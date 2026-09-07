@@ -1,0 +1,30 @@
+# Normaliza fim de linha NO REPOSITORIO para LF, deixando cada plataforma fazer
+# checkout no formato nativo. Sem isso, um clone em Linux/Mac pega o codigo com
+# fim de linha diferente e o primeiro commit dessa pessoa vira um diff de arquivo
+# inteiro. Definido no commit inicial de proposito: depois exigiria renormalizar
+# o repo todo.
+* text=auto
+
+# Binarios declarados explicitamente. A deteccao automatica do git costuma
+# acertar, mas com milhares de PNG e fontes no public/ nao vale correr o risco
+# de um asset ser tratado como texto e ter bytes trocados.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.ico    binary
+*.svgz   binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
+*.eot    binary
+*.mp3    binary
+*.ogg    binary
+*.wav    binary
+*.webm   binary
+*.mp4    binary
+*.pdf    binary
+*.sqlite binary
+*.zip    binary

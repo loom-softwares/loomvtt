@@ -1,0 +1,828 @@
+/* ==========================================================================
+   Create World — "Warp & Weft" direction.
+   ==========================================================================
+
+   The loom is the structure, not an ornament: vertical warp threads cross
+   the screen and all content leans on them. The three steps are the weft being
+   passed, and that's why they are numbered — the order carries real information
+   (the system must exist before the world has a name).
+
+   RULES FOR THIS FILE
+   1. Every selector lives under `.world-forge`. Nothing loose, nothing global.
+   2. Tokens are declared at `.world-forge` root — not `:root` —
+      so they don't leak to the rest of the app.
+   3. No rule here overwrites a rule from another file. If something here
+      clashes with `setup.css` or `screens.css`, the fix goes there, not via
+      `!important` here.
+   ========================================================================== */
+
+.world-forge {
+  /* Dyehouse: vat indigo, root madder, raw linen.
+     Deliberately outside the global palette — this screen is an antechamber to
+     the product, not part of the HUD. */
+  --wf-ground:      #0a0d14;
+  --wf-ground-deep: #06080d;
+  --wf-surface:     #121722;
+  --wf-warp:        rgba(122, 140, 180, 0.1);
+  --wf-warp-lit:    rgba(122, 140, 180, 0.3);
+
+  --wf-linen:     #e9e3d6;
+  --wf-linen-mid: #9aa0ae;
+  --wf-linen-dim: #5d6472;
+
+  --wf-indigo:      #5f73d8;
+  --wf-indigo-deep: #2d3a78;
+  --wf-madder:      #c8452e;
+  --wf-madder-lit:  #e05b41;
+
+  --wf-display: 'Bahnschrift', 'Archivo Narrow', 'Roboto Condensed', 'Helvetica Neue', system-ui, sans-serif;
+  --wf-body: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --wf-mono: 'Cascadia Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
+
+  /* Warp column width. The side rail is exactly 1 column,
+     and horizontal indents are half a column — this way everything sits on the grid. */
+  --wf-col: 88px;
+
+  position: fixed;
+  inset: 0;
+  /* Below 100: the window-manager stacks windows starting from 100, and on a
+     tie the screen would win by coming later in the DOM — the File Picker would open
+     behind this screen. */
+  z-index: 90;
+  overflow-y: auto;
+  background: var(--wf-ground);
+  color: var(--wf-linen);
+  font-family: var(--wf-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.world-forge *,
+.world-forge *::before,
+.world-forge *::after {
+  box-sizing: border-box;
+}
+
+/* The warp: vertical hairlines that cross everything. It's the actual layout
+   grid — not background texture. */
+.wf-warp {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, var(--wf-warp) 0 1px, transparent 1px var(--wf-col));
+}
+
+.wf-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--wf-col) 1fr;
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   Steps rail
+   -------------------------------------------------------------------------- */
+
+.wf-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0;
+  border-right: 1px solid var(--wf-warp-lit);
+  background: var(--wf-ground-deep);
+}
+
+/* Horizontal mark: fits in 88px without rotating. The steps below rotate
+   because they are a traveled rail; the mark is not a journey. */
+.wf-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 26px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--wf-warp-lit);
+  font-family: var(--wf-display);
+  font-size: 13px;
+  font-weight: 700;
+  font-stretch: 78%;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: var(--wf-linen);
+}
+
+/* The rail is 88px; 34px leaves the logo breathing within the column without
+   touching the warp threads. */
+.wf-mark img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.wf-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--wf-linen-dim);
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.wf-step:hover:not(:disabled) {
+  color: var(--wf-linen-mid);
+}
+
+.wf-step:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.wf-step:focus-visible {
+  outline: 2px solid var(--wf-madder-lit);
+  outline-offset: 2px;
+}
+
+.wf-step-num {
+  color: inherit;
+}
+
+.wf-step[data-done='true'] {
+  color: var(--wf-indigo);
+}
+
+.wf-step[aria-current='step'] {
+  border-left-color: var(--wf-madder);
+  color: var(--wf-linen);
+}
+
+.wf-step[aria-current='step'] .wf-step-num {
+  color: var(--wf-madder-lit);
+}
+
+/* --------------------------------------------------------------------------
+   Web header
+   -------------------------------------------------------------------------- */
+
+.wf-weave {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wf-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 22px calc(var(--wf-col) / 2) 18px;
+  border-bottom: 1px solid var(--wf-warp-lit);
+}
+
+.wf-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--wf-linen-dim);
+}
+
+.wf-title {
+  margin: 0;
+  font-family: var(--wf-display);
+  font-size: clamp(28px, 3.4vw, 44px);
+  font-weight: 700;
+  font-stretch: 78%;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  color: var(--wf-linen);
+  text-wrap: balance;
+}
+
+.wf-note {
+  max-width: 32ch;
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: var(--wf-linen-dim);
+}
+
+.wf-close {
+  align-self: flex-start;
+  padding: 10px 14px;
+  border: 1px solid var(--wf-warp-lit);
+  background: transparent;
+  color: var(--wf-linen-dim);
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.wf-close:hover {
+  border-color: var(--wf-linen-dim);
+  color: var(--wf-linen);
+}
+
+.wf-close:focus-visible {
+  outline: 2px solid var(--wf-madder-lit);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Step panels
+   -------------------------------------------------------------------------- */
+
+.wf-panel {
+  display: none;
+  flex: 1;
+  min-height: 0;
+}
+
+.wf-panel.is-active {
+  display: block;
+}
+
+/* Step 01 — systems shelf ---------------------------------------- */
+
+.wf-shelf {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--wf-warp-lit);
+  scrollbar-width: thin;
+}
+
+.wf-sys {
+  position: relative;
+  flex: 0 0 clamp(230px, 26vw, 330px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 58vh;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--wf-warp-lit);
+  background: var(--wf-surface);
+  color: var(--wf-linen);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wf-sys:focus-visible {
+  outline: 2px solid var(--wf-madder-lit);
+  outline-offset: -4px;
+}
+
+.wf-sys-art {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.55;
+  transition: opacity 320ms ease;
+}
+
+.wf-sys:hover .wf-sys-art {
+  opacity: 0.75;
+}
+
+.wf-sys[aria-pressed='true'] {
+  background: var(--wf-ground-deep);
+}
+
+.wf-sys[aria-pressed='true'] .wf-sys-art {
+  opacity: 0.9;
+}
+
+.wf-sys-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 8, 13, 0) 30%, rgba(6, 8, 13, 0.86) 78%, rgba(6, 8, 13, 0.97) 100%);
+}
+
+.wf-sys-body {
+  position: relative;
+  padding: 26px 24px 28px;
+}
+
+.wf-sys-name {
+  display: block;
+  margin: 0 0 10px;
+  font-family: var(--wf-display);
+  font-size: 27px;
+  font-weight: 700;
+  font-stretch: 78%;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+.wf-sys-meta {
+  display: block;
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wf-linen-mid);
+}
+
+/* The madder thread: the selection mark, pulled along the base of the panel. */
+.wf-sys-thread {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--wf-madder);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.wf-sys[aria-pressed='true'] .wf-sys-thread {
+  transform: scaleX(1);
+}
+
+.wf-shelf-empty {
+  padding: 60px calc(var(--wf-col) / 2);
+  font-family: var(--wf-mono);
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--wf-linen-dim);
+}
+
+/* Step 02 — identity and preview ------------------------------------------- */
+
+.wf-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+}
+
+.wf-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 26px calc(var(--wf-col) / 2) 28px;
+  border-right: 1px solid var(--wf-warp-lit);
+}
+
+.wf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wf-field label {
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wf-linen-dim);
+}
+
+/* Boxless fields: only the baseline, which lights up in madder on focus.
+   It is the most visible difference compared to a conventional form. */
+.wf-field input,
+.wf-field select {
+  width: 100%;
+  padding: 6px 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--wf-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wf-linen);
+  font-family: var(--wf-body);
+  font-size: 17px;
+  appearance: none;
+  transition: border-color 200ms ease;
+}
+
+.wf-field select {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.wf-field select option {
+  background: var(--wf-surface);
+  color: var(--wf-linen);
+}
+
+.wf-field input::placeholder {
+  color: var(--wf-linen-dim);
+}
+
+.wf-field input:focus,
+.wf-field select:focus {
+  border-bottom-color: var(--wf-madder);
+  outline: 0;
+}
+
+.wf-field input[readonly] {
+  cursor: pointer;
+}
+
+.wf-hint {
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--wf-linen-dim);
+}
+
+.wf-hint b {
+  font-weight: 400;
+  color: var(--wf-indigo);
+}
+
+.wf-hint button {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--wf-linen-dim);
+  background: transparent;
+  color: var(--wf-linen-mid);
+  font: inherit;
+  cursor: pointer;
+}
+
+.wf-hint button:hover {
+  border-bottom-color: var(--wf-madder);
+  color: var(--wf-linen);
+}
+
+.wf-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Description editor ------------------------------------------------------ */
+
+.wf-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 96px;
+  border-bottom: 1px solid var(--wf-warp-lit);
+  background: transparent;
+}
+
+/* `prosemirror-menu/style/menu.css` draws the bar with a white background and
+   `border-bottom: 1px solid silver`. That stylesheet comes from the package and might
+   load after this one, so `!important` is the only way to win without
+   relying on import order. */
+.world-forge .ProseMirror-menubar {
+  padding: 0 0 8px;
+  border-bottom: 0 !important;
+  background: transparent !important;
+  color: var(--wf-linen-mid) !important;
+}
+
+.world-forge .ProseMirror-icon {
+  color: var(--wf-linen-mid);
+}
+
+.world-forge .ProseMirror-icon:hover {
+  color: var(--wf-linen);
+}
+
+.world-forge .ProseMirror {
+  flex: 1;
+  padding: 4px 0 12px;
+  color: var(--wf-linen);
+  font-family: var(--wf-body);
+  font-size: 15px;
+  line-height: 1.7;
+  outline: none;
+}
+
+/* Live preview ----------------------------------------------------------- */
+
+.wf-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 26px calc(var(--wf-col) / 2) 28px;
+  background: var(--wf-ground-deep);
+}
+
+.wf-preview-label {
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wf-linen-dim);
+}
+
+.wf-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 220px;
+  overflow: hidden;
+  background: var(--wf-surface);
+}
+
+.wf-card-art {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+}
+
+.wf-card-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 8, 13, 0) 34%, rgba(6, 8, 13, 0.9) 80%, rgba(6, 8, 13, 0.98) 100%);
+}
+
+.wf-card-body {
+  position: relative;
+  padding: 24px;
+}
+
+.wf-card-title {
+  display: block;
+  margin: 0 0 8px;
+  font-family: var(--wf-display);
+  font-size: 32px;
+  font-weight: 700;
+  font-stretch: 78%;
+  line-height: 1.02;
+  color: var(--wf-linen);
+}
+
+.wf-card-sub {
+  display: block;
+  margin: 0 0 12px;
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wf-linen-mid);
+}
+
+.wf-card-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--wf-linen-mid);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.wf-preview-note {
+  padding-left: 14px;
+  border-left: 2px solid var(--wf-indigo-deep);
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  color: var(--wf-linen-dim);
+}
+
+/* Step 03 — conference as weft lines ------------------------------ */
+
+.wf-summary {
+  max-width: 940px;
+  margin: 0;
+  padding: 40px calc(var(--wf-col) / 2) 48px;
+}
+
+.wf-weft {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  align-items: baseline;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--wf-warp-lit);
+}
+
+.wf-weft dt {
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wf-linen-dim);
+}
+
+.wf-weft dd {
+  margin: 0;
+  font-size: 18px;
+  color: var(--wf-linen);
+}
+
+.wf-weft dd .wf-mono {
+  font-family: var(--wf-mono);
+  font-size: 14px;
+  color: var(--wf-linen-mid);
+}
+
+/* --------------------------------------------------------------------------
+   Action bar
+   -------------------------------------------------------------------------- */
+
+.wf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 22px calc(var(--wf-col) / 2);
+  border-top: 1px solid var(--wf-warp-lit);
+  background: var(--wf-ground-deep);
+}
+
+.wf-state {
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--wf-linen-dim);
+}
+
+.wf-state b {
+  font-weight: 400;
+  color: var(--wf-linen);
+}
+
+.wf-btn-row {
+  display: flex;
+}
+
+.wf-btn {
+  padding: 15px 30px;
+  border: 1px solid var(--wf-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wf-linen-mid);
+  font-family: var(--wf-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.wf-btn + .wf-btn {
+  border-left: 0;
+}
+
+.wf-btn:hover:not(:disabled) {
+  border-color: var(--wf-linen-dim);
+  color: var(--wf-linen);
+}
+
+.wf-btn:focus-visible {
+  outline: 2px solid var(--wf-madder-lit);
+  outline-offset: 2px;
+}
+
+.wf-btn-primary {
+  border-color: var(--wf-madder);
+  background: var(--wf-madder);
+  color: #fff3ee;
+}
+
+.wf-btn-primary:hover:not(:disabled) {
+  border-color: var(--wf-madder-lit);
+  background: var(--wf-madder-lit);
+  color: #fff6f2;
+}
+
+.wf-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .world-forge {
+    --wf-col: 56px;
+  }
+
+  .wf-identity {
+    grid-template-columns: 1fr;
+  }
+
+  .wf-fields {
+    border-right: 0;
+    border-bottom: 1px solid var(--wf-warp-lit);
+  }
+
+  .wf-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .wf-weft {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .wf-sys {
+    min-height: 44vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-forge *,
+  .world-forge *::before,
+  .world-forge *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   File field
+   --------------------------------------------------------------------------
+   The button is mandatory: the `data-action` dispatch purposely ignores clicks on
+   input/select/textarea (see `isValueInput` in lib/dom-render.ts),
+   so an action attached to the field itself would never trigger.
+   -------------------------------------------------------------------------- */
+
+.wf-file {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.wf-file input {
+  flex: 1;
+  min-width: 0;
+}
+
+.wf-file-btn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border: 1px solid var(--wf-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wf-linen-mid);
+  font-family: var(--wf-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.wf-file-btn:hover {
+  border-color: var(--wf-madder);
+  color: var(--wf-linen);
+}
+
+.wf-file-btn:focus-visible {
+  outline: 2px solid var(--wf-madder-lit);
+  outline-offset: 2px;
+}
+
+/* Step 2 is the tallest of the three. The panel divides the remaining height and each
+   column scrolls internally if needed — the page itself never gets a scrollbar. */
+.world-forge {
+  overflow: hidden;
+}
+
+.wf-shell {
+  height: 100vh;
+  min-height: 0;
+}
+
+.wf-weave {
+  min-height: 0;
+}
+
+.wf-panel.is-active {
+  display: block;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.wf-identity {
+  height: 100%;
+}
+
+.wf-fields,
+.wf-preview {
+  overflow-y: auto;
+  min-height: 0;
+}

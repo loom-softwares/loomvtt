@@ -1,0 +1,7 @@
+﻿{
+    "Inter[wght].woff2": { "family": "Inter", "weight": "100 900", "style": "normal" },
+    "Cinzel[wght].woff2": { "family": "Cinzel", "weight": "400 700", "style": "normal" },
+    "CrimsonText-Regular.woff2": { "family": "Crimson Text", "weight": "400 600", "style": "normal" },
+    "CrimsonText-Regular-Italic.woff2": { "family": "Crimson Text", "weight": "400", "style": "italic" },
+    "JetBrainsMono[wght].woff2": { "family": "JetBrains Mono", "weight": "100 900", "style": "normal" }
+}

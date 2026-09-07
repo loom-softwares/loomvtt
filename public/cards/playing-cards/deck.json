@@ -1,0 +1,497 @@
+{
+  "id": "playing-cards-standard",
+  "name": "Baralho Tradicional (54 Cartas)",
+  "type": "standard",
+  "back": "/cards/backs/fantasy-01.png",
+  "width": 71,
+  "height": 96,
+  "description": "Baralho padrão de 52 cartas francesas mais 2 coringas.",
+  "cards": [
+    {
+      "name": "Ás de Ouros",
+      "suit": "diamonds",
+      "value": "A",
+      "type": "card",
+      "img": "/cards/playing-cards/101.png",
+      "face": "/cards/playing-cards/101.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "2 de Ouros",
+      "suit": "diamonds",
+      "value": "2",
+      "type": "card",
+      "img": "/cards/playing-cards/102.png",
+      "face": "/cards/playing-cards/102.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "3 de Ouros",
+      "suit": "diamonds",
+      "value": "3",
+      "type": "card",
+      "img": "/cards/playing-cards/103.png",
+      "face": "/cards/playing-cards/103.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "4 de Ouros",
+      "suit": "diamonds",
+      "value": "4",
+      "type": "card",
+      "img": "/cards/playing-cards/104.png",
+      "face": "/cards/playing-cards/104.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "5 de Ouros",
+      "suit": "diamonds",
+      "value": "5",
+      "type": "card",
+      "img": "/cards/playing-cards/105.png",
+      "face": "/cards/playing-cards/105.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "6 de Ouros",
+      "suit": "diamonds",
+      "value": "6",
+      "type": "card",
+      "img": "/cards/playing-cards/106.png",
+      "face": "/cards/playing-cards/106.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "7 de Ouros",
+      "suit": "diamonds",
+      "value": "7",
+      "type": "card",
+      "img": "/cards/playing-cards/107.png",
+      "face": "/cards/playing-cards/107.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "8 de Ouros",
+      "suit": "diamonds",
+      "value": "8",
+      "type": "card",
+      "img": "/cards/playing-cards/108.png",
+      "face": "/cards/playing-cards/108.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "9 de Ouros",
+      "suit": "diamonds",
+      "value": "9",
+      "type": "card",
+      "img": "/cards/playing-cards/109.png",
+      "face": "/cards/playing-cards/109.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "10 de Ouros",
+      "suit": "diamonds",
+      "value": "10",
+      "type": "card",
+      "img": "/cards/playing-cards/110.png",
+      "face": "/cards/playing-cards/110.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Valete de Ouros",
+      "suit": "diamonds",
+      "value": "J",
+      "type": "card",
+      "img": "/cards/playing-cards/111.png",
+      "face": "/cards/playing-cards/111.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Dama de Ouros",
+      "suit": "diamonds",
+      "value": "Q",
+      "type": "card",
+      "img": "/cards/playing-cards/112.png",
+      "face": "/cards/playing-cards/112.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Rei de Ouros",
+      "suit": "diamonds",
+      "value": "K",
+      "type": "card",
+      "img": "/cards/playing-cards/113.png",
+      "face": "/cards/playing-cards/113.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Ás de Paus",
+      "suit": "clubs",
+      "value": "A",
+      "type": "card",
+      "img": "/cards/playing-cards/114.png",
+      "face": "/cards/playing-cards/114.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "2 de Paus",
+      "suit": "clubs",
+      "value": "2",
+      "type": "card",
+      "img": "/cards/playing-cards/115.png",
+      "face": "/cards/playing-cards/115.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "3 de Paus",
+      "suit": "clubs",
+      "value": "3",
+      "type": "card",
+      "img": "/cards/playing-cards/116.png",
+      "face": "/cards/playing-cards/116.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "4 de Paus",
+      "suit": "clubs",
+      "value": "4",
+      "type": "card",
+      "img": "/cards/playing-cards/117.png",
+      "face": "/cards/playing-cards/117.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "5 de Paus",
+      "suit": "clubs",
+      "value": "5",
+      "type": "card",
+      "img": "/cards/playing-cards/118.png",
+      "face": "/cards/playing-cards/118.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "6 de Paus",
+      "suit": "clubs",
+      "value": "6",
+      "type": "card",
+      "img": "/cards/playing-cards/119.png",
+      "face": "/cards/playing-cards/119.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "7 de Paus",
+      "suit": "clubs",
+      "value": "7",
+      "type": "card",
+      "img": "/cards/playing-cards/120.png",
+      "face": "/cards/playing-cards/120.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "8 de Paus",
+      "suit": "clubs",
+      "value": "8",
+      "type": "card",
+      "img": "/cards/playing-cards/121.png",
+      "face": "/cards/playing-cards/121.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "9 de Paus",
+      "suit": "clubs",
+      "value": "9",
+      "type": "card",
+      "img": "/cards/playing-cards/122.png",
+      "face": "/cards/playing-cards/122.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "10 de Paus",
+      "suit": "clubs",
+      "value": "10",
+      "type": "card",
+      "img": "/cards/playing-cards/123.png",
+      "face": "/cards/playing-cards/123.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Valete de Paus",
+      "suit": "clubs",
+      "value": "J",
+      "type": "card",
+      "img": "/cards/playing-cards/124.png",
+      "face": "/cards/playing-cards/124.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Dama de Paus",
+      "suit": "clubs",
+      "value": "Q",
+      "type": "card",
+      "img": "/cards/playing-cards/125.png",
+      "face": "/cards/playing-cards/125.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Rei de Paus",
+      "suit": "clubs",
+      "value": "K",
+      "type": "card",
+      "img": "/cards/playing-cards/126.png",
+      "face": "/cards/playing-cards/126.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Ás de Copas",
+      "suit": "hearts",
+      "value": "A",
+      "type": "card",
+      "img": "/cards/playing-cards/127.png",
+      "face": "/cards/playing-cards/127.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "2 de Copas",
+      "suit": "hearts",
+      "value": "2",
+      "type": "card",
+      "img": "/cards/playing-cards/128.png",
+      "face": "/cards/playing-cards/128.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "3 de Copas",
+      "suit": "hearts",
+      "value": "3",
+      "type": "card",
+      "img": "/cards/playing-cards/129.png",
+      "face": "/cards/playing-cards/129.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "4 de Copas",
+      "suit": "hearts",
+      "value": "4",
+      "type": "card",
+      "img": "/cards/playing-cards/130.png",
+      "face": "/cards/playing-cards/130.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "5 de Copas",
+      "suit": "hearts",
+      "value": "5",
+      "type": "card",
+      "img": "/cards/playing-cards/131.png",
+      "face": "/cards/playing-cards/131.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "6 de Copas",
+      "suit": "hearts",
+      "value": "6",
+      "type": "card",
+      "img": "/cards/playing-cards/132.png",
+      "face": "/cards/playing-cards/132.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "7 de Copas",
+      "suit": "hearts",
+      "value": "7",
+      "type": "card",
+      "img": "/cards/playing-cards/133.png",
+      "face": "/cards/playing-cards/133.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "8 de Copas",
+      "suit": "hearts",
+      "value": "8",
+      "type": "card",
+      "img": "/cards/playing-cards/134.png",
+      "face": "/cards/playing-cards/134.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "9 de Copas",
+      "suit": "hearts",
+      "value": "9",
+      "type": "card",
+      "img": "/cards/playing-cards/135.png",
+      "face": "/cards/playing-cards/135.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "10 de Copas",
+      "suit": "hearts",
+      "value": "10",
+      "type": "card",
+      "img": "/cards/playing-cards/136.png",
+      "face": "/cards/playing-cards/136.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Valete de Copas",
+      "suit": "hearts",
+      "value": "J",
+      "type": "card",
+      "img": "/cards/playing-cards/137.png",
+      "face": "/cards/playing-cards/137.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Dama de Copas",
+      "suit": "hearts",
+      "value": "Q",
+      "type": "card",
+      "img": "/cards/playing-cards/138.png",
+      "face": "/cards/playing-cards/138.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Rei de Copas",
+      "suit": "hearts",
+      "value": "K",
+      "type": "card",
+      "img": "/cards/playing-cards/139.png",
+      "face": "/cards/playing-cards/139.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Ás de Espadas",
+      "suit": "spades",
+      "value": "A",
+      "type": "card",
+      "img": "/cards/playing-cards/140.png",
+      "face": "/cards/playing-cards/140.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "2 de Espadas",
+      "suit": "spades",
+      "value": "2",
+      "type": "card",
+      "img": "/cards/playing-cards/141.png",
+      "face": "/cards/playing-cards/141.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "3 de Espadas",
+      "suit": "spades",
+      "value": "3",
+      "type": "card",
+      "img": "/cards/playing-cards/142.png",
+      "face": "/cards/playing-cards/142.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "4 de Espadas",
+      "suit": "spades",
+      "value": "4",
+      "type": "card",
+      "img": "/cards/playing-cards/143.png",
+      "face": "/cards/playing-cards/143.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "5 de Espadas",
+      "suit": "spades",
+      "value": "5",
+      "type": "card",
+      "img": "/cards/playing-cards/144.png",
+      "face": "/cards/playing-cards/144.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "6 de Espadas",
+      "suit": "spades",
+      "value": "6",
+      "type": "card",
+      "img": "/cards/playing-cards/145.png",
+      "face": "/cards/playing-cards/145.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "7 de Espadas",
+      "suit": "spades",
+      "value": "7",
+      "type": "card",
+      "img": "/cards/playing-cards/146.png",
+      "face": "/cards/playing-cards/146.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "8 de Espadas",
+      "suit": "spades",
+      "value": "8",
+      "type": "card",
+      "img": "/cards/playing-cards/147.png",
+      "face": "/cards/playing-cards/147.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "9 de Espadas",
+      "suit": "spades",
+      "value": "9",
+      "type": "card",
+      "img": "/cards/playing-cards/148.png",
+      "face": "/cards/playing-cards/148.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "10 de Espadas",
+      "suit": "spades",
+      "value": "10",
+      "type": "card",
+      "img": "/cards/playing-cards/149.png",
+      "face": "/cards/playing-cards/149.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Valete de Espadas",
+      "suit": "spades",
+      "value": "J",
+      "type": "card",
+      "img": "/cards/playing-cards/150.png",
+      "face": "/cards/playing-cards/150.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Dama de Espadas",
+      "suit": "spades",
+      "value": "Q",
+      "type": "card",
+      "img": "/cards/playing-cards/151.png",
+      "face": "/cards/playing-cards/151.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Rei de Espadas",
+      "suit": "spades",
+      "value": "K",
+      "type": "card",
+      "img": "/cards/playing-cards/152.png",
+      "face": "/cards/playing-cards/152.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Coringa (Vermelho)",
+      "suit": "joker",
+      "value": "Joker",
+      "type": "joker",
+      "img": "/cards/playing-cards/153.png",
+      "face": "/cards/playing-cards/153.png",
+      "back": "/cards/backs/fantasy-01.png"
+    },
+    {
+      "name": "Coringa (Preto)",
+      "suit": "joker",
+      "value": "Joker",
+      "type": "joker",
+      "img": "/cards/playing-cards/154.png",
+      "face": "/cards/playing-cards/154.png",
+      "back": "/cards/backs/fantasy-01.png"
+    }
+  ]
+}

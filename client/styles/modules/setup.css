@@ -1,0 +1,2164 @@
+/* Setup Module - Setup hub and configuration screen styles */
+
+/* Setup Container */
+#setup {
+  display: grid;
+  grid-template-columns: minmax(700px, 1200px) 450px;
+  justify-content: center;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  gap: 1.5rem;
+  padding: 1.5rem 2.5rem;
+  background:
+    linear-gradient(rgba(8, 10, 20, 0.88), rgba(4, 5, 12, 0.94)),
+    url('/bgs/06_ritual_chamber.png') center / cover no-repeat;
+  background-blend-mode: multiply, normal;
+  overflow: hidden;
+  /* Locked height + overflow:hidden here — the header and footer (auto
+     grid lines) are always visible; only #setup-packages
+     (.tab) and #setup-sidebar (#news) scroll, which already had their own overflow-y:auto. */
+  position: relative;
+  isolation: isolate;
+}
+
+#setup-packages,
+#setup-sidebar {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Frosted glass — the same material the app windows already use
+   and now has the background texture coming through
+   behind the glass, like the rest of LoomVTT. */
+.tab-content-box,
+#setup-sidebar section {
+  background: rgba(10, 13, 20, 0.35) !important;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.35) !important;
+  box-shadow: var(--shadow-glow), 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Allow scroll inside the tab content */
+.tab-content-box {
+  overflow-y: auto;
+}
+
+/* Subtle ambient glow behind the header — same technique as world-login,
+   gives a "living" feeling without costing performance (just opacity). */
+#setup::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05), transparent 55%);
+  animation: setupAmbientGlow 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes setupAmbientGlow {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #setup::before {
+    animation: none;
+  }
+}
+
+#setup-header-section {
+  grid-column: 1 / -1;
+}
+
+#setup-footer {
+  grid-column: 1 / -1;
+  text-align: left;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 0.25rem 2.5rem;
+  opacity: 0.4;
+}
+
+/* Setup Packages Area */
+#setup-packages {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Setup Header */
+.setup-hub-header {
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 0.25rem);
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.setup-hub-logo {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  color: var(--color-text-primary);
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9), 0 1px 4px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+}
+
+.setup-hub-logo-icon {
+  display: block;
+  font-size: 3rem;
+  margin-bottom: var(--spacing-xs);
+  filter: drop-shadow(0 2px 8px rgba(var(--color-accent-rgb), 0.5));
+}
+
+.setup-hub-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  text-wrap: balance;
+}
+
+/* Setup Packages Header */
+/* Fixed height 64px — aligns with the news sidebar header */
+#setup-packages .setup-hub-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  height: 64px;
+  padding: 0 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+#setup-packages .setup-hub-panel-header .tabs {
+  display: flex;
+  flex: 1;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: nowrap;
+}
+
+/* Decorative lines between tabs were removed */
+
+/* Tabs as "spools" — pill with dashed frame. Signature: the same stitching line used on the Updates screen, here turning into the active tab's outline. */
+#setup .tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 2px dashed transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0.6rem 0.5rem;
+  position: relative;
+}
+
+#setup .tab-button::after {
+  content: none;
+}
+
+#setup .tab-button:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+#setup .tab-button:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-rgb), 0.6);
+  outline-offset: 2px;
+}
+
+/* Active / Selected State */
+#setup .tab-button.active,
+#setup .tab-button[aria-selected="true"] {
+  color: var(--color-text-primary);
+  border-bottom-color: rgba(var(--color-accent-rgb), 0.8);
+}
+
+#setup .tab-button:active {
+  transform: none;
+}
+
+/* Setup Toolbar */
+.setup-hub-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem var(--spacing-lg, 1.5rem);
+  border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.15);
+  flex-wrap: wrap;
+  backdrop-filter: blur(4px);
+}
+
+/* Create World Button (Ultra Premium - Sleek) */
+.setup-hub-toolbar .btn,
+.empty-state .btn,
+.su-actions .btn {
+  background-image: none !important;
+  flex-shrink: 0;
+  height: 48px;
+  padding: 0 1.5rem;
+  min-width: 220px;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(15, 20, 28, 0.7) !important;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.4) !important;
+  border-radius: 8px;
+  color: #ffffff !important;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.setup-hub-toolbar .btn::after,
+.empty-state .btn::after,
+.su-actions .btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-25deg);
+  animation: metallic-shine 4s infinite;
+}
+
+.setup-hub-toolbar .btn:hover,
+.empty-state .btn:hover,
+.su-actions .btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%) !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 30px rgba(var(--color-accent-rgb), 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.setup-hub-toolbar .btn:active,
+.empty-state .btn:active,
+.su-actions .btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 10px rgba(var(--color-accent-rgb), 0.4);
+}
+
+/* Centers the button inside the empty state since it is display: flex */
+.empty-state .btn {
+  margin: 1rem auto 0 auto;
+}
+
+.setup-hub-toolbar #search-container {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Dark Glass Input for Search */
+.setup-hub-toolbar #search-container input {
+  width: 100%;
+  height: 48px;
+  padding: 0 1.25rem 0 2.75rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+.setup-hub-toolbar #search-container input:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.7);
+  border-color: var(--color-accent);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(var(--color-accent-rgb), 0.3),
+    0 0 0 1px var(--color-accent);
+}
+
+.setup-hub-toolbar .view-mode-toggle {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.setup-hub-toolbar .view-mode-btn {
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.setup-hub-toolbar .view-mode-btn:hover {
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-accent);
+  border-color: rgba(var(--color-accent-rgb), 0.4);
+}
+
+.setup-hub-toolbar .view-mode-btn.active {
+  background: rgba(var(--color-accent-rgb), 0.2);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3);
+}
+
+/* Tab Panels */
+.tab {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: rgba(15, 20, 28, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.25);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 -2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--color-accent-rgb), 0.3) transparent;
+}
+
+.tab.active {
+  display: flex;
+  flex-direction: column;
+}
+
+.tab.active .package-list {
+  flex: 1;
+  min-height: 0;
+}
+
+.tab::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tab::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-accent-rgb), 0.3);
+  border-radius: 3px;
+}
+
+/* Package List (setup context) */
+.package-list {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  padding: 1.5rem;
+  margin: 0;
+  list-style: none;
+}
+
+.package-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.package-description {
+  display: none;
+}
+
+/* LIST MODE (Details) - 1140x180 */
+.package-list.view-list {
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.package-list.view-list .package {
+  height: 180px;
+  min-height: 180px;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px;
+}
+
+.package-list.view-list .package-cover {
+  width: 320px;
+  height: 170px;
+  flex: 0 0 320px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.package-list.view-list .package-description {
+  display: block;
+  flex: 1;
+  height: 170px;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  overflow-y: auto;
+  border-left: 1px solid rgba(var(--color-accent-rgb), 0.2);
+  margin-left: 1rem;
+}
+
+/* GRID MODE (Tiles) - 273x68 */
+.package-list.view-grid {
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 0.5rem;
+}
+
+.package-list.view-grid .package {
+  height: 68px;
+  min-height: 68px;
+}
+
+.package-list.view-grid .package-cover {
+  flex-direction: row;
+  align-items: center;
+}
+
+.package-list.view-grid .package-title {
+  font-size: 1rem;
+  padding: 0;
+  padding-right: 6.5rem;
+  /* Reserve space for the tags on the right */
+  text-align: left;
+  margin-left: 3.5rem;
+  flex: 1;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.package-list.view-grid .control.play {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+  left: 2rem;
+  transform: translate(-50%, -50%);
+}
+
+.package-list.view-grid .tags.flexrow {
+  bottom: auto;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.package-list.view-grid .tags.flexrow.left {
+  display: none;
+}
+
+.package {
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-bg-medium);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 200px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.package:not(:has(.thumbnail)) {
+  background: linear-gradient(160deg, rgba(40, 32, 26, 0.95) 0%, rgba(25, 20, 16, 0.98) 100%);
+  border-color: rgba(var(--color-accent-rgb), 0.15);
+}
+
+.package .thumbnail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  transition: all 0.4s ease;
+  filter: brightness(0.4) saturate(0.8);
+}
+
+.package:hover .thumbnail {
+  transform: scale(1.05);
+  filter: brightness(1) saturate(1);
+}
+
+.package:hover {
+  border-color: rgba(var(--color-accent-rgb), 0.6);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(var(--color-accent-rgb), 0.3);
+  transform: translateY(-2px);
+}
+
+.package:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--color-accent));
+  outline-offset: 2px;
+}
+
+.package:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+.card-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 0.35rem 0.6rem;
+}
+
+.card-progress-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.card-progress-bar {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 300ms ease;
+}
+
+.card-progress-label {
+  font-size: 0.7rem;
+  color: var(--color-text-primary);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.package-info {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.package-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  margin: 0;
+  line-height: 1.2;
+  padding: 0;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Decorative line under the title */
+
+
+.package-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.package-meta .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-text-muted);
+}
+
+.control.play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(15, 20, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+  z-index: 3;
+  opacity: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.package:hover .control.play {
+  opacity: 1;
+}
+
+.control.play:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.9);
+}
+
+.card-play-icon {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-left: 2px;
+}
+
+/* Package entrance animation */
+@keyframes packageEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.package {
+  animation: packageEntrance 0.4s ease-out;
+  animation-fill-mode: backwards;
+}
+
+.package-list .package:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.package-list .package:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.package-list .package:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.package-list .package:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.package-list .package:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.package-list .package:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.package-list .package:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+.package-list .package:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+.package-list .package:nth-child(9) {
+  animation-delay: 0.45s;
+}
+
+.package-list .package:nth-child(10) {
+  animation-delay: 0.5s;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.empty-state p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Search Filter */
+.search-filter {
+  position: relative;
+  flex: 1;
+  max-width: none;
+}
+
+.search-filter input {
+  width: 100%;
+  padding: 0.7rem 1.25rem 0.7rem 2.75rem;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 4px);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.search-filter input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.search-filter input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+/* Setup Status Indicators */
+.setup-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.setup-status-success {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.setup-status-warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--color-warning);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.setup-status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Setup Progress */
+.setup-progress {
+  margin-bottom: 1.5rem;
+}
+
+.setup-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-bg-medium);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.setup-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width var(--transition-normal);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.setup-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* Setup Form Section */
+.setup-form-section {
+  background: var(--color-bg-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 8px);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.setup-form-section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+}
+
+.setup-form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .package {
+    animation: none;
+    opacity: 1;
+  }
+
+  .tab-button {
+    transition: none;
+  }
+
+  .package:hover {
+    transform: none;
+  }
+
+  .tab-button:hover {
+    transform: none;
+  }
+
+  /* Removed control.play override for reduced motion to ensure it still fades in on hover.
+   O .context-menu NAO vai para animation:none aqui: e animacao curta disparada
+   por acao do usuario (ver aviso em foundation.css) — sem ela o menu abre seco. */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  #setup {
+    grid-template-columns: 1fr;
+  }
+
+  .package-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .setup-hub-header {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .setup-hub-logo {
+    font-size: 2rem;
+  }
+
+  .setup-hub-title {
+    font-size: 0.9rem;
+  }
+
+  #setup-packages .tabs {
+    gap: 0.5rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .tab-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  .setup-hub-toolbar {
+    padding: var(--spacing-sm);
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .setup-hub-toolbar .search-filter {
+    max-width: none;
+    width: 100%;
+  }
+
+  .tab {
+    padding: var(--spacing-md);
+  }
+
+  .package-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: var(--spacing-sm);
+  }
+
+  .package {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  #setup {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .setup-hub-header {
+    padding: var(--spacing-sm) 0;
+  }
+
+  .setup-hub-logo {
+    font-size: 1.6rem;
+  }
+
+  #setup-packages .setup-hub-panel-header {
+    height: auto;
+    padding: 0.5rem;
+  }
+
+  #setup-packages .setup-hub-panel-header .tabs {
+    gap: 0.5rem;
+  }
+
+  .tab-rule {
+    display: none;
+  }
+}
+
+/* Global Progress Bar */
+.global-progress-container {
+  width: calc(100% - 3rem);
+  margin: 0.5rem 1.5rem 1.5rem 1.5rem;
+  height: 18px;
+  background: rgba(10, 10, 15, 0.9);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.4);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: block;
+  align-self: stretch;
+}
+
+.global-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-warning), var(--color-accent));
+  border-radius: 0;
+  transition: width 250ms ease-out;
+}
+
+.global-progress-label {
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  font-weight: 500;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+
+/* Count badge on Setup Hub notification bell */
+.setup-hub-global-actions .badge-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--color-danger, #c0392b);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Setup Hub — side rail. Cascade override: stuck at the end on purpose,
+   overrides the two-column grid (content + news) without editing the
+   rules above, and drops out completely if rollback is needed.
+   ========================================================================== */
+
+#setup {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  gap: 0;
+  height: 100vh;
+  max-width: none;
+  padding: 0;
+}
+
+#setup-rail {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 0;
+  background: rgba(8, 12, 20, 0.92);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.rail-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.rail-brand img {
+  width: 42px;
+  height: auto;
+}
+
+.rail-brand span {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #e0a44a;
+}
+
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  align-items: center;
+}
+
+.rail-item {
+  width: 72px;
+  padding: 0.7rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.63rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.rail-item i {
+  font-size: 1.15rem;
+}
+
+.rail-item:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rail-item.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.rail-item-bottom {
+  margin-top: auto;
+}
+
+#setup-main {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 1.5rem 2.25rem 1rem;
+  overflow-y: auto;
+}
+
+#setup-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.topbar-titles h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  color: #f8fafc;
+}
+
+.topbar-titles p {
+  font-size: 0.76rem;
+  color: rgba(148, 163, 184, 0.9);
+  margin: 0.2rem 0 0;
+}
+
+#setup-main .setup-hub-global-actions {
+  position: static;
+  display: flex;
+  gap: 0.5rem;
+}
+
+#setup-packages {
+  flex: 1;
+  min-height: 0;
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+#setup-guide {
+  flex-shrink: 0;
+  margin-top: 1.5rem;
+}
+
+#setup-guide h2 {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: rgba(203, 213, 225, 0.95);
+  margin: 0 0 0.85rem;
+}
+
+.guide-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+}
+
+.guide-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  background: rgba(19, 29, 53, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.guide-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(30, 45, 80, 0.75);
+}
+
+.guide-card-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
+  font-size: 1.05rem;
+}
+
+.guide-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.guide-card-text strong {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.guide-card-text em {
+  font-size: 0.72rem;
+  font-style: normal;
+  color: rgba(148, 163, 184, 0.9);
+  line-height: 1.45;
+}
+
+#setup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-top: 1.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
+  color: rgba(100, 116, 139, 0.95);
+  text-align: left;
+}
+
+#setup .setup-hub-panel-header:empty {
+  display: none;
+}
+
+/* ==========================================================================
+   Setup Hub — "Featured session" banner (Worlds tab).
+   Cascade override, drops out completely if rollback is needed.
+   ========================================================================== */
+
+.featured-label,
+.worlds-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(203, 213, 225, 0.95);
+  margin: 0 0 0.75rem;
+}
+
+.featured-label i {
+  color: #e0a44a;
+}
+
+.worlds-section-label {
+  margin-top: 1.5rem;
+}
+
+.worlds-section-label i {
+  color: #38bdf8;
+}
+
+#setup-featured {
+  margin-bottom: 0.5rem;
+}
+
+.featured-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #6366f1, transparent);
+}
+
+.featured-thumb {
+  width: 210px;
+  height: 118px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.4);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  position: relative;
+}
+
+.featured-system {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(5, 7, 14, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #38bdf8;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.featured-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.featured-state {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.featured-state.is-live {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.featured-info h3 {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.featured-info p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: rgba(148, 163, 184, 0.95);
+  margin: 0;
+}
+
+.featured-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  min-width: 190px;
+}
+
+.featured-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Setup Hub — full art cards and removal of inner frames.
+
+   Why position: static on cover: .thumbnail is already
+   position:absolute; inset:0, but it resolved against .package-cover
+   (which was relative), so the art only filled the top band.
+   By making the cover static, it now resolves against .package and
+   fills the entire card — the text then floats on top, with gradient.
+   ========================================================================== */
+
+.tab-content-box {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.package-list {
+  padding: 0;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+
+.package {
+  min-height: 240px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-end;
+}
+
+.package:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-4px);
+}
+
+.package-cover {
+  position: static;
+  flex: 1;
+  min-height: 0;
+}
+
+.package .thumbnail {
+  filter: brightness(0.78) saturate(0.95);
+}
+
+.package:hover .thumbnail {
+  filter: brightness(0.95) saturate(1.05);
+}
+
+.package-info {
+  position: relative;
+  z-index: 1;
+  padding: 0.9rem 1rem 1rem;
+  background: linear-gradient(180deg,
+      rgba(6, 9, 19, 0) 0%,
+      rgba(6, 9, 19, 0.82) 42%,
+      rgba(6, 9, 19, 0.96) 100%);
+}
+
+.package-title {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-align: left;
+  margin: 0 0 0.35rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.package-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.package-meta .badge,
+.package-meta .badge.neutral {
+  background: rgba(5, 7, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #38bdf8;
+  border-radius: 4px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.setup-hub-toolbar {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+#setup-packages .tab {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* Setup Hub — news panel */
+
+#setup-news-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#setup-news-panel h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 1rem;
+}
+
+.news-entry {
+  padding: 1.25rem 1.5rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 12px;
+}
+
+.news-version {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  color: #38bdf8;
+  margin-bottom: 0.6rem;
+}
+
+.news-body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: rgba(203, 213, 225, 0.95);
+}
+
+.news-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.news-empty i {
+  font-size: 1.9rem;
+  color: rgba(148, 163, 184, 0.45);
+}
+
+.news-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.news-empty small {
+  font-size: 0.76rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+/* ==========================================================================
+   Specificity fix.
+
+   The rules above (frame and card) use a single class selector —
+   .tab-content-box, .package-cover, .package-info. There are rules of
+   equal weight for the same elements in another file that loads after this one,
+   and in a tie, the one loading last wins. Prefixing with #setup gives id
+   weight and resolves without !important.
+
+   margin-top: auto on .package-info anchors the text to the bottom of the
+   card: it doesn't depend on the sizing of .package-cover, which is where
+   the floating text in the middle came from.
+   ========================================================================== */
+
+/* `background`, `border` and `box-shadow` take `!important` because the
+ * `.tab-content-box` rule that loses to this one in specificity uses `!important` on those
+ * three — and `!important` only yields to another `!important`. Between two, the
+ * most specific selector wins, which is this one. The other properties don't need it. */
+#setup .tab-content-box {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none !important;
+  backdrop-filter: none;
+}
+
+#setup .setup-hub-toolbar {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+  margin-bottom: 1rem;
+  backdrop-filter: none;
+}
+
+#setup .package-list {
+  padding: 0;
+}
+
+/* Explicit border on both states. The original hover rule uses
+ * `rgba(var(--color-accent-rgb), …)`; where this variable does not resolve, the
+ * entire declaration is discarded and the border disappears exactly on hover. */
+#setup .package {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#setup .package:hover {
+  border: 1px solid rgba(56, 189, 248, 0.55);
+}
+
+/* The card text is anchored by absolute positioning, not by flex.
+ * Reason: `.package-cover` combines `height:100%`, `flex:1` and an `<img>` with
+ * `position:absolute` — its actual content has no height, so the remaining
+ * flex space is unpredictable and the text block ended up in the middle of the card.
+ * Anchored to the footer, it no longer depends on how the cover sizes itself. */
+/* IMPORTANT: scoped only to card mode (`.package-list` without `.view-list` nor
+ * `.view-grid`). The other two modes have their own layout defined above —
+ * in list mode the card is a horizontal band, and anchoring the text to the footer
+ * ate the content. */
+#setup .package-list:not(.view-list):not(.view-grid) .package {
+  position: relative;
+  min-height: 230px;
+}
+
+/* ROOT CAUSE of the text in the middle of the card: `.package-cover` and `.package-info` both
+ * have `flex: 1` in the base rules (lines ~417 and ~602), so they divided the card
+ * in half. Removing the growth from info makes it occupy only its own content height
+ * and the cover takes all the rest — the text sits at the footer alone, without
+ * absolute positioning and without fighting the other modes.
+ * The cover is `position: static` (rule above), so the art fills the entire card
+ * and the text stays on top of it, over the gradient. */
+#setup .package-list:not(.view-list):not(.view-grid) .package-info {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  padding: 2rem 0.9rem 0.85rem;
+  background: linear-gradient(180deg,
+      rgba(6, 9, 19, 0) 0%,
+      rgba(6, 9, 19, 0.78) 45%,
+      rgba(6, 9, 19, 0.95) 100%);
+}
+
+#setup .package-list:not(.view-list):not(.view-grid) .package-title {
+  text-align: left;
+  margin: 0 0 0.4rem;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+#setup .package-list:not(.view-list):not(.view-grid) .package-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+/* Only the stacking changes: the ▶ goes under the text gradient (which is z-index 2),
+ * instead of floating on top of it. The centering is from the base rule
+ * (`top/left: 50%` + `translate(-50%, -50%)`) and cannot be overwritten — changing
+ * the transform to `translateY` alone loses the X axis and throws the button to the right. */
+#setup .package-list:not(.view-list):not(.view-grid) .control.play {
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   No internal scroll in the list — what scrolls is the page (`#setup-main` already has
+   `overflow-y: auto`). With `max-height` + own scroll, the container clipped
+   the cards in the middle, top and bottom. Letting the list grow, nothing is
+   sliced: the whole page scrolls and the "Quick guide" goes down with it.
+   -------------------------------------------------------------------------- */
+#setup .tab-content-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+#setup .tab-content-box .package-list,
+#setup .tab-content-box>div[id$="-grid"] {
+  overflow: visible;
+  min-height: 0;
+}
+
+/* `flex: 1` + `min-height: 0` locked the panel to the remaining height, and with
+ * `overflow: visible` the content overflowed painting ON TOP of the guide and
+ * footer. With natural height, it pushes both down and what scrolls is the
+ * page. */
+#setup #setup-packages,
+#setup #setup-packages .tab,
+#setup #setup-packages .tab.active {
+  flex: 0 0 auto;
+  overflow: visible;
+  min-height: 0;
+}
+
+#setup .tab.active .package-list {
+  flex: 0 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   LIST Mode — compact row: thumbnail on the left, text on the side.
+   Before the art was stretched as background of a 180px band, two
+   worlds fit per screen and the text floated in the middle. Now it's a 84px row.
+   -------------------------------------------------------------------------- */
+#setup .package-list.view-list {
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+#setup .package-list.view-list .package {
+  height: auto;
+  min-height: 96px;
+  flex-direction: row;
+  align-items: stretch;
+  /* Mandatory reset: card mode uses `justify-content: flex-end` to push the
+   * text to the footer (column direction). Here the direction is row, and the same value
+   * pushed the whole row to the right, leaving a giant gap on the left. */
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* `height: auto` + `align-items: stretch` on the row makes the thumbnail follow the
+ * actual content height. With the fixed 84px height it was loose at the top
+ * whenever the description stretched the row. */
+#setup .package-list.view-list .package-cover {
+  position: relative;
+  flex: 0 0 168px;
+  width: 168px;
+  height: auto;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+#setup .package-list.view-list .thumbnail {
+  filter: none;
+}
+
+/* FIXED width, not min/max: with variable width the description column started
+ * at a different x on each row, depending on title size. Fixing it, title and
+ * description stay aligned in column. */
+#setup .package-list.view-list .package-info {
+  position: static;
+  flex: 0 0 320px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.7rem 1.1rem;
+  background: none;
+}
+
+#setup .package-list.view-list .package-title {
+  margin: 0;
+  font-size: 0.92rem;
+  text-align: left;
+  text-shadow: none;
+}
+
+/* The description is a third column sibling to the text. The original fixed
+ * `height: 170px` on it, which was what stretched the whole row and left the
+ * thumbnail misaligned. Here it becomes two lines maximum. */
+#setup .package-list.view-list .package-description {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  align-self: center;
+  margin-left: 0;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+#setup .package-list.view-list .control.play {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   GRID Mode — smaller cards, art on top and text below (no overlap).
+   It stays distinct from card mode, which is large art with text on top; before
+   the two were almost identical.
+   -------------------------------------------------------------------------- */
+#setup .package-list.view-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.8rem;
+}
+
+#setup .package-list.view-grid .package {
+  min-height: 0;
+  height: auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+#setup .package-list.view-grid .package-cover {
+  position: relative;
+  width: 100%;
+  height: 104px;
+  flex: 0 0 104px;
+  overflow: hidden;
+}
+
+#setup .package-list.view-grid .thumbnail {
+  filter: none;
+}
+
+#setup .package-list.view-grid .package-info {
+  position: static;
+  padding: 0.6rem 0.7rem 0.7rem;
+  background: none;
+}
+
+#setup .package-list.view-grid .package-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  text-align: left;
+  text-shadow: none;
+}
+
+#setup .package-list.view-grid .control.play {
+  display: none;
+}
+
+/* ==========================================================================
+   Program updates screen.
+   ==========================================================================
+   Before it piggybacked on `.create-world-container` just to inherit the
+   fullscreen framing. That class was removed along with the
+   Create World redesign, and the screen became a loose transparent box
+   over the rail. Now it has its own positioning and doesn't depend on
+   any other screen.
+   ========================================================================== */
+
+.su-updates-container {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: 3rem 2rem 2rem;
+  background:
+    linear-gradient(rgba(10, 8, 7, 0.72), rgba(10, 8, 7, 0.88)),
+    url('/bgs/02_throne_room.png') center / cover no-repeat;
+  background-attachment: fixed;
+}
+
+/* ==========================================================================
+   Updates Screen UI
+   ========================================================================== */
+
+.su-panel {
+  background: rgba(15, 16, 20, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 680px;
+  width: 100%;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  margin-top: 1rem;
+  animation: su-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes su-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.su-panel-title {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.su-panel-title h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.su-thread {
+  display: block;
+  height: 2px;
+  width: 40px;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  margin-top: 0.75rem;
+  border-radius: 2px;
+}
+
+.su-status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.su-status-ok {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.su-status-error {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.su-status-checking {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.su-version-tag {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.su-status-ok .su-version-tag {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.su-status-text {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.su-form-group {
+  margin-bottom: 2rem;
+}
+
+.su-form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.su-channel-switch {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.su-channel-option {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 1rem;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.su-channel-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.su-channel-option.active {
+  background: rgba(79, 172, 254, 0.15);
+  border-color: rgba(79, 172, 254, 0.5);
+  color: #60a5fa;
+  box-shadow: inset 0 0 0 1px rgba(79, 172, 254, 0.2), 0 4px 12px rgba(79, 172, 254, 0.15);
+}
+
+.su-channel-option i {
+  font-size: 1.1rem;
+}
+
+.su-field-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.su-body {
+  margin-bottom: 2rem;
+}
+
+.su-log {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.su-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.su-force-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.su-force-check:hover {
+  color: #cbd5e1;
+}
+
+.su-force-check input[type="checkbox"] {
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #475569;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.su-force-check input[type="checkbox"]:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.su-force-check input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.su-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.su-actions .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+}
+
+.su-actions .btn:not(.btn-secondary) {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.su-actions .btn:not(.btn-secondary):hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
+  filter: brightness(1.1);
+}
+
+.su-actions .btn:not(.btn-secondary):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.su-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.su-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}

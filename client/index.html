@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LoomVTT</title>
+    <link rel="icon" type="image/png" href="/images/loom-logo.png" />
+    <link rel="stylesheet" href="/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/css/icon-weight-fallback.css" />
+    <link rel="stylesheet" href="/fonts/rpg-awesome/css/rpg-awesome.css" />
+
+    <!-- Aplica tema/paleta ANTES do CSS carregar, senão da um flash do tema
+         errado. Espelha client/core/theme-manager.ts — mudou uma chave de
+         localStorage lá, muda aqui também. Extraído pra arquivo externo (em
+         vez de inline) pra CSP poder tirar 'unsafe-inline' de script-src. -->
+    <script src="/theme-init.js"></script>
+
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="windows"></div>
+    <div id="toasts"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

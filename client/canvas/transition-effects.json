@@ -1,0 +1,50 @@
+[
+  {
+    "id": "none",
+    "label": "Nenhuma",
+    "usesMask": false,
+    "reveal": []
+  },
+  {
+    "id": "fade",
+    "label": "Esmaecimento (Fade)",
+    "usesMask": false,
+    "reveal": [{ "opacity": 1 }, { "opacity": 0 }]
+  },
+  {
+    "id": "circle",
+    "label": "Círculo (Íris)",
+    "usesMask": true,
+    "reveal": [{ "--iris-r": "0%" }, { "--iris-r": "150%" }],
+    "maskImage": "radial-gradient(circle at 50% 50%, transparent 0%, transparent var(--iris-r), #000 var(--iris-r), #000 100%)"
+  },
+  {
+    "id": "swirl",
+    "label": "Redemoinho",
+    "usesMask": true,
+    "reveal": [{ "--iris-r": "0%" }, { "--iris-r": "150%" }],
+    "maskImage": "radial-gradient(circle at 50% 50%, transparent 0%, transparent var(--iris-r), #000 var(--iris-r), #000 100%)",
+    "filter": "url(#stage-swirl-filter)",
+    "extraAnimation": "swirl-displacement"
+  },
+  {
+    "id": "wipe",
+    "label": "Cortina",
+    "usesMask": true,
+    "reveal": [{ "clipPath": "inset(0 0 0 0%)" }, { "clipPath": "inset(0 0 0 100%)" }]
+  },
+  {
+    "id": "blinds",
+    "label": "Persiana",
+    "usesMask": true,
+    "reveal": [{ "--blind-h": "100%" }, { "--blind-h": "0%" }],
+    "maskImage": "repeating-linear-gradient(to bottom, #000 0%, #000 var(--blind-h), transparent var(--blind-h), transparent 10%)"
+  },
+  {
+    "id": "clock",
+    "label": "Relógio",
+    "usesMask": true,
+    "reveal": [{ "--clock-a": "360deg" }, { "--clock-a": "0deg" }],
+    "maskImage": "conic-gradient(from 0deg at 50% 50%, #000 var(--clock-a), transparent var(--clock-a))"
+  }
+]

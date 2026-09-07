@@ -1,0 +1,10 @@
+/* LoomVTT só empacota o Font Awesome Free (sem o peso Regular completo — Free só
+   cobre um subconjunto pequeno de ícones nesse peso). Sistemas convertidos usam
+   `fa-regular`/`far` esperando o peso Regular completo (padrão de host com Pro).
+   Sem isso, qualquer ícone Regular que não existe no subset Free renderiza em
+   branco. Redireciona pro peso Solid (que o Loom empacota completo) — muda o
+   estilo visual de contorno pra preenchido, mas garante que sempre aparece algo. */
+.fa-regular,
+.far {
+  font-weight: 900;
+}

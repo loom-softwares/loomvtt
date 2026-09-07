@@ -1,0 +1,417 @@
+/* Toast */
+.toast {
+  background: rgba(10, 10, 15, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: 4px solid var(--color-info);
+  padding: 0.15rem 0.75rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  width: 500px;
+  max-width: 90vw;
+  animation: toastSlide var(--transition-normal) cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-close:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-success {
+  border-left-color: var(--color-success);
+}
+
+.toast-error {
+  border-left-color: var(--color-danger);
+}
+
+.toast-info {
+  border-left-color: var(--color-info);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-bg-medium);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+/* Form */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+/* Functional reset — without this, the rollable field <button> (roll-sheet-field)
+   renders with native browser styling instead of looking like a label. */
+.field-label-roll {
+  all: unset;
+  cursor: pointer;
+  font-weight: bold;
+  color: inherit;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+}
+
+.appearance-custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.appearance-custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.6rem;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+}
+
+/* Tabs (non-setup, generic) */
+.tabs {
+  display: flex;
+  gap: 8rem;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Tour */
+.tour-highlight {
+  transition: box-shadow var(--transition-normal);
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 340px;
+  min-width: 280px;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  
+  background: color-mix(in srgb, var(--color-bg-deep) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-lg, 6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+}
+
+.tour-content {
+  padding: 1.25rem;
+}
+
+.tour-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.tour-text {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tour-buttons {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.25rem 1.25rem 1.25rem; /* Padding for the sides and bottom since it's outside content */
+  justify-content: flex-end;
+}
+
+/* Tour Buttons */
+.tour-tooltip .btn {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-md, 4px);
+  border: 1px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tour-tooltip .btn:hover {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.tour-tooltip .btn-secondary {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tour-tooltip .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Dialog Backdrop and Modal */
+.loom-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.loom-dialog-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loom-dialog {
+  background: var(--window-bg);
+  backdrop-filter: var(--window-backdrop-blur);
+  -webkit-backdrop-filter: var(--window-backdrop-blur);
+  border: 1px solid var(--window-border);
+  border-radius: 8px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.92);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.loom-dialog-backdrop.active .loom-dialog {
+  transform: scale(1);
+}
+
+.loom-dialog.closing {
+  transform: scale(0.95);
+}
+
+.loom-dialog-header {
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border-bottom: 1px solid var(--window-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loom-dialog-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(238, 155, 58, 0.25);
+}
+
+.loom-dialog-close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.loom-dialog-close-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.loom-dialog-body {
+  padding: 1.25rem 1rem;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.loom-dialog-footer {
+  padding: 1rem 1.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--window-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Loading Overlay */
+.loom-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 10, 19, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.loom-loading-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loom-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--color-bg-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.loom-loading-text {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.loom-loading-scene-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--color-accent);
+  text-shadow: 0 0 8px rgba(238, 155, 58, 0.35);
+  letter-spacing: 0.03em;
+}
+
+.loom-loading-step {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  min-height: 1em;
+}
+
+.loom-loading-track {
+  width: 220px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.loom-loading-bar {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px rgba(238, 155, 58, 0.6);
+  transition: width 0.25s ease-out;
+}

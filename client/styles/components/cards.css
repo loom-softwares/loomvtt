@@ -1,0 +1,805 @@
+/* Card Component - Flexible content container with various layouts */
+
+/* Base Card : full cover image, dark overlay, title at bottom */
+.card {
+  /* Cards have a cover image filling the whole card */
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-bg-medium);
+  border: 1px solid rgba(228, 154, 66, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* content at bottom */
+  min-height: 180px;
+  cursor: pointer;
+  /* dark overlay at bottom so text is readable over any image */
+  box-shadow: inset 0 -80px 60px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: cardEntrance 0.5s ease-out;
+}
+
+/* When no cover image: subtle stone texture look */
+.card:not([style*="background-image"]) {
+  background: linear-gradient(160deg, rgba(40, 32, 26, 0.95) 0%, rgba(25, 20, 16, 0.98) 100%);
+  border-color: rgba(228, 154, 66, 0.15);
+}
+
+.card:hover {
+  border-color: rgba(228, 154, 66, 0.5);
+  box-shadow: inset 0 -80px 60px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(228, 154, 66, 0.3), var(--shadow-md);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.card:active {
+  opacity: 0.9;
+}
+
+/*Card sizes */
+.card-sm {
+  min-height: 120px;
+}
+
+.card-lg {
+  min-height: 220px;
+}
+
+.card-xl {
+  min-height: 280px;
+}
+
+/* Card Title: bold white text at bottom of card */
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.3;
+  padding: 0.75rem 0.75rem 0.25rem;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  position: relative;
+  z-index: 2;
+  transition: all var(--transition-normal);
+}
+
+.card:hover .card-title {
+  color: var(--color-accent);
+  text-shadow: 0 0 8px rgba(228, 154, 66, 0.3);
+}
+
+/* Card Body */
+.card-body {
+  padding: 1.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-body-sm {
+  padding: 1rem;
+}
+
+.card-body-lg {
+  padding: 2rem;
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-medium);
+  flex-shrink: 0;
+}
+
+.card-footer-sm {
+  padding: 0.75rem 1rem;
+}
+
+.card-footer-lg {
+  padding: 1.5rem 2rem;
+}
+
+/* Card Content */
+.card-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.card-content-sm {
+  padding: 1rem;
+}
+
+.card-content-lg {
+  padding: 2rem;
+}
+
+/* Card Grid Layouts: wider cards */
+.card-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  padding: 1rem;
+}
+
+.card-grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.card-grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.card-grid-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+/* Card with Cover Image */
+.card-cover {
+  position: relative;
+  min-height: 200px;
+}
+
+.card-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.card-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 13, 11, 0.8), rgba(15, 13, 11, 0.95));
+  z-index: 1;
+}
+
+.card-cover .card-body {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem;
+  background: transparent;
+}
+
+.card-cover .card-title,
+.card-cover .card-subtitle {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Card with Action Buttons */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.card-actions .btn {
+  flex-shrink: 0;
+}
+
+.card-actions .btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  transition: all var(--transition-normal);
+  border-radius: 6px;
+}
+
+.card-actions .btn-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(228, 154, 66, 0.2);
+}
+
+/* Card with Tags */
+.card-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.card-tag:hover {
+  background: var(--color-bg-medium);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.card-tag.primary {
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
+  border-color: var(--color-accent);
+}
+
+.card-tag.success {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.card-tag.warning {
+  background: var(--color-warning);
+  color: white;
+  border-color: var(--color-warning);
+}
+
+.card-tag.danger {
+  background: var(--color-danger);
+  color: white;
+  border-color: var(--color-danger);
+}
+
+/* Card with Status */
+.card-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-bg-medium);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 2px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+.card-status.success {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-success);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.card-status.warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.card-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.card-status-icon {
+  font-size: 0.75rem;
+}
+
+/* Card with Progress */
+.card-progress {
+  margin-top: 1rem;
+}
+
+.card-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width var(--transition-normal);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.card-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+/* Card with Badge */
+.card-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-danger);
+  color: white;
+  border-radius: var(--radius-sm, 2px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.card-badge.success {
+  background: var(--color-success);
+}
+
+.card-badge.warning {
+  background: var(--color-warning);
+}
+
+.card-badge.info {
+  background: var(--color-info);
+}
+
+/* Card with Icon */
+.card-icon {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 52px;
+  height: 52px;
+  background: var(--color-accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: var(--color-bg-deep);
+  z-index: 10;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 12px rgba(228, 154, 66, 0.3);
+}
+
+.card:hover .card-icon {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(228, 154, 66, 0.4);
+}
+
+.card-icon.outline {
+  background: transparent;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Card with Hover Overlay */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 13, 11, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  z-index: 20;
+}
+
+.card:hover .card-overlay {
+  opacity: 1;
+}
+
+.card-overlay-content {
+  text-align: center;
+  color: white;
+}
+
+.card-overlay-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.card-overlay-description {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  max-width: 300px;
+}
+
+/* Card Variants */
+.card.bordered {
+  border-width: 2px;
+}
+
+.card.elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+.card.flat {
+  border: none;
+  box-shadow: none;
+  background: var(--color-bg-dark);
+}
+
+.card.glass {
+  background: var(--color-bg-medium);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card Groups */
+.card-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Deck Sheet (DeckSheetWindow) — baralho de cartas
+   ========================================================================== */
+
+.deck-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0 1.25rem 0;
+  border-bottom: 1px solid var(--color-border-glass);
+}
+
+.deck-name-input {
+  flex: 1;
+  background: transparent;
+  border: none !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 0.25rem 0;
+  box-shadow: none !important;
+  transition: border-bottom-color var(--transition-fast);
+}
+
+.deck-name-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent) !important;
+}
+
+.deck-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.deck-type-badge {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-radius: var(--radius-full, 9999px);
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.deck-count {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.deck-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border-radius: 8px;
+  border: 1px solid var(--color-border-glass);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.deck-toolbar .btn-group {
+  box-shadow: none;
+}
+
+.deck-workspace {
+  background: color-mix(in srgb, var(--color-bg-deep) 20%, transparent);
+  border: 1px dashed var(--color-border-glass);
+  border-radius: 8px;
+  padding: 1.5rem;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  height: 100%;
+  width: 100%;
+  margin: auto;
+  opacity: 0.7;
+}
+.deck-empty-state i {
+  font-size: 2.5rem;
+}
+
+.deck-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.deck-card-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, rgba(40, 32, 26, 0.95) 0%, rgba(25, 20, 16, 0.98) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.deck-card-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(228, 154, 66, 0.5);
+  box-shadow: var(--shadow-md);
+}
+
+.deck-card-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  background: var(--color-bg-deep, var(--color-bg-dark));
+  overflow: hidden;
+}
+
+.deck-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.deck-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.deck-card-info {
+  padding: 0.4rem 0.5rem 0.55rem;
+}
+
+.deck-card-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-card-meta {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-card-item-controls {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  z-index: 3;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.deck-card-item:hover .deck-card-item-controls,
+.deck-card-item:focus-within .deck-card-item-controls {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .deck-card-item-controls {
+    opacity: 1;
+  }
+}
+
+.deck-card-remove,
+.deck-card-pass {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 13, 11, 0.75);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.deck-card-remove:hover {
+  background: var(--color-danger);
+  color: white;
+}
+
+.deck-card-pass:hover {
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
+}
+
+.deck-card-img-field {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.deck-card-img-field input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.deck-add-card {
+  display: flex;
+}
+
+.deck-add-card .btn {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.card-group .card {
+  flex: 1;
+  min-width: 250px;
+}
+
+/* Nested Cards */
+.card-nested {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 4px);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+/* Responsive Cards */
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .card-grid-cols-2,
+  .card-grid-cols-3,
+  .card-grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: auto;
+  }
+
+  .card-cover {
+    min-height: 150px;
+  }
+
+  .card-header,
+  .card-body,
+  .card-footer,
+  .card-content {
+    padding: 1.25rem;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .card-actions .btn {
+    width: 100%;
+  }
+
+  .card-group {
+    flex-direction: column;
+  }
+
+  .card-group .card {
+    min-width: auto;
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card entrance animations with staggered delays */
+.card-grid .card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.card-grid .card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.card-grid .card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.card-grid .card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.card-grid .card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.card-grid .card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+.card:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(228, 154, 66, 0.2), var(--shadow-md);
+}

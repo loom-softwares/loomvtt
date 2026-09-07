@@ -1,0 +1,4056 @@
+/* ==========================================
+   LOOM WINDOW
+   ========================================== */
+
+/* ── Compendium Directory ─────────────────── */
+.cp-directory {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 450px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* Compendium Pack Window (Applied to .loom-window) */
+.compendium-pack-window::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  /* Covers header and banner area */
+  background-image: var(--cp-banner-url);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, var(--color-bg-deep) 30%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, var(--color-bg-deep) 30%, transparent 100%);
+  pointer-events: none;
+}
+
+.compendium-pack-window .loom-window-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--color-bg-deep) 70%, transparent) 0%, transparent 100%) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  z-index: 10;
+}
+
+.compendium-pack-window .loom-window-controls button {
+  color: color-mix(in srgb, var(--color-text-primary) 85%, transparent);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--color-bg-deep) 90%, transparent);
+}
+
+.compendium-pack-window .loom-window-controls button:hover {
+  color: var(--color-text-primary);
+}
+
+.compendium-pack-window .loom-window-title {
+  visibility: hidden;
+  /* Keep it taking space but hide it so controls stay at right */
+}
+
+/* Banner Header: icon + editable name + type badge */
+.cp-dir-banner {
+  position: relative;
+  display: flex;
+  height: 110px;
+  /* Taller to show off the background image */
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  /* Subtle border instead of solid */
+}
+
+.cp-dir-banner-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Center the title */
+  gap: 0.75rem;
+  padding: 1.5rem 2rem 0.5rem;
+  /* Push down below the absolute header */
+  width: 100%;
+  z-index: 1;
+  margin-top: auto;
+  /* Push content to bottom of banner */
+}
+
+.cp-dir-type-icon {
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  text-shadow: 0 2px 4px color-mix(in srgb, var(--color-bg-deep) 80%, transparent);
+}
+
+.cp-dir-name-input {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  padding: 0.1rem 0.2rem;
+  text-align: center;
+  transition: border-color var(--transition-fast);
+  text-shadow: 0 2px 4px color-mix(in srgb, var(--color-bg-deep) 80%, transparent), 0 4px 12px color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+}
+
+.cp-dir-name-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border-radius: 4px 4px 0 0;
+}
+
+.cp-dir-type-badge {
+  display: none;
+  /* Hidden in the grand title style */
+}
+
+/* Action row */
+.cp-dir-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cp-dir-btn-create {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.cp-dir-btn-create i {
+  font-size: 0.75rem;
+}
+
+.cp-dir-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.cp-dir-btn-icon:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+/* Search bar */
+.cp-dir-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cp-dir-search-icon {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.cp-dir-search {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  padding: 0.1rem 0.2rem;
+}
+
+.cp-dir-search:focus {
+  outline: none;
+}
+
+.cp-dir-search::placeholder {
+  color: var(--color-text-muted);
+}
+
+.cp-dir-count {
+  font-size: 0.7rem;
+  font-family: var(--font-ui);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Entry list */
+.cp-dir-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+}
+
+.cp-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.cp-entry-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+}
+
+.cp-entry-row:hover .cp-entry-remove {
+  opacity: 1;
+}
+
+/* Thumbnail */
+.cp-entry-thumb {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border: 1px solid var(--color-border);
+}
+
+.cp-entry-thumb--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.cp-entry-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-entry-remove {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.cp-entry-remove:hover {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+/* Empty state */
+.cp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  text-align: center;
+}
+
+.cp-empty i {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+
+/* ── Configure Settings ───── */
+.settings-shell {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.settings-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-right: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg-deep) 15%, transparent);
+}
+
+.settings-search {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.settings-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.settings-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius);
+  color: var(--color-text-secondary);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.settings-category-btn:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+}
+
+.settings-category-btn.active {
+  color: var(--color-accent);
+  background: var(--color-border-glass);
+}
+
+.settings-category-btn .badge {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.settings-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.settings-group-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-group-title:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.settings-row-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.settings-row-control {
+  flex-shrink: 0;
+}
+
+.settings-row-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-top: 0.15rem;
+}
+
+.settings-row .btn-secondary {
+  white-space: nowrap;
+}
+
+/* ── Keybind Config ───────────────────────── */
+.keybind-list {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.keybind-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.keybind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: color-mix(in srgb, var(--color-bg-deep) 15%, transparent);
+  border-radius: var(--radius);
+  gap: var(--spacing-md);
+}
+
+.keybind-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.keybind-label {
+  font-weight: var(--font-weight-semibold);
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+.keybind-desc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keybind-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.keybind-key-btn {
+  min-width: 110px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  transition: all var(--transition-fast);
+}
+
+.keybind-key-btn.listening {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+.keybind-reset-btn {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  opacity: 0.6;
+}
+
+.keybind-reset-btn:hover {
+  opacity: 1;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.loom-window {
+  position: fixed;
+  background: var(--window-bg);
+  backdrop-filter: var(--window-backdrop-blur);
+  -webkit-backdrop-filter: var(--window-backdrop-blur);
+  border: 1px solid var(--window-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Dimensões flexíveis para suportar janelas mais largas, como Cenas */
+  min-width: 480px;
+  max-width: 95vw;
+  height: auto;
+  max-height: calc(100vh - 20px);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* CRÍTICO: Corta qualquer elemento que tente vazar */
+  animation: windowSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Proteção: janelas nativas (sem a classe .sheet, adicionada só pelas fichas de
+   documento) mantêm o fundo do core mesmo se um CSS de addon/sistema injetado
+   depois tiver uma regra genérica de mesma especificidade mirando .loom-window/
+   .window-app/.window-content. Fichas de sistema (.sheet) ficam de fora de
+   propósito — elas PODEM ser tematizadas pelo CSS do sistema. */
+.loom-window:not(.sheet) {
+  background: var(--window-bg) !important;
+}
+
+/* Opt-in: janela que precisa deixar conteúdo vazar pra fora do retângulo (aba lateral
+   flutuante, popup suspenso de modificador). O corte no header/footer some junto — sem
+   raio de borda próprio eles mostrariam canto quadrado sobre o pai arredondado, então
+   compensa aqui explicitamente. */
+.loom-window.loom-window--allow-overflow {
+  overflow: visible;
+}
+
+.loom-window--allow-overflow .loom-window-header {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.loom-window--allow-overflow .loom-window-footer {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+@keyframes windowSlide {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(1.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.loom-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Opaque on purpose — the window body scrolls underneath a `position:
+     sticky`/fixed-height header; a translucent header (previously
+     rgba(0,0,0,0.25)) let scrolled text bleed through and become legible
+     behind the title bar, confusing which layer was which. */
+  background: var(--color-bg-deep);
+  /* Distinct dark titlebar like an IDE */
+  height: 30px;
+  /* Compact */
+  padding: 0 1rem;
+  cursor: move;
+  border-bottom: 1px solid transparent;
+  /* Invisível, mas mantém a estrutura */
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.loom-window-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  /* Subtle like IDE panels */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.loom-window-title-icon {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  /* Subdued icon */
+}
+
+.loom-window-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.loom-window-save-status {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #888);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 0.35rem;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+.loom-window-save-status.is-saving {
+  color: var(--color-text-secondary, #aaa);
+}
+
+.loom-window-save-status.is-saved {
+  color: var(--color-success, #2ecc71);
+}
+
+.loom-window-save-status.is-error {
+  color: var(--color-danger, #e74c3c);
+}
+
+.loom-window-close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  transition: color var(--transition-fast);
+  font-size: 1rem;
+}
+
+.loom-window-close:hover {
+  color: var(--color-danger);
+  /* Vermelho suave ao passar o mouse */
+}
+
+.loom-window-control-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loom-window-control-btn:hover {
+  color: var(--color-accent);
+  transform: scale(1.1);
+}
+
+.loom-window-body {
+  flex: 1;
+  overflow-y: auto;
+  /* Scroll ativo apenas se o conteúdo passar de 85vh */
+  min-height: 0;
+  /* CRÍTICO para o flexbox gerenciar a altura interna */
+  /* Padding-bottom maior que os outros lados: sem isso o último elemento
+     (ex.: "Criado em: ..." nas janelas com aba) ficava colado/cortado na
+     borda inferior da janela, sem respiro nenhum antes do rodapé. */
+  padding: 0 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  /* 1.25rem -> 1.75rem: gap curto demais deixava elemento colado/quase
+     sobrepondo o vizinho (reportado como "comendo elemento" — ex.: a barra
+     de abas grudada em cima do primeiro campo do formulário). */
+  gap: 3rem;
+  background: transparent;
+}
+
+/* ── Sistema de navegação de abas (Tabs) ──
+   Navegação: qualquer elemento com [data-tab][data-group] dentro da janela.
+   Conteúdo associado: <div class="tab" data-tab="x" data-group="g">.
+   O sistema de classes `.active` já realiza o chaveamento do display nativamente,
+   portanto estas classes devem sempre ser utilizadas na construção de novas abas,
+   evitando a necessidade de regras CSS redundantes e sobreposição indevida de conteúdo. */
+.loom-window-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--window-border);
+  margin: -0.5rem 0 0.25rem;
+  overflow-x: auto;
+}
+
+.loom-window-tabs [data-tab][data-group] {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.loom-window-tabs [data-tab][data-group]:hover {
+  color: var(--color-text-primary);
+}
+
+.loom-window-tabs [data-tab][data-group].active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.loom-window .tab[data-group] {
+  display: none;
+}
+
+.loom-window .tab[data-group].active {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.loom-window-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--hud-bar-gap);
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--window-border);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+/* Botão Principal (Salvar) */
+.loom-window-footer .btn {
+  background-image: none !important;
+  padding: 0.45rem 1.25rem;
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  color: var(--color-text-primary);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.loom-window-footer .btn:hover {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Botão Secundário Opcional */
+.loom-window-footer .btn.secondary {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  color: var(--color-text-secondary);
+  box-shadow: none;
+}
+
+.loom-window-footer .btn.secondary:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+.loom-window-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+/* Global Window Scrollbar (Impeccable style) */
+.loom-window-body::-webkit-scrollbar,
+.loom-window .window-main::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.loom-window-body::-webkit-scrollbar-track,
+.loom-window .window-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.loom-window-body::-webkit-scrollbar-thumb,
+.loom-window .window-main::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  border-radius: 4px;
+}
+
+.loom-window-body::-webkit-scrollbar-thumb:hover,
+.loom-window .window-main::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+}
+
+/* ==========================================
+   GLOBAL FORM LAYOUTS (Fieldsets & Input Groups)
+   ========================================== */
+.form-fieldset {
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  border-radius: 6px;
+  padding: 0.75rem 1rem 1rem;
+  margin-bottom: 1rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 15%, transparent);
+}
+
+.form-legend {
+  font-family: var(--font-header);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  padding: 0 0.5rem;
+  border-bottom: none;
+  text-transform: capitalize;
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+}
+
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.color-input-group-full {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.input-flex-1 {
+  flex: 1;
+}
+
+/* ==========================================
+   GLOBAL WINDOW BANNER (Compendium Style)
+   ========================================== */
+.window-has-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background-image: var(--window-banner-url);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  pointer-events: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.window-has-banner .loom-window-body {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.window-has-banner .loom-window-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--color-bg-deep) 80%, transparent) 0%, transparent 100%) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  z-index: 10;
+}
+
+.window-has-banner .loom-window-controls button {
+  color: color-mix(in srgb, var(--color-text-primary) 85%, transparent);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--color-bg-deep) 90%, transparent);
+}
+
+.window-has-banner .loom-window-controls button:hover {
+  color: var(--color-text-primary);
+}
+
+/* Spacer for banner inside body */
+.window-has-banner .banner-spacer {
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.loom-window.minimized {
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+}
+
+.loom-window.minimized .loom-window-body,
+.loom-window.minimized .loom-window-footer,
+.loom-window.minimized .loom-window-resize-handle {
+  display: none !important;
+}
+
+/* ==========================================
+   JOURNAL - MULTI-PAGE
+   ========================================== */
+
+.journal-layout {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+  min-height: 480px;
+}
+
+.journal-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-bg-deep) 20%, transparent);
+  border-right: 1px solid var(--color-border-glass);
+  padding: 1rem 0.75rem;
+  border-radius: 6px 0 0 6px;
+  gap: 1rem;
+}
+
+.journal-sidebar-header {
+  padding-bottom: 0.5rem;
+}
+
+.journal-title-input {
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  outline: none;
+  transition: border-bottom-color var(--transition-fast);
+  text-shadow: 1px 1px 2px color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+}
+
+.journal-title-input:hover,
+.journal-title-input:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.journal-page-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+.journal-sidebar-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.journal-sidebar-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.journal-sidebar-btn:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  transform: translateY(-1px);
+}
+
+.journal-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journal-category-pages {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 0.5rem;
+}
+
+.journal-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.5rem;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-border-glass);
+}
+
+.journal-category-header--uncategorized {
+  color: var(--color-text-muted);
+}
+
+.journal-category-name {
+  flex: 1;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.journal-category-actions {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.journal-category-header:hover .journal-category-actions {
+  opacity: 1;
+}
+
+.journal-category-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.journal-category-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.journal-category-btn[data-action="delete-category"]:hover {
+  color: var(--color-danger);
+}
+
+
+.journal-page-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.journal-page-item:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text);
+}
+
+.journal-page-item.active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 15%, transparent) 0%, transparent 100%);
+  color: var(--color-accent);
+  border: 1px solid transparent;
+  border-left: 2px solid var(--color-accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.journal-page-name {
+  flex: 1;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.journal-page-category-select {
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  max-width: 70px;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.journal-page-item:hover .journal-page-category-select,
+.journal-page-category-select:focus {
+  opacity: 1;
+}
+
+.journal-page-category-select:hover,
+.journal-page-category-select:focus {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+}
+
+.journal-page-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+  transition: opacity var(--transition-fast);
+}
+
+.journal-page-item:hover .journal-page-delete {
+  opacity: 1;
+}
+
+.journal-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-bg-deep);
+  border-radius: 0 6px 6px 0;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border-glass);
+  box-shadow: inset 0 2px 10px color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  overflow-y: auto;
+}
+
+.journal-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border-glass);
+}
+
+.journal-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.journal-header-btn:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+.journal-page-title {
+  font-family: var(--font-title);
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.journal-page-content-view {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.journal-page-title-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.3rem 0;
+  outline: none;
+}
+
+.journal-page-title-input:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.journal-editor {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.journal-editor .ProseMirror-menubar-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.journal-editor .ProseMirror-menubar {
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  padding: 0.25rem 0.5rem;
+}
+
+.journal-editor .ProseMirror-icon {
+  filter: invert(1) brightness(0.8);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.journal-editor .ProseMirror-icon:hover {
+  filter: invert(1) brightness(1.2);
+  transform: scale(1.1);
+}
+
+.journal-editor .ProseMirror-prompt {
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem;
+  color: var(--color-text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.journal-editor .ProseMirror-prompt input[type="text"] {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  margin: 0 0.5rem;
+}
+
+.journal-editor .ProseMirror-prompt-buttons {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.journal-editor .ProseMirror {
+  flex: 1;
+  min-height: 100%;
+  outline: none;
+  padding: 0.75rem;
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-bg) 30%, transparent);
+}
+
+/* Empty state dentro do journal */
+.journal-content-area .empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* File Picker Window */
+.file-picker-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.75rem;
+}
+
+.file-picker-breadcrumbs {
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.breadcrumb-item {
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.breadcrumb-item:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: var(--color-text-muted);
+  margin: 0 0.25rem;
+}
+
+.file-picker-browser {
+  flex: 1;
+  background: color-mix(in srgb, var(--color-bg-deep) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  border-radius: 4px;
+  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-auto-rows: max-content;
+  gap: 0.75rem;
+  overflow-y: auto;
+  max-height: 280px;
+}
+
+.file-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  user-select: none;
+}
+
+.file-picker-item:hover {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.file-picker-item.selected {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.file-picker-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.file-picker-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 1px solid var(--color-border-glass);
+}
+
+.file-picker-name {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.file-picker-item:hover .file-picker-name {
+  color: var(--color-text-primary);
+}
+
+.file-picker-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: auto;
+}
+
+.file-selected-input {
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--color-text-primary);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+/* ==========================================
+   FORM LAYOUT
+   ========================================== */
+.loom-window-body .form-group {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.loom-window-body .form-group.form-group-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.loom-window-body .form-group.form-group-checkbox>label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loom-window-body .form-group>label {
+  grid-column: 1;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.loom-window-body .form-group>input[type="text"],
+.loom-window-body .form-group>input[type="number"],
+.loom-window-body .form-group>input[type="datetime-local"],
+.loom-window-body .form-group>select,
+.loom-window-body .form-group>textarea,
+.loom-window-body .form-group>div {
+  grid-column: 2;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Beautiful dark theme inputs */
+.loom-window-body input[type="text"],
+.loom-window-body input[type="number"],
+.loom-window-body input[type="datetime-local"],
+.loom-window-body select,
+.loom-window-body textarea {
+  background-color: color-mix(in srgb, var(--color-bg-deep) 50%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.loom-window-body input[type="text"]:focus,
+.loom-window-body input[type="number"]:focus,
+.loom-window-body input[type="datetime-local"]:focus,
+.loom-window-body select:focus,
+.loom-window-body textarea:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 5px color-mix(in srgb, var(--color-accent) 40%, transparent) !important;
+}
+
+.loom-window-body select {
+  cursor: pointer;
+}
+
+.loom-window-body .form-group>textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Checkbox specific alignments — appearance:none + tick desenhado (não usa
+   accent-color: checkbox nativo do navegador varia muito de OS pra OS e
+   destoava do resto do tema escuro). Regra combinada mais abaixo desenha o tick. */
+.loom-window-body .form-group>input[type="checkbox"] {
+  grid-column: 2;
+  justify-self: start;
+}
+
+/* ==========================================
+   FIELD UTILITIES — layout rótulo-em-cima-do-input
+   (config windows tipo note/tile/token, diferente do .form-group grid horizontal)
+   ========================================== */
+.loom-window-body .panel-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.loom-window-body .panel-fill {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.loom-window-body .field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.loom-window-body .field-stack-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loom-window-body .field-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.loom-window-body .field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loom-window-body .field-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+
+.loom-window-body select.field-input {
+  font-size: 0.9rem;
+}
+
+.loom-window-body .checkbox-label {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.loom-window-body .section-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding: 0.5rem;
+  background: var(--color-bg-medium);
+  border-radius: 4px;
+  margin: -0.5rem;
+}
+
+.loom-window-body .section-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loom-window-body .empty-panel {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* Campo 'dots' de SheetSchema (sistemas tipo WoD) — pips clicáveis via
+   data-action="set-dots", valor real fica no <input type="hidden"> irmão. */
+.dots-field {
+  display: flex;
+  gap: 6px;
+  grid-column: 2;
+}
+
+.dot-pip {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.dot-pip:hover {
+  border-color: var(--color-accent-hover);
+}
+
+.dot-pip.filled {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Square counter (WoD-style health/willpower tracker) */
+.square-counter-field {
+  display: flex;
+  gap: 4px;
+  grid-column: 2;
+  flex-wrap: wrap;
+}
+
+.square-pip {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.square-pip:hover {
+  border-color: var(--color-accent-hover);
+}
+
+.square-pip.superficial {
+  background: transparent;
+  border-color: var(--color-accent);
+  position: relative;
+}
+
+.square-pip.superficial::after {
+  content: '/';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.square-pip.aggravated {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* New unnested checkbox row layout */
+.loom-window-body .form-group.form-group-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.5rem 0 !important;
+  margin-bottom: 0.85rem;
+}
+
+.loom-window-body .form-group.form-group-checkbox>label {
+  flex: 1 !important;
+  grid-column: auto !important;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.loom-window-body .form-group.form-group-checkbox>input[type="checkbox"] {
+  flex: 0 0 auto !important;
+  grid-column: auto !important;
+  margin: 0 0 0 auto !important;
+}
+
+.loom-window-body .form-group.form-group-checkbox>small {
+  flex: 0 0 100% !important;
+  grid-column: auto !important;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 0.25rem !important;
+}
+
+/* Fallback for nested input checkboxes in labels */
+.loom-window-body .form-group>label:has(input[type="checkbox"]) {
+  grid-column: 1 / span 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.loom-window-body .form-group>label input[type="checkbox"] {
+  order: 2;
+  margin: 0 0 0 auto;
+}
+
+/* Aparência do tick e estado :checked já vêm da regra canônica
+   .loom-window input[type="checkbox"] (mais abaixo no arquivo) — não redeclarar aqui. */
+
+/* Sub-text descriptions */
+.loom-window-body .form-group small {
+  grid-column: 2;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 0.1rem;
+}
+
+/* For full-width checkboxes, make small span both columns */
+.loom-window-body .form-group>label:has(input[type="checkbox"])~small {
+  grid-column: 1 / span 2;
+}
+
+/* File Picker Input with Button inside */
+.loom-window-body .form-group .input-with-button,
+.cw-panel-form .form-group .input-with-button {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 0 !important;
+}
+
+.loom-window-body .form-group .input-with-button input,
+.cw-panel-form .form-group .input-with-button input {
+  flex: 1 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+}
+
+.loom-window-body .form-group .input-with-button button.btn-pick-file,
+.cw-panel-form .form-group .input-with-button button.btn-pick-file {
+  padding: 0 12px !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+  border-left: none !important;
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.95rem !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.loom-window-body .form-group .input-with-button button.btn-pick-file:hover,
+.cw-panel-form .form-group .input-with-button button.btn-pick-file:hover {
+  background: var(--color-accent) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-accent) !important;
+}
+
+/* Path input pair for Caminho dos Dados */
+.loom-window-body .form-group.path-group .input-pair,
+.cw-panel-form .form-group.path-group .input-pair {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 0.5rem !important;
+}
+
+.loom-window-body .form-group.path-group .input-pair input.path-prefix,
+.cw-panel-form .form-group.path-group .input-pair input.path-prefix {
+  flex: 1 !important;
+  min-width: 0 !important;
+  text-align: center !important;
+  opacity: 0.65 !important;
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent) !important;
+  pointer-events: none !important;
+}
+
+.loom-window-body .form-group.path-group .input-pair input:not(.path-prefix),
+.cw-panel-form .form-group.path-group .input-pair input:not(.path-prefix) {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* Full Width Form Group (e.g. description at the bottom) */
+.loom-window-body .form-group.form-group-full {
+  grid-column: 1 / span 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.5rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.loom-window-body .form-group.form-group-full>label {
+  font-size: 0.8rem !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+/* Make scrollbar thicker and highly visible */
+
+
+/* ==========================================
+   EXPLORADOR DE ARQUIVO
+   ========================================== */
+
+/* Hide default window footer on file picker */
+#file-picker .loom-window-footer {
+  display: none !important;
+}
+
+.file-picker-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.85rem;
+}
+
+/* File Picker Tabs */
+.file-picker-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  padding-bottom: 2px;
+}
+
+.fp-tab {
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border-bottom: none;
+  color: var(--color-text-secondary);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+}
+
+.fp-tab:hover {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+.fp-tab.active {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent) !important;
+  color: var(--color-accent) !important;
+}
+
+/* Address Bar Row */
+.address-bar-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.btn-up-dir,
+.btn-fp-action {
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  color: var(--color-text-primary);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-up-dir:hover,
+.btn-fp-action:hover {
+  background: var(--color-accent);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+}
+
+.current-path-input {
+  flex: 1;
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono, monospace);
+  outline: none;
+  pointer-events: none;
+}
+
+/* Filter Row & View Mode Row */
+.filter-row,
+.view-mode-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-row label,
+.view-mode-row label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.filter-row .search-input {
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.view-mode-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-view-mode {
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  color: var(--color-text-secondary);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-view-mode:hover {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+}
+
+.btn-view-mode.active {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent) !important;
+  color: var(--color-accent) !important;
+}
+
+/* Browser Area (List View) */
+.file-picker-browser {
+  flex: 1;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  border-radius: 4px;
+  padding: 0.5rem;
+  overflow-y: auto;
+  max-height: 250px;
+  min-height: 200px;
+}
+
+.file-picker-browser.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-picker-browser.list-view .file-picker-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 6px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text-primary);
+  font-size: 0.8rem;
+  border: 1px solid transparent;
+}
+
+.file-picker-browser.list-view .file-picker-item:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+}
+
+.file-picker-browser.list-view .file-picker-item.selected {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent) !important;
+  color: var(--color-accent) !important;
+  font-weight: 600;
+}
+
+.file-picker-browser.list-view .file-picker-icon {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  color: var(--color-accent);
+}
+
+.file-picker-browser.list-view .file-picker-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Browser Area (Grid View) */
+.file-picker-browser.grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.file-picker-browser.grid-view .file-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.file-picker-browser.grid-view .file-picker-item:hover {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.file-picker-browser.grid-view .file-picker-item.selected {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.file-picker-browser.grid-view .file-picker-preview {
+  width: 54px;
+  height: 54px;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  border: 1px solid var(--color-border-glass);
+  background-color: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+}
+
+.file-picker-browser.grid-view .file-picker-name {
+  font-size: 0.72rem;
+  color: var(--color-text-primary);
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Bottom Actions Panel */
+.file-picker-bottom-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  border-radius: 4px;
+}
+
+.file-picker-bottom-actions .action-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-picker-bottom-actions .action-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.file-picker-bottom-actions .input-with-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-fp-upload {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-file-name {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Giant Select File button acting as footer */
+.file-picker-footer-button {
+  margin-top: auto;
+  border-top: 1px solid color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  padding-top: 0.75rem;
+}
+
+.btn-select-file {
+  width: 100%;
+  padding: 10px !important;
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent) !important;
+  border: 1px solid var(--color-accent) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 4px !important;
+  font-size: 0.85rem !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-select-file:hover:not(:disabled) {
+  background: var(--color-accent) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 50%, transparent) !important;
+}
+
+.btn-select-file:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--color-bg-surface) !important;
+}
+
+/* ── Breadcrumbs (Texture Navigator) ───────────────────── */
+.fp-breadcrumbs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.fp-breadcrumbs .breadcrumb-item {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.1rem 0.25rem;
+  border-radius: 3px;
+  transition: all var(--transition-fast);
+}
+
+.fp-breadcrumbs .breadcrumb-item:hover {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.fp-breadcrumbs .breadcrumb-item.active {
+  color: var(--color-accent);
+  font-weight: 600;
+  cursor: default;
+}
+
+.fp-breadcrumbs .breadcrumb-separator {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.btn-fp-action.active {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+  color: var(--color-accent) !important;
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent) !important;
+}
+
+/* ── Favorites Bar ─────────────────────────────────────── */
+.fp-favorites-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0;
+}
+
+.fp-fav-label {
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fp-fav-chip {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.fp-fav-chip:hover {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.fp-fav-chip.active {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* ── Toolbar Row (search + actions) ────────────────────── */
+.fp-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fp-search-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fp-search-wrapper .fa-search {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.fp-search-wrapper .search-input {
+  width: 100%;
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-radius: 4px;
+  padding: 6px 10px 6px 30px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.fp-search-clear {
+  position: absolute;
+  right: 4px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  border-radius: 3px;
+  transition: all var(--transition-fast);
+}
+
+.fp-search-clear:hover {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+}
+
+.fp-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.fp-grid-size-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.fp-grid-size-input {
+  width: 50px;
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent) !important;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  text-align: center;
+  outline: none;
+}
+
+/* ── Grid view with dynamic size ───────────────────────── */
+.file-picker-browser.grid-view {
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 90px), 1fr));
+}
+
+.file-picker-browser.grid-view .file-picker-preview {
+  width: calc(var(--grid-size, 90px) - 20px);
+  height: calc(var(--grid-size, 90px) - 20px);
+}
+
+/* ── Draggable file items ──────────────────────────────── */
+.file-item[draggable] {
+  cursor: grab;
+  user-select: none;
+}
+
+.file-item[draggable]:active {
+  cursor: grabbing;
+}
+
+.file-item.dragging {
+  opacity: 0.5;
+}
+
+/* ── Fav toggle on dir items ───────────────────────────── */
+.fp-fav-toggle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+  border: none;
+  color: var(--color-text-muted);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.dir-item {
+  position: relative;
+}
+
+.dir-item:hover .fp-fav-toggle {
+  opacity: 1;
+}
+
+.fp-fav-toggle.is-fav {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+.fp-fav-toggle:hover {
+  color: var(--color-accent);
+}
+
+/* ── File size in list view ────────────────────────────── */
+.file-picker-size {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   PADRÃO GLOBAL DE WINDOW
+   Escopo: .loom-window. Toda janela herda.
+   Markup padrão: .tabs > .tab-button | .tab-content
+   fieldset > legend | .form-group > label + input + .hint
+   ========================================== */
+
+/* ---------- Abas (topo da janela) ---------- */
+/* !important nas propriedades abaixo: existe um .tab-button GLOBAL sem escopo em
+   modules/setup.css (Setup Hub) que vaza font-family/letter-spacing/text-shadow pra
+   qualquer .tab-button do app, inclusive dentro de windows. Blindado aqui. */
+.loom-window .tabs {
+  display: flex !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  /* Firefox */
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  /* Fundo OPACO, de propósito. Esta barra é sticky: com os 85% de opacidade
+   * que havia aqui, o conteúdo rolando por baixo aparecia por cima das abas
+   * (o nome do mundo cruzando "Detalhes/Módulos/Permissões"). O
+   * `backdrop-filter` que disfarçava isso não vale nada quando algum ancestral
+   * tem `filter`/`transform` — o caso normal de uma janela arrastável. */
+  background: var(--color-bg-deep);
+  /* Fix: Adicionando o fundo que faltava */
+  position: sticky;
+  /* `top: 0`, não 36px: a janela já tem o `<header>` real fora deste corpo
+     rolável — esse offset de 36px só abria uma faixa vazia ACIMA da barra
+     de abas grudada, e como o corpo tem fundo transparente, era ali que o
+     texto rolando por trás aparecia por cima. */
+  top: 0;
+  z-index: 10;
+  /* -1.5rem, não -1.25rem: tem que casar exatamente com o padding real de
+     `.loom-window-body` (1.5rem, ver regra logo acima) pra cancelar certo —
+     descasado, a barra de abas ficava 0.25rem mais estreita que o resto do
+     conteúdo em vez de esticar de ponta a ponta. */
+  /* Puxa pros 4 lados agora, não só esquerda/direita: `.loom-window-body`
+     tem padding-top de 1.5rem, então sem isso sobrava um vão entre o
+     `<header>` real e a barra de abas — vão esse com fundo transparente
+     (mesma família de bug do gap que já foi corrigido acima). */
+  margin: -1.5rem -1.5rem 0;
+  padding: 12px calc(12px + 1.5rem) 0;
+  flex-shrink: 0;
+}
+
+.loom-window .tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.loom-window .tab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px !important;
+  background: none !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  box-shadow: none !important;
+  color: var(--color-text-secondary) !important;
+  font: 600 13px/1 var(--font-ui) !important;
+  letter-spacing: normal !important;
+  text-shadow: none !important;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  flex: 1 1 0;
+  /* Stretches to fill available space evenly */
+  min-width: 0;
+  /* Allows shrinking below content size */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loom-window .tab-button:hover {
+  color: var(--color-text-primary) !important;
+  text-shadow: none !important;
+}
+
+.loom-window .tab-button.active {
+  color: var(--color-accent) !important;
+  border-bottom-color: transparent !important;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 50%, transparent) !important;
+}
+
+.loom-window .tab-content {
+  display: none;
+}
+
+.loom-window .tab-content.active {
+  display: block;
+}
+
+/* ---------- Fieldset / Legend ---------- */
+.loom-window fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  padding: 10px 12px 12px;
+  margin: 0 0 14px;
+}
+
+.loom-window legend {
+  padding: 0 8px;
+  color: var(--color-text-primary);
+  font: 700 13px/1 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Form Group (label em cima, campo embaixo — empilhado) ----------
+   !important nas propriedades abaixo: existe .form-group SEM ESCOPO em
+   components.css (flex-direction: column; width: 100% nos inputs) que vence
+   por propriedade quando eu não declaro a mesma propriedade — CSS resolve
+   conflito por PROPRIEDADE, não pela regra inteira, então "ganhar" em display
+   não bloqueia flex-direction/width de vazarem da regra global. Travado aqui. */
+.loom-window .form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  margin-bottom: 12px !important;
+}
+
+.loom-window .form-group>label {
+  flex: none !important;
+  width: auto !important;
+  color: var(--color-text-primary);
+  font: 600 13px/1.3 var(--font-ui);
+}
+
+.loom-window .form-group>label .units,
+.loom-window .form-group>label small {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.loom-window .form-group>input:not([type="checkbox"]),
+.loom-window .form-group>select,
+.loom-window .form-group>textarea,
+.loom-window .form-group>.form-fields {
+  flex: none !important;
+  width: 100% !important;
+  min-width: 0;
+}
+
+/* Checkbox fica pequeno e sozinho na sua linha — tamanho fixo vem da regra
+   canônica .loom-window input[type="checkbox"] mais abaixo. */
+.loom-window .form-group>input[type="checkbox"] {
+  flex: none !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.loom-window .form-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hint ocupa a linha inteira abaixo do campo. Cobre tanto .hint quanto <small>
+   solto (usado em vários windows no lugar de .hint) pra não puxar cor/fonte
+   de alguma regra global de <small> em outro arquivo CSS. */
+.loom-window .hint,
+.loom-window .form-group .hint,
+.loom-window .form-group>small {
+  display: block !important;
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--color-text-secondary) !important;
+  font: 400 12px/1.45 var(--font-ui) !important;
+}
+
+/* Variante empilhada (label em cima) */
+.loom-window .form-group.stacked {
+  display: block;
+}
+
+.loom-window .form-group.stacked>label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* Variante horizontal */
+.loom-window .form-group-horizontal {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px 8px !important;
+  margin-bottom: 12px !important;
+}
+
+.loom-window .form-group-horizontal>label {
+  flex: 1 0 30% !important;
+  width: auto !important;
+  color: var(--color-text-primary);
+  font: 600 13px/1.3 var(--font-ui);
+}
+
+.loom-window .form-group-horizontal>input:not([type="checkbox"]),
+.loom-window .form-group-horizontal>select,
+.loom-window .form-group-horizontal>textarea,
+.loom-window .form-group-horizontal>.form-fields {
+  flex: 2 1 60% !important;
+  width: auto !important;
+  min-width: 0;
+}
+
+.loom-window .form-group-horizontal>input[type="checkbox"] {
+  flex: none !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: auto;
+}
+
+.loom-window .form-group-horizontal .hint,
+.loom-window .form-group-horizontal>small {
+  display: block !important;
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--color-text-secondary) !important;
+  font: 400 12px/1.45 var(--font-ui) !important;
+}
+
+/* ---------- Inputs / Selects / Textareas ---------- */
+.loom-window input[type="text"],
+.loom-window input[type="number"],
+.loom-window input[type="password"],
+.loom-window input[type="search"],
+.loom-window input[type="email"],
+.loom-window select,
+.loom-window textarea {
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 4px;
+  padding: 7px 10px;
+  color: var(--color-text-primary);
+  font: 400 13px/1.3 var(--font-ui);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.loom-window input[type="number"]::-webkit-outer-spin-button,
+.loom-window input[type="number"]::-webkit-inner-spin-button,
+.loom-window input[type="number"]:hover::-webkit-inner-spin-button,
+.loom-window input[type="number"]:focus::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
+
+.loom-window input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+.loom-window input:focus,
+.loom-window select:focus,
+.loom-window textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.loom-window input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.loom-window select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a89880'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.loom-window select option {
+  background: var(--color-bg-dark);
+}
+
+/* Checkbox dourado — regra canônica única, reusada por qualquer checkbox
+   dentro de .loom-window (os blocos .form-group específicos abaixo só
+   ajustam layout/grid, não redeclaram aparência). */
+.loom-window input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  box-sizing: border-box !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 55%, transparent) !important;
+  border-radius: 3px !important;
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent) !important;
+  cursor: pointer;
+  position: relative;
+}
+
+.loom-window input[type="checkbox"]:hover {
+  border-color: var(--color-accent) !important;
+}
+
+.loom-window input[type="checkbox"]:checked {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.loom-window input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--color-bg-deep);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Range slider + valor numérico ao lado */
+.loom-window input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 0;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  cursor: pointer;
+}
+
+.loom-window input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg-dark);
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.loom-window .range-value {
+  flex: 0 0 auto;
+  min-width: 34px;
+  padding: 4px 6px;
+  text-align: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font: 600 12px/1 var(--font-mono);
+}
+
+/* Color picker: input texto + swatch */
+.loom-window .color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+}
+
+.loom-window .color-input-group input[type="text"] {
+  flex: 1 1 0;
+}
+
+.loom-window input[type="color"] {
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Campo com botão anexado (ex.: file picker) */
+.loom-window .input-with-button {
+  display: flex;
+  flex: 1 1 0;
+}
+
+.loom-window .input-with-button>input {
+  flex: 1 1 0;
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+}
+
+.loom-window .input-with-button>button {
+  /* `!important` on width/flex-basis: `.loom-window .btn.btn-primary` (higher
+     specificity, three classes) sets `width: 100%` — without beating that
+     here, a primary-styled button (e.g. "Conectar" on the account-pairing
+     field) claims the whole row and crushes the input next to it down to
+     near-zero width. Plain buttons (no `.btn-primary`) were never affected,
+     which is why this only showed up on that one field. */
+  flex: 0 0 auto !important;
+  width: auto !important;
+  padding: 0 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 0 4px 4px 0;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.loom-window .input-with-button>button:hover {
+  color: var(--color-accent);
+}
+
+/* ==========================================
+   UTILITY CLASSES FOR INLINE STYLES REPLACEMENT
+   ========================================== */
+
+/* Checkbox labels with consistent styling */
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Full-width color input group */
+.color-input-group-full {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Full-width input with flex:1 */
+.input-flex-1 {
+  flex: 1;
+}
+
+/* Separator with consistent styling */
+.form-separator {
+  border: 0;
+  border-top: 1px solid var(--color-border-glass);
+  margin: 1rem 0;
+}
+
+/* Bold accent label */
+.label-bold-accent {
+  font-weight: bold;
+  color: var(--color-accent);
+}
+
+/* Camera controls layout */
+.camera-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Camera inputs grid */
+.camera-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.camera-inputs .form-group {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   JOURNAL WINDOW UTILITIES
+   ========================================== */
+
+/* Journal content viewer */
+.journal-page-content-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  min-height: 360px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* Rich text doc link (ProseMirror docLink node) */
+.doc-link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.doc-link:hover {
+  color: var(--color-accent-hover);
+}
+
+/* Rich text inline roll (ProseMirror inlineRoll node) */
+.inline-roll {
+  display: inline-block;
+  background: var(--color-border-glass);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 0 4px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.inline-roll:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  border-color: var(--color-accent);
+}
+
+/* Journal page header */
+.journal-page-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.5rem;
+}
+
+/* Journal page title */
+.journal-page-title {
+  flex: 1;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+}
+
+/* Journal sidebar */
+.journal-sidebar {
+  width: 250px;
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.journal-sidebar-header {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.journal-page-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.journal-title-input {
+  width: 100%;
+  background: color-mix(in srgb, var(--color-bg-deep) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+}
+
+.journal-title-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* Redundant rules removed */
+
+/* Journal button utilities */
+.btn-journal-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.btn-journal-full-width {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Journal image viewer */
+.journal-image-viewer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-deep);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  min-height: 360px;
+}
+
+.journal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Journal PDF viewer */
+.journal-pdf-viewer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-deep);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  min-height: 360px;
+  width: 100%;
+}
+
+.journal-pdf-frame {
+  width: 100%;
+  height: 360px;
+  border: none;
+}
+
+/* Text utilities */
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-secondary.italic {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ==========================================
+   ACTOR AND ITEM SHEET UTILITIES
+   ========================================== */
+
+/* Actor sheet header — portrait + nome lado a lado */
+.actor-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.75rem;
+}
+
+.actor-sheet-name-input {
+  flex: 1;
+  background: color-mix(in srgb, var(--color-bg-deep) 35%, transparent);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--color-text-primary);
+  font: 600 1rem/1.3 var(--font-ui);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.actor-sheet-name-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.actor-sheet-name-input[readonly] {
+  cursor: default;
+  opacity: 0.8;
+}
+
+/* Actor/Item portrait container */
+.actor-sheet-portrait {
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.actor-sheet-portrait:hover {
+  border-color: var(--color-accent);
+}
+
+.actor-sheet-portrait span {
+  font-size: 2rem;
+  color: var(--color-text-secondary);
+}
+
+.actor-sheet-portrait.has-no-image {
+  background: color-mix(in srgb, var(--color-bg-deep) 30%, transparent);
+}
+
+.actor-sheet-portrait img.actor-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.actor-sheet-portrait[data-action="pick-icon"],
+.actor-sheet-portrait[data-action="pick-portrait"] {
+  position: relative;
+}
+
+/* Hidden file input */
+.input-file-hidden {
+  display: none;
+}
+
+/* Actor/Item sheet hint */
+.actor-sheet-hint {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  border-radius: 4px;
+  border-left: 3px solid var(--color-accent);
+}
+
+/* ==========================================
+   MODULE MANAGEMENT WINDOW
+   ========================================== */
+.module-manager-search {
+  margin-bottom: 0.75rem;
+}
+
+.module-manager-search .search-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.module-manager-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.module-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background var(--transition-fast);
+}
+
+.module-row:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+}
+
+.module-row-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  width: 100%;
+  user-select: none;
+}
+
+.module-row-name {
+  flex: 1;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.version-badge {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.version-ok {
+  color: color-mix(in srgb, var(--color-success) 80%, var(--color-text-primary));
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+.version-warn {
+  color: color-mix(in srgb, var(--color-warning) 80%, var(--color-text-primary));
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 4px;
+  line-height: 1;
+}
+
+.module-manager-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  flex-shrink: 0;
+}
+
+/* ---------- Botões ---------- */
+.loom-window .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--color-text-primary);
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.loom-window .btn:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: var(--color-text-primary);
+}
+
+.loom-window .btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.01), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.loom-window .btn.btn-primary,
+.loom-window button[type="submit"]:not(.btn-secondary) {
+  width: 100%;
+  padding: 0.45rem 1rem;
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font: 500 0.8rem/1.2 var(--font-ui);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.loom-window .btn.btn-primary:hover,
+.loom-window button[type="submit"]:not(.btn-secondary):hover {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.loom-window .btn.btn-secondary {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  box-shadow: none;
+}
+
+.loom-window .btn.btn-secondary:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  transform: translateY(-1px);
+}
+
+.loom-window .btn.btn-danger {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border-color: var(--color-danger);
+  color: var(--color-text-primary);
+}
+
+.loom-window .btn.btn-danger:hover {
+  background: var(--color-danger);
+  color: var(--color-bg-deep);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* ---------- Layout com painel lateral (ex.: Configurações) ---------- */
+.loom-window .window-sidebar-layout {
+  display: flex;
+  gap: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.loom-window .window-sidebar {
+  flex: 0 0 180px;
+  border-right: 1px solid var(--color-border);
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.loom-window .window-sidebar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font: 600 13px/1.3 var(--font-ui);
+  cursor: pointer;
+}
+
+.loom-window .window-sidebar-item:hover {
+  color: var(--color-text-primary);
+}
+
+.loom-window .window-sidebar-item.active {
+  color: var(--color-accent);
+  border-bottom: 1px solid var(--color-accent);
+  border-radius: 0;
+}
+
+.loom-window .window-sidebar-item .count {
+  color: var(--color-text-muted);
+  font: 400 11px/1 var(--font-mono);
+}
+
+.loom-window .window-main {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+
+/* ---------- Linha de configuração (label + botão, estilo Configurações do Jogo) ---------- */
+.loom-window .setting-row {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 4px 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+}
+
+.loom-window .setting-row>label {
+  color: var(--color-text-primary);
+  font: 700 13px/1.3 var(--font-ui);
+}
+
+.loom-window .setting-row>.hint {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Scrollbar padrão do corpo ---------- */
+
+
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.permissions-table th {
+  text-align: center;
+  padding: 6px 4px;
+  color: var(--color-accent);
+  font: 600 12px var(--font-ui);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.permissions-table th:first-child {
+  text-align: left;
+}
+
+.permissions-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.permissions-row-label {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.permissions-row-hint {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.permissions-cell {
+  text-align: center;
+}
+
+.user-management-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.user-management-table th {
+  text-align: left;
+  padding: 6px 4px;
+  color: var(--color-accent);
+  font: 600 12px var(--font-ui);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.user-management-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.user-management-table input,
+.user-management-table select {
+  width: 100%;
+}
+
+.user-management-footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ── CategoryBrowser (2-panel layout) ── */
+.loom-window-body .category-browser {
+  display: flex;
+  height: 100%;
+  min-height: 300px;
+}
+
+.loom-window-body .category-browser-sidebar {
+  width: 200px;
+  min-width: 180px;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  background: var(--color-bg-secondary);
+}
+
+.loom-window-body .category-browser-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.loom-window-body .category-browser-list {
+  padding: 0.5rem 0;
+}
+
+.loom-window-body .category-browser-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background 0.15s;
+}
+
+.loom-window-body .category-browser-item:hover {
+  background: var(--color-bg-hover);
+}
+
+.loom-window-body .category-browser-item.active {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.loom-window-body .category-browser-item-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-tertiary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* Range Inputs */
+.loom-window-body input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 24px;
+  cursor: pointer;
+}
+
+.loom-window-body input[type="range"]:focus {
+  outline: none;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-radius: 2px;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  border-radius: 3px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-accent);
+  cursor: pointer;
+  margin-top: -6px;
+  transition: all 0.2s ease;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--color-accent);
+  box-shadow: 0 0 5px var(--color-accent);
+}
+
+.range-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.range-input-group input[type="range"] {
+  flex: 1;
+}
+
+.range-input-group .range-value {
+  width: 45px;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 0.2rem 0;
+  border-radius: 3px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.window-tabs-fixed,
+.window-fixed-header {
+  height: auto !important;
+}
+
+/* Window layout with fixed tabs and scrollable tab content */
+.window-tabs-fixed .loom-window-body {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+.window-tabs-fixed .tabs {
+  position: relative !important;
+  top: auto !important;
+  margin: 0 !important;
+  padding: 0 1.25rem !important;
+}
+
+.window-tabs-fixed .tab-content {
+  flex: auto;
+  overflow-y: auto;
+  margin: 0 !important;
+  padding: 1.25rem !important;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  border-radius: 4px;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+}
+
+/* Window layout with fixed header (no tabs) and scrollable content */
+.window-fixed-header .loom-window-body {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.user-management-table th {
+  text-align: left;
+  padding: 6px 4px;
+  color: var(--color-accent);
+  font: 600 12px var(--font-ui);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.user-management-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.user-management-table input,
+.user-management-table select {
+  width: 100%;
+}
+
+.user-management-footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ── CategoryBrowser (2-panel layout) ── */
+.loom-window-body .category-browser {
+  display: flex;
+  height: 100%;
+  min-height: 300px;
+}
+
+.loom-window-body .category-browser-sidebar {
+  width: 200px;
+  min-width: 180px;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  background: var(--color-bg-secondary);
+}
+
+.loom-window-body .category-browser-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.loom-window-body .category-browser-list {
+  padding: 0.5rem 0;
+}
+
+.loom-window-body .category-browser-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background 0.15s;
+}
+
+.loom-window-body .category-browser-item:hover {
+  background: var(--color-bg-hover);
+}
+
+.loom-window-body .category-browser-item.active {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.loom-window-body .category-browser-item-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-tertiary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* Range Inputs */
+.loom-window-body input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 24px;
+  cursor: pointer;
+}
+
+.loom-window-body input[type="range"]:focus {
+  outline: none;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-radius: 2px;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  border-radius: 3px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-accent);
+  cursor: pointer;
+  margin-top: -6px;
+  transition: all 0.2s ease;
+}
+
+.loom-window-body input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--color-accent);
+  box-shadow: 0 0 5px var(--color-accent);
+}
+
+.range-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.range-input-group input[type="range"] {
+  flex: 1;
+}
+
+.range-input-group .range-value {
+  width: 45px;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 0.2rem 0;
+  border-radius: 3px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.window-tabs-fixed,
+.window-fixed-header {
+  height: auto !important;
+}
+
+/* Window layout with fixed tabs and scrollable tab content */
+.window-tabs-fixed .loom-window-body {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+.window-tabs-fixed .tabs {
+  position: relative !important;
+  top: auto !important;
+  margin: 0 !important;
+  padding: 0 1.25rem !important;
+}
+
+.window-tabs-fixed .tab-content {
+  flex: auto;
+  overflow-y: auto;
+  margin: 0 !important;
+  padding: 1.25rem !important;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  border-radius: 4px;
+}
+
+.window-tabs-fixed .tab-content::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+}
+
+/* Window layout with fixed header (no tabs) and scrollable content */
+.window-fixed-header .loom-window-body {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+.window-fixed-header .scroll-content {
+  flex: auto;
+  overflow-y: auto;
+  margin: 0 !important;
+  padding: 1.25rem !important;
+}
+
+.window-fixed-header .scroll-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.window-fixed-header .scroll-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.window-fixed-header .scroll-content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  border-radius: 4px;
+}
+
+.window-fixed-header .scroll-content::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+}
+
+/* ==========================================================================
+   Roll Table Window (table-sheet-window)
+   ========================================================================== */
+
+.roll-table-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-border-glass);
+}
+
+.roll-table-actions-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.roll-table-roll-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.roll-table-roll-btn i {
+  font-size: 1rem;
+}
+
+.roll-table-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.roll-table-list-title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roll-table-grid {
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, transparent);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.roll-table-grid-header {
+  display: flex;
+  background: color-mix(in srgb, var(--color-bg-deep) 80%, transparent);
+  border-bottom: 1px solid var(--color-border-glass);
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.roll-table-grid-row {
+  display: flex;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-glass) 50%, transparent);
+  background: transparent;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.roll-table-grid-row:last-child {
+  border-bottom: none;
+}
+
+.roll-table-grid-row.is-even {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.roll-table-grid-row[data-action="edit-entry"] {
+  cursor: pointer;
+}
+
+.roll-table-grid-row[data-action="edit-entry"]:hover {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+}
+
+.roll-table-grid-row.is-drawn {
+  opacity: 0.45;
+}
+
+.roll-table-grid-col,
+.roll-table-grid-cell {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.roll-table-col-image {
+  width: 36px;
+  justify-content: center;
+  padding: 0.35rem;
+}
+
+.roll-table-entry-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--color-border-glass);
+}
+
+.roll-table-entry-icon-default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.roll-table-col-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.roll-table-col-range {
+  width: 70px;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.roll-table-drawn-badge {
+  color: var(--color-accent);
+  margin-right: 0.35rem;
+}
+
+.roll-table-entry-weight {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+.roll-table-entry-weight small {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.roll-table-entry-remove {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  transition: all 0.2s;
+}
+
+.roll-table-entry-remove:hover {
+  color: var(--color-danger);
+  opacity: 1;
+}
+
+
+.roll-table-col-weight {
+  width: 80px;
+  justify-content: center;
+}
+
+.roll-table-col-actions {
+  width: 40px;
+  justify-content: center;
+}

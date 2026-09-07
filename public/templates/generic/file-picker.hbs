@@ -1,0 +1,117 @@
+{{#if loading}}
+<div class="empty-state"><p>{{loadingMessage}}</p></div>
+{{else}}
+<div class="file-picker-container">
+  <!-- Tabs: World Assets / Global Assets -->
+  <div class="file-picker-tabs">
+    <button class="fp-tab {{#if isWorldScope}}active{{/if}}" data-tab="world"><i class="fa-solid fa-database"></i> Assets do Mundo</button>
+    <button class="fp-tab {{#if isGlobalScope}}active{{/if}}" data-tab="global"><i class="fa-solid fa-server"></i> Assets Globais</button>
+  </div>
+
+  <!-- Breadcrumb Row -->
+  <div class="address-bar-row">
+    <button class="btn-up-dir" data-action="nav-back" title="Subir um diretório"><i class="fa-solid fa-turn-up fa-rotate-270"></i></button>
+    <div class="fp-breadcrumbs">
+      {{#each breadcrumbs}}
+        <span class="breadcrumb-item {{#if isLast}}active{{/if}}" data-action="nav-dir" data-id="{{path}}">{{label}}</span>
+        {{#unless isLast}}<span class="breadcrumb-separator">/</span>{{/unless}}
+      {{/each}}
+    </div>
+    <button class="btn-fp-action {{#if isCurrentFavorite}}active{{/if}}" data-action="toggle-fav" data-id="{{currentDir}}" title="{{#if isCurrentFavorite}}Remover dos favoritos{{else}}Adicionar aos favoritos{{/if}}">
+      <i class="fa-solid fa-star"></i>
+    </button>
+  </div>
+
+  <!-- Favorites bar -->
+  {{#if hasFavorites}}
+  <div class="fp-favorites-bar">
+    <span class="fp-fav-label"><i class="fa-solid fa-star"></i> Favoritos</span>
+    {{#each favorites}}
+      <button class="fp-fav-chip {{#if isActive}}active{{/if}}" data-action="nav-dir" data-id="{{path}}">
+        <i class="fa-solid fa-folder"></i> {{label}}
+      </button>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  <!-- Search + View Mode + Grid Size -->
+  <div class="fp-toolbar-row">
+    <div class="fp-search-wrapper">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" class="search-input" placeholder="Procurar arquivos..." value="{{searchQuery}}" />
+      {{#if hasSearchQuery}}<button class="fp-search-clear" data-action="clear-search"><i class="fa-solid fa-times"></i></button>{{/if}}
+    </div>
+    <div class="fp-toolbar-actions">
+      <label class="fp-grid-size-label" title="Tamanho dos thumbnails">
+        <i class="fa-solid fa-expand"></i>
+        <input type="number" class="fp-grid-size-input" value="{{gridSize}}" min="40" max="300" step="10" />
+      </label>
+      <div class="view-mode-buttons">
+        <button class="btn-view-mode {{#if isListView}}active{{/if}}" data-mode="list" title="Exibição em Lista"><i class="fa-solid fa-list"></i></button>
+        <button class="btn-view-mode {{#if isGridView}}active{{/if}}" data-mode="grid" title="Exibição em Grade"><i class="fa-solid fa-grip"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Browser Area -->
+  <div class="file-picker-browser {{viewMode}}-view" {{{gridSizeStyle}}}>
+    {{#if isNotRoot}}
+      <div class="file-picker-item nav-back-item" data-action="nav-back">
+        <span class="file-picker-icon"><i class="fa-solid fa-arrow-turn-up fa-rotate-90"></i></span>
+        <span class="file-picker-name">.. (Voltar)</span>
+      </div>
+    {{/if}}
+
+    {{#each dirs}}
+      <div class="file-picker-item dir-item" data-action="nav-dir" data-id="{{fullPath}}">
+        <span class="file-picker-icon"><i class="fa-solid fa-folder"></i></span>
+        <span class="file-picker-name" title="{{rawName}}">{{name}}</span>
+        <button class="fp-fav-toggle {{#if isFav}}is-fav{{/if}}" data-action="toggle-fav" data-id="{{fullPath}}" title="{{#if isFav}}Remover dos favoritos{{else}}Adicionar aos favoritos{{/if}}">
+          <i class="fa-solid fa-star"></i>
+        </button>
+      </div>
+    {{/each}}
+
+    {{#each files}}
+      <div class="file-picker-item file-item {{#if isSelected}}selected{{/if}}"
+           data-action="select-file" data-id="{{path}}"
+           draggable="true"
+           data-path="{{path}}">
+        {{#if ../isGridView}}
+          <div class="file-picker-preview" style="{{previewStyle}}">
+            {{#unless isImage}}<i class="fa-solid fa-file"></i>{{/unless}}
+          </div>
+          <span class="file-picker-name" title="{{name}}">{{name}}</span>
+        {{else}}
+          <span class="file-picker-icon">{{#if isImage}}<i class="fa-solid fa-image"></i>{{else}}<i class="fa-solid fa-file"></i>{{/if}}</span>
+          <span class="file-picker-name" title="{{name}}">{{name}}</span>
+          <span class="file-picker-size">{{formattedSize}}</span>
+        {{/if}}
+      </div>
+    {{/each}}
+
+    {{#if emptyState}}
+      <div class="empty-state"><p>Nenhum arquivo encontrado.</p></div>
+    {{/if}}
+  </div>
+
+  <!-- Bottom: Upload + Selected -->
+  <div class="file-picker-bottom-actions">
+    <div class="action-row">
+      <span class="action-label"><i class="fa-solid fa-upload"></i> Enviar</span>
+      <div class="input-with-button">
+        <input type="file" id="file-picker-upload-input" style="display: none;" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif,image/tiff,video/mp4,video/webm,video/ogg,audio/mpeg,audio/mp3,audio/ogg,audio/wav" />
+        <button class="btn btn-secondary btn-fp-upload" data-action="trigger-upload">Escolher Arquivo</button>
+        <span class="upload-file-name" id="fp-upload-status">Nenhum arquivo escolhido</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select File Footer -->
+  <div class="file-picker-footer-button">
+    <button class="btn-select-file" data-action="confirm-selection" {{#unless hasSelectedPath}}disabled{{/unless}}>
+      <i class="fa-solid fa-check"></i> Selecionar Arquivo
+    </button>
+  </div>
+</div>
+{{/if}}

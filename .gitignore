@@ -1,0 +1,46 @@
+node_modules
+dist/
+release/
+.env
+
+# Cópia de build de shared/data/fields.ts — gerada por scripts/sync-sdk-shared-fields.mjs
+# toda vez antes do tsc do SDK rodar (necessário por causa do rootDir do SDK), nunca editar
+# nem comitar direto.
+packages/sdk/src/vendor/
+
+# .js/.js.map compilados do client/ (TS-only) — um `tsc` sem --noEmit em algum
+# momento deixou 15 arquivos .js velhos ao lado dos .ts, e como os imports usam
+# extensão .js, o Vite resolvia pro compilado velho em vez do .ts atual (bug
+# real: fix nunca "pegava" até isso ser encontrado e apagado). Nunca comitar.
+client/**/*.js
+client/**/*.js.map
+
+# Mesma familia: `.d.ts` + `.d.ts.map` em client/ sao saida de `tsc --declaration`,
+# nao codigo escrito a mao — todo `.d.ts` de client/ tinha um `.map` do lado, e isso
+# so acontece quando o compilador gerou os dois. Declaracao ambiente de verdade vive
+# em server/types/ (sem `.map`) e continua versionada.
+client/**/*.d.ts
+client/**/*.d.ts.map
+
+# Mesma familia, mesmo bug, achado em shared/ (fields.ts) — tsc --declaration
+# vazou .js/.d.ts + .map ao lado do .ts de origem. Nunca comitar.
+shared/**/*.js
+shared/**/*.js.map
+shared/**/*.d.ts
+shared/**/*.d.ts.map
+
+# Runtime user data (db, uploads, installed marketplace content) — never
+# belongs in the repo, always lives in the OS app-data folder (see
+# getAppDataPath in db.ts).
+/Config/loom.config.json
+/Data/*.sqlite*
+/Data/uploads/
+/Data/marketplace/
+/Logs/
+
+# `tools/` era blanket-ignore e engolia código legítimo: o validate-system.mjs
+# é ferramenta do projeto (valida sistema de RPG), não rascunho.
+tools/*
+!tools/validate-system.mjs
+
+reports/
