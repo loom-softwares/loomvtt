@@ -3,7 +3,7 @@
   <h1>LoomVTT</h1>
 </div>
 
-This repository serves as the central hub for tracking planned features, feature requests, bugs, and issues for [LoomVTT](https://loomvtt.com) software.
+This repository serves as the central hub for tracking planned features, feature requests, bugs, and other issues for [LoomVTT](https://loomvtt.com) software.
 
 LoomVTT is a next-generation, extensible Virtual Tabletop built for modern role-playing games. Engineered from the ground up with TypeScript and native web technologies, it delivers blazing-fast performance, a robust real-time multiplayer engine, and a powerful SDK for addon and ruleset developers. LoomVTT runs as a self-hosted desktop application on Windows, macOS, and Linux — players connect for free directly through a web browser.
 
