@@ -76,7 +76,7 @@ bugReportsRouter.post('/', async (req, res) => {
       severity: severity ?? 'medium',
       category: category ?? 'other',
       status: 'open',
-      reporterId: (req as any).userId ?? '',
+      reporterId: (req as any).userId || (req as any).auth?.userId || 'gm',
       metadata,
     });
     if (result.error) return res.status(400).json({ error: result.error });

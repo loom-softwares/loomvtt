@@ -199,7 +199,7 @@ export function getKnexForTable(tableName: string): Knex {
   // aqui, ativar QUALQUER mundo redirecionava toda leitura de settings pro
   // banco daquele mundo (sem as linhas certas), derrubando a sessao de admin
   // na hora — bug real, achado ao vivo, nao teorico.
-  const globalTables = ['worlds', 'users', 'packages', 'world_packages', 'campaigns', 'settings'];
+  const globalTables = ['worlds', 'users', 'packages', 'world_packages', 'campaigns', 'settings', 'bug_reports'];
   if (globalTables.includes(tableName)) {
     return rawDb;
   }

@@ -31,17 +31,22 @@ export async function createGithubIssue(payload: IssuePayload): Promise<GithubIs
   const severityLabel = payload.severity || 'medium';
 
   const bodyContent = [
-    '### 🐛 Bug Report via LoomVTT',
+    '### LoomVTT Version',
+    'v1.0.0-alpha',
     '',
-    '**Descrição:**',
-    payload.description?.trim() || '_Nenhuma descrição fornecida._',
+    '### Platform',
+    process.platform === 'win32' ? 'Desktop app (Windows)' : 'Desktop app / Browser',
     '',
-    '---',
+    '### What happened?',
+    payload.description?.trim() || payload.title,
     '',
-    `- **Categoria:** \`${categoryLabel}\``,
-    `- **Severidade:** \`${severityLabel}\``,
-    `- **Versão do Engine:** \`v1.0.0-alpha\``,
-    `- **Report ID Local:** \`${payload.id}\``,
+    '### What did you expect to happen?',
+    'Funcionamento esperado sem erros ou falhas.',
+    '',
+    '### Additional Context',
+    `- **Category:** \`${categoryLabel}\``,
+    `- **Severity:** \`${severityLabel}\``,
+    `- **Local Report ID:** \`${payload.id}\``,
     `- **World ID:** \`${payload.worldId}\``,
   ].join('\n');
 
@@ -57,7 +62,7 @@ export async function createGithubIssue(payload: IssuePayload): Promise<GithubIs
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: `[${categoryLabel.toUpperCase()}] ${payload.title}`,
+        title: `[Bug]: ${payload.title}`,
         body: bodyContent,
         labels: ['bug', categoryLabel, severityLabel],
       }),
