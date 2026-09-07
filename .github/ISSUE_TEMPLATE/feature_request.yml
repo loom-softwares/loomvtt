@@ -1,0 +1,63 @@
+name: ✨ Feature Request
+description: Suggest a new feature or improvement for LoomVTT.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape LoomVTT! Please describe your idea in as much detail as possible.
+        
+        **Before submitting:** Check [existing issues](../../issues) to avoid duplicates.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature Area
+      description: Which part of LoomVTT does this relate to?
+      options:
+        - Canvas / Map
+        - Tokens & Characters
+        - Combat / Initiative
+        - Ruleset / System support
+        - Addons / Module API
+        - UI / Windows
+        - Setup Hub / World management
+        - Lighting & Vision
+        - Audio / Sound
+        - Multiplayer / Networking
+        - Performance
+        - Documentation / SDK
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the frustration, limitation, or gap you're experiencing. Focus on the *why*, not just the *what*.
+      placeholder: "e.g. When I try to run a mass combat encounter, there's no way to group multiple tokens and move them together, which makes large battles very tedious to manage."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution. Be as specific as possible.
+      placeholder: "e.g. Add a 'token group' feature where you can select multiple tokens and save them as a group that moves together..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you tried any workarounds? Are there alternative approaches?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Mockups, references from other VTTs, links, screenshots — anything that helps illustrate the idea.

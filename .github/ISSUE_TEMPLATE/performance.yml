@@ -1,0 +1,82 @@
+name: ⚡ Performance Issue
+description: Report lag, FPS drops, slow loading, or other performance problems.
+title: "[Performance]: "
+labels: ["performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Performance issues can be tricky to diagnose. The more detail you provide, the faster we can identify the root cause.
+
+  - type: input
+    id: version
+    attributes:
+      label: LoomVTT Version
+      placeholder: "e.g. 0.5.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Performance Area
+      options:
+        - Canvas rendering / FPS drops
+        - World loading time
+        - Token movement lag
+        - Lighting / Vision recalculation
+        - WebSocket / network lag
+        - Audio
+        - Setup Hub / UI responsiveness
+        - Memory usage / crashes
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Performance Issue
+      description: When does it happen? What does it look like?
+      placeholder: "e.g. FPS drops from 60 to ~5 whenever I move a token on a scene with dynamic lighting enabled and more than 10 tokens."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Load World "..."
+        2. Open scene with X tokens and dynamic lighting ON
+        3. Move a token
+        4. FPS drops to ~5
+    validations:
+      required: true
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Performance Metrics
+      description: If possible, include measurements — FPS, load time in seconds, memory usage, etc.
+      placeholder: "e.g. Normal FPS: 60. During issue: 5-8 FPS. Load time: ~45s (vs ~5s on simple scenes)."
+
+  - type: textarea
+    id: specs
+    attributes:
+      label: System Specifications
+      description: Your hardware and OS details.
+      placeholder: |
+        - OS: Windows 11 / macOS 14 / Ubuntu 22.04
+        - CPU: Intel i7-12700 / AMD Ryzen 5 5600X
+        - RAM: 16 GB
+        - GPU: NVIDIA RTX 3060 / Intel Iris Xe
+        - Storage: SSD / HDD
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Scene complexity (number of walls, lights, tokens), active addons, etc.
