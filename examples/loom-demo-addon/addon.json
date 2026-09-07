@@ -1,0 +1,24 @@
+{
+  "name": "loom-demo-addon",
+  "title": "Loom Demo Addon",
+  "version": "0.1.0",
+  "engine": "loom",
+  "type": "addon",
+  "description": "Minimal addon example — a standalone utility window, not tied to any actor/item/system.",
+  "author": "LoomVTT",
+  "client": "main.mjs",
+  "active": true,
+  "styles": [
+    "styles/system.css"
+  ],
+  "settings": [
+    {
+      "key": "fontSize",
+      "type": "string",
+      "default": "14px",
+      "label": "Notes Font Size",
+      "hint": "Default font size for the Quick Notes textarea (e.g. 12px, 14px, 16px)",
+      "scope": "client"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+/*
+ * LoomVTT — client/styles/prosemirror-menu.css
+ *
+ * ProseMirror's own menu-bar/view CSS, loaded globally. Before this, the
+ * only place these rules existed was inside `<prose-mirror>`'s own Shadow
+ * DOM (prose-mirror-element.ts, injected via `adoptedStyleSheets`) — any
+ * window that calls `mountRichTextEditor()` directly on a plain page-level
+ * element (not through `<prose-mirror>`, e.g. edit-world-window.ts's world
+ * description field) got a fully unstyled ProseMirror menu bar: toolbar
+ * buttons stacked instead of laid out in a row, dropdown labels ("Insert",
+ * "Type...") showing as plain always-expanded text instead of collapsed
+ * menus. Loading the same three stylesheets globally fixes every such
+ * editor at once instead of patching each window's own markup.
+ */
+@import 'prosemirror-view/style/prosemirror.css';
+@import 'prosemirror-menu/style/menu.css';
+@import 'prosemirror-example-setup/style/style.css';

@@ -1,0 +1,789 @@
+{
+  "id": "tarot-complete",
+  "name": "Baralho de Tarô Completo (78 Cartas)",
+  "type": "tarot",
+  "back": "/cards/backs/fantasy-02.png",
+  "description": "Baralho de Tarô completo com 22 Arcanos Maiores e 56 Arcanos Menores.",
+  "cards": [
+    {
+      "name": "O Louco (0)",
+      "suit": "major",
+      "value": "0",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major00.jpg",
+      "face": "/cards/tarot-cards/major00.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior 0: O Louco"
+    },
+    {
+      "name": "O Mago (I)",
+      "suit": "major",
+      "value": "I",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major01.jpg",
+      "face": "/cards/tarot-cards/major01.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior I: O Mago"
+    },
+    {
+      "name": "A Sacerdotisa (II)",
+      "suit": "major",
+      "value": "II",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major02.jpg",
+      "face": "/cards/tarot-cards/major02.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior II: A Sacerdotisa"
+    },
+    {
+      "name": "A Imperatriz (III)",
+      "suit": "major",
+      "value": "III",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major03.jpg",
+      "face": "/cards/tarot-cards/major03.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior III: A Imperatriz"
+    },
+    {
+      "name": "O Imperador (IV)",
+      "suit": "major",
+      "value": "IV",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major04.jpg",
+      "face": "/cards/tarot-cards/major04.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior IV: O Imperador"
+    },
+    {
+      "name": "O Hierofante (V)",
+      "suit": "major",
+      "value": "V",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major05.jpg",
+      "face": "/cards/tarot-cards/major05.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior V: O Hierofante"
+    },
+    {
+      "name": "Os Enamorados (VI)",
+      "suit": "major",
+      "value": "VI",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major06.jpg",
+      "face": "/cards/tarot-cards/major06.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior VI: Os Enamorados"
+    },
+    {
+      "name": "O Carro (VII)",
+      "suit": "major",
+      "value": "VII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major07.jpg",
+      "face": "/cards/tarot-cards/major07.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior VII: O Carro"
+    },
+    {
+      "name": "A Força (VIII)",
+      "suit": "major",
+      "value": "VIII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major08.jpg",
+      "face": "/cards/tarot-cards/major08.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior VIII: A Força"
+    },
+    {
+      "name": "O Eremita (IX)",
+      "suit": "major",
+      "value": "IX",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major09.jpg",
+      "face": "/cards/tarot-cards/major09.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior IX: O Eremita"
+    },
+    {
+      "name": "A Roda da Fortuna (X)",
+      "suit": "major",
+      "value": "X",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major10.jpg",
+      "face": "/cards/tarot-cards/major10.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior X: A Roda da Fortuna"
+    },
+    {
+      "name": "A Justiça (XI)",
+      "suit": "major",
+      "value": "XI",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major11.jpg",
+      "face": "/cards/tarot-cards/major11.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XI: A Justiça"
+    },
+    {
+      "name": "O Enforcado (XII)",
+      "suit": "major",
+      "value": "XII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major12.jpg",
+      "face": "/cards/tarot-cards/major12.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XII: O Enforcado"
+    },
+    {
+      "name": "A Morte (XIII)",
+      "suit": "major",
+      "value": "XIII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major13.jpg",
+      "face": "/cards/tarot-cards/major13.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XIII: A Morte"
+    },
+    {
+      "name": "A Temperança (XIV)",
+      "suit": "major",
+      "value": "XIV",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major14.jpg",
+      "face": "/cards/tarot-cards/major14.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XIV: A Temperança"
+    },
+    {
+      "name": "O Diabo (XV)",
+      "suit": "major",
+      "value": "XV",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major15.jpg",
+      "face": "/cards/tarot-cards/major15.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XV: O Diabo"
+    },
+    {
+      "name": "A Torre (XVI)",
+      "suit": "major",
+      "value": "XVI",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major16.jpg",
+      "face": "/cards/tarot-cards/major16.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XVI: A Torre"
+    },
+    {
+      "name": "A Estrela (XVII)",
+      "suit": "major",
+      "value": "XVII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major17.jpg",
+      "face": "/cards/tarot-cards/major17.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XVII: A Estrela"
+    },
+    {
+      "name": "A Lua (XVIII)",
+      "suit": "major",
+      "value": "XVIII",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major18.jpg",
+      "face": "/cards/tarot-cards/major18.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XVIII: A Lua"
+    },
+    {
+      "name": "O Sol (XIX)",
+      "suit": "major",
+      "value": "XIX",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major19.jpg",
+      "face": "/cards/tarot-cards/major19.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XIX: O Sol"
+    },
+    {
+      "name": "O Julgamento (XX)",
+      "suit": "major",
+      "value": "XX",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major20.jpg",
+      "face": "/cards/tarot-cards/major20.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XX: O Julgamento"
+    },
+    {
+      "name": "O Mundo (XXI)",
+      "suit": "major",
+      "value": "XXI",
+      "type": "arcano_maior",
+      "img": "/cards/tarot-cards/major21.jpg",
+      "face": "/cards/tarot-cards/major21.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Maior XXI: O Mundo"
+    },
+    {
+      "name": "Ás de Paus",
+      "suit": "clubs",
+      "value": "A",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs01.jpg",
+      "face": "/cards/tarot-cards/clubs01.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Ás do naipe de Paus"
+    },
+    {
+      "name": "2 de Paus",
+      "suit": "clubs",
+      "value": "2",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs02.jpg",
+      "face": "/cards/tarot-cards/clubs02.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 2 do naipe de Paus"
+    },
+    {
+      "name": "3 de Paus",
+      "suit": "clubs",
+      "value": "3",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs03.jpg",
+      "face": "/cards/tarot-cards/clubs03.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 3 do naipe de Paus"
+    },
+    {
+      "name": "4 de Paus",
+      "suit": "clubs",
+      "value": "4",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs04.jpg",
+      "face": "/cards/tarot-cards/clubs04.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 4 do naipe de Paus"
+    },
+    {
+      "name": "5 de Paus",
+      "suit": "clubs",
+      "value": "5",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs05.jpg",
+      "face": "/cards/tarot-cards/clubs05.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 5 do naipe de Paus"
+    },
+    {
+      "name": "6 de Paus",
+      "suit": "clubs",
+      "value": "6",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs06.jpg",
+      "face": "/cards/tarot-cards/clubs06.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 6 do naipe de Paus"
+    },
+    {
+      "name": "7 de Paus",
+      "suit": "clubs",
+      "value": "7",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs07.jpg",
+      "face": "/cards/tarot-cards/clubs07.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 7 do naipe de Paus"
+    },
+    {
+      "name": "8 de Paus",
+      "suit": "clubs",
+      "value": "8",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs08.jpg",
+      "face": "/cards/tarot-cards/clubs08.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 8 do naipe de Paus"
+    },
+    {
+      "name": "9 de Paus",
+      "suit": "clubs",
+      "value": "9",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs09.jpg",
+      "face": "/cards/tarot-cards/clubs09.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 9 do naipe de Paus"
+    },
+    {
+      "name": "10 de Paus",
+      "suit": "clubs",
+      "value": "10",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs10.jpg",
+      "face": "/cards/tarot-cards/clubs10.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 10 do naipe de Paus"
+    },
+    {
+      "name": "Valete / Pajem de Paus",
+      "suit": "clubs",
+      "value": "V",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs11.jpg",
+      "face": "/cards/tarot-cards/clubs11.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Valete / Pajem do naipe de Paus"
+    },
+    {
+      "name": "Cavaleiro de Paus",
+      "suit": "clubs",
+      "value": "C",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs12.jpg",
+      "face": "/cards/tarot-cards/clubs12.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Cavaleiro do naipe de Paus"
+    },
+    {
+      "name": "Rainha de Paus",
+      "suit": "clubs",
+      "value": "D",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs13.jpg",
+      "face": "/cards/tarot-cards/clubs13.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rainha do naipe de Paus"
+    },
+    {
+      "name": "Rei de Paus",
+      "suit": "clubs",
+      "value": "R",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/clubs14.jpg",
+      "face": "/cards/tarot-cards/clubs14.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rei do naipe de Paus"
+    },
+    {
+      "name": "Ás de Ouros",
+      "suit": "coins",
+      "value": "A",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins01.jpg",
+      "face": "/cards/tarot-cards/coins01.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Ás do naipe de Ouros"
+    },
+    {
+      "name": "2 de Ouros",
+      "suit": "coins",
+      "value": "2",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins02.jpg",
+      "face": "/cards/tarot-cards/coins02.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 2 do naipe de Ouros"
+    },
+    {
+      "name": "3 de Ouros",
+      "suit": "coins",
+      "value": "3",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins03.jpg",
+      "face": "/cards/tarot-cards/coins03.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 3 do naipe de Ouros"
+    },
+    {
+      "name": "4 de Ouros",
+      "suit": "coins",
+      "value": "4",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins04.jpg",
+      "face": "/cards/tarot-cards/coins04.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 4 do naipe de Ouros"
+    },
+    {
+      "name": "5 de Ouros",
+      "suit": "coins",
+      "value": "5",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins05.jpg",
+      "face": "/cards/tarot-cards/coins05.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 5 do naipe de Ouros"
+    },
+    {
+      "name": "6 de Ouros",
+      "suit": "coins",
+      "value": "6",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins06.jpg",
+      "face": "/cards/tarot-cards/coins06.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 6 do naipe de Ouros"
+    },
+    {
+      "name": "7 de Ouros",
+      "suit": "coins",
+      "value": "7",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins07.jpg",
+      "face": "/cards/tarot-cards/coins07.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 7 do naipe de Ouros"
+    },
+    {
+      "name": "8 de Ouros",
+      "suit": "coins",
+      "value": "8",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins08.jpg",
+      "face": "/cards/tarot-cards/coins08.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 8 do naipe de Ouros"
+    },
+    {
+      "name": "9 de Ouros",
+      "suit": "coins",
+      "value": "9",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins09.jpg",
+      "face": "/cards/tarot-cards/coins09.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 9 do naipe de Ouros"
+    },
+    {
+      "name": "10 de Ouros",
+      "suit": "coins",
+      "value": "10",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins10.jpg",
+      "face": "/cards/tarot-cards/coins10.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 10 do naipe de Ouros"
+    },
+    {
+      "name": "Valete / Pajem de Ouros",
+      "suit": "coins",
+      "value": "V",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins11.jpg",
+      "face": "/cards/tarot-cards/coins11.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Valete / Pajem do naipe de Ouros"
+    },
+    {
+      "name": "Cavaleiro de Ouros",
+      "suit": "coins",
+      "value": "C",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins12.jpg",
+      "face": "/cards/tarot-cards/coins12.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Cavaleiro do naipe de Ouros"
+    },
+    {
+      "name": "Rainha de Ouros",
+      "suit": "coins",
+      "value": "D",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins13.jpg",
+      "face": "/cards/tarot-cards/coins13.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rainha do naipe de Ouros"
+    },
+    {
+      "name": "Rei de Ouros",
+      "suit": "coins",
+      "value": "R",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/coins14.jpg",
+      "face": "/cards/tarot-cards/coins14.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rei do naipe de Ouros"
+    },
+    {
+      "name": "Ás de Copas",
+      "suit": "cups",
+      "value": "A",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups01.jpg",
+      "face": "/cards/tarot-cards/cups01.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Ás do naipe de Copas"
+    },
+    {
+      "name": "2 de Copas",
+      "suit": "cups",
+      "value": "2",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups02.jpg",
+      "face": "/cards/tarot-cards/cups02.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 2 do naipe de Copas"
+    },
+    {
+      "name": "3 de Copas",
+      "suit": "cups",
+      "value": "3",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups03.jpg",
+      "face": "/cards/tarot-cards/cups03.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 3 do naipe de Copas"
+    },
+    {
+      "name": "4 de Copas",
+      "suit": "cups",
+      "value": "4",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups04.jpg",
+      "face": "/cards/tarot-cards/cups04.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 4 do naipe de Copas"
+    },
+    {
+      "name": "5 de Copas",
+      "suit": "cups",
+      "value": "5",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups05.jpg",
+      "face": "/cards/tarot-cards/cups05.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 5 do naipe de Copas"
+    },
+    {
+      "name": "6 de Copas",
+      "suit": "cups",
+      "value": "6",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups06.jpg",
+      "face": "/cards/tarot-cards/cups06.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 6 do naipe de Copas"
+    },
+    {
+      "name": "7 de Copas",
+      "suit": "cups",
+      "value": "7",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups07.jpg",
+      "face": "/cards/tarot-cards/cups07.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 7 do naipe de Copas"
+    },
+    {
+      "name": "8 de Copas",
+      "suit": "cups",
+      "value": "8",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups08.jpg",
+      "face": "/cards/tarot-cards/cups08.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 8 do naipe de Copas"
+    },
+    {
+      "name": "9 de Copas",
+      "suit": "cups",
+      "value": "9",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups09.jpg",
+      "face": "/cards/tarot-cards/cups09.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 9 do naipe de Copas"
+    },
+    {
+      "name": "10 de Copas",
+      "suit": "cups",
+      "value": "10",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups10.jpg",
+      "face": "/cards/tarot-cards/cups10.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 10 do naipe de Copas"
+    },
+    {
+      "name": "Valete / Pajem de Copas",
+      "suit": "cups",
+      "value": "V",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups11.jpg",
+      "face": "/cards/tarot-cards/cups11.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Valete / Pajem do naipe de Copas"
+    },
+    {
+      "name": "Cavaleiro de Copas",
+      "suit": "cups",
+      "value": "C",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups12.jpg",
+      "face": "/cards/tarot-cards/cups12.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Cavaleiro do naipe de Copas"
+    },
+    {
+      "name": "Rainha de Copas",
+      "suit": "cups",
+      "value": "D",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups13.jpg",
+      "face": "/cards/tarot-cards/cups13.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rainha do naipe de Copas"
+    },
+    {
+      "name": "Rei de Copas",
+      "suit": "cups",
+      "value": "R",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/cups14.jpg",
+      "face": "/cards/tarot-cards/cups14.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rei do naipe de Copas"
+    },
+    {
+      "name": "Ás de Espadas",
+      "suit": "swords",
+      "value": "A",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords01.jpg",
+      "face": "/cards/tarot-cards/swords01.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Ás do naipe de Espadas"
+    },
+    {
+      "name": "2 de Espadas",
+      "suit": "swords",
+      "value": "2",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords02.jpg",
+      "face": "/cards/tarot-cards/swords02.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 2 do naipe de Espadas"
+    },
+    {
+      "name": "3 de Espadas",
+      "suit": "swords",
+      "value": "3",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords03.jpg",
+      "face": "/cards/tarot-cards/swords03.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 3 do naipe de Espadas"
+    },
+    {
+      "name": "4 de Espadas",
+      "suit": "swords",
+      "value": "4",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords04.jpg",
+      "face": "/cards/tarot-cards/swords04.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 4 do naipe de Espadas"
+    },
+    {
+      "name": "5 de Espadas",
+      "suit": "swords",
+      "value": "5",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords05.jpg",
+      "face": "/cards/tarot-cards/swords05.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 5 do naipe de Espadas"
+    },
+    {
+      "name": "6 de Espadas",
+      "suit": "swords",
+      "value": "6",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords06.jpg",
+      "face": "/cards/tarot-cards/swords06.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 6 do naipe de Espadas"
+    },
+    {
+      "name": "7 de Espadas",
+      "suit": "swords",
+      "value": "7",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords07.jpg",
+      "face": "/cards/tarot-cards/swords07.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 7 do naipe de Espadas"
+    },
+    {
+      "name": "8 de Espadas",
+      "suit": "swords",
+      "value": "8",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords08.jpg",
+      "face": "/cards/tarot-cards/swords08.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 8 do naipe de Espadas"
+    },
+    {
+      "name": "9 de Espadas",
+      "suit": "swords",
+      "value": "9",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords09.jpg",
+      "face": "/cards/tarot-cards/swords09.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 9 do naipe de Espadas"
+    },
+    {
+      "name": "10 de Espadas",
+      "suit": "swords",
+      "value": "10",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords10.jpg",
+      "face": "/cards/tarot-cards/swords10.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: 10 do naipe de Espadas"
+    },
+    {
+      "name": "Valete / Pajem de Espadas",
+      "suit": "swords",
+      "value": "V",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords11.jpg",
+      "face": "/cards/tarot-cards/swords11.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Valete / Pajem do naipe de Espadas"
+    },
+    {
+      "name": "Cavaleiro de Espadas",
+      "suit": "swords",
+      "value": "C",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords12.jpg",
+      "face": "/cards/tarot-cards/swords12.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Cavaleiro do naipe de Espadas"
+    },
+    {
+      "name": "Rainha de Espadas",
+      "suit": "swords",
+      "value": "D",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords13.jpg",
+      "face": "/cards/tarot-cards/swords13.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rainha do naipe de Espadas"
+    },
+    {
+      "name": "Rei de Espadas",
+      "suit": "swords",
+      "value": "R",
+      "type": "arcano_menor",
+      "img": "/cards/tarot-cards/swords14.jpg",
+      "face": "/cards/tarot-cards/swords14.jpg",
+      "back": "/cards/backs/fantasy-02.png",
+      "description": "Arcano Menor: Rei do naipe de Espadas"
+    }
+  ]
+}

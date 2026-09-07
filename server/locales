@@ -1,0 +1,136 @@
+{
+  "adminLogin": {
+    "kicker": "Admin Login",
+    "title": "Acesso de Administrador Necessário",
+    "description": "Use a senha mestra do servidor para abrir o painel de setup, instalar sistemas, ativar módulos e preparar os mundos.",
+    "passwordLabel": "Senha do administrador",
+    "passwordPlaceholder": "Digite a senha mestra",
+    "submit": "Entrar no Setup",
+    "submitting": "Entrando...",
+    "errorEmpty": "Digite a senha mestra.",
+    "errorAuth": "Falha ao autenticar"
+  },
+  "setup": {
+    "nav": {
+      "worlds": "Mundos",
+      "systems": "Sistemas",
+      "modules": "Módulos Adicionais",
+      "settings": "Configurações",
+      "exit": "Sair do Setup"
+    },
+    "worlds": {
+      "title": "Mundos de RPG",
+      "subtitle": "Configure e inicie sua campanha",
+      "createBtn": "Criar Mundo",
+      "noRulesets": "Instale ao menos um Sistema de Regras (Ruleset) na aba \"Sistemas\" antes de criar um mundo.",
+      "loading": "Carregando painel...",
+      "newWorld": "Novo Mundo de Campanha",
+      "editWorld": "Editar Mundo",
+      "fieldName": "Nome do Mundo",
+      "fieldNamePlaceholder": "Ex: A Lenda de Baldur",
+      "fieldSystem": "Sistema de Regras (Ruleset)",
+      "fieldSystemPlaceholder": "Selecione um sistema...",
+      "fieldDesc": "Descrição",
+      "fieldDescPlaceholder": "Uma breve sinopse sobre a campanha...",
+      "fieldCover": "URL da Imagem de Capa",
+      "fieldLang": "Idioma",
+      "fieldPassword": "Senha de Admin",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "edit": "Editar",
+      "remove": "Remover",
+      "confirmRemove": "⚠ Confirmar?",
+      "launch": "Iniciar",
+      "launching": "Iniciando...",
+      "online": "Online",
+      "empty": "Nenhum mundo criado ainda.",
+      "emptyHint": "Crie seu primeiro mundo de campanha acima."
+    },
+    "systems": {
+      "title": "Sistemas Instalados",
+      "found": "encontrados",
+      "active": "Ativo",
+      "installed": "Instalado",
+      "noVersion": "Sem versão informada",
+      "localRuleset": "Ruleset local",
+      "deactivate": "Desativar",
+      "activate": "Ativar",
+      "empty": "Nenhum sistema instalado ainda."
+    },
+    "modules": {
+      "title": "Módulos Instalados",
+      "found": "encontrados",
+      "active": "Ativo",
+      "installed": "Instalado",
+      "noVersion": "Sem versão informada",
+      "deactivate": "Desativar",
+      "activate": "Ativar",
+      "empty": "Nenhum módulo instalado ainda."
+    },
+    "settings": {
+      "title": "Configurações do Servidor",
+      "language": "Idioma da Interface",
+      "save": "Salvar Configurações",
+      "saving": "Salvando...",
+      "saved": "Configurações salvas.",
+      "restartAlert": "Configuração salva com sucesso! O aplicativo precisa ser reiniciado para aplicar as novas opções.",
+      "saveConfigError": "Falha ao salvar configuração"
+    },
+    "errors": {
+      "nameRequired": "Informe o nome do mundo.",
+      "selectSystem": "Selecione um sistema de regras (Ruleset) para o mundo.",
+      "saveWorldFailed": "Falha ao salvar o mundo.",
+      "removeWorldFailed": "Falha ao remover o mundo.",
+      "rulesetNotActive": "O sistema \"{system}\" não está ativo. Ative-o na aba \"Sistemas\" antes de iniciar.",
+      "rulesetNotInstalled": "Nenhum sistema de regras (Ruleset) está instalado. Instale um na aba \"Sistemas\" antes de iniciar.",
+      "gmSessionMissing": "Sessão GM não retornada pelo servidor.",
+      "launchFailed": "Falha ao iniciar o mundo.",
+      "togglePackageFailed": "Falha ao atualizar o pacote."
+    },
+    "news": {
+      "title": "Notícias",
+      "featured": "Conteúdo em Destaque"
+    },
+    "wizard": {
+      "kicker": "Primeira execução",
+      "title": "Crie a senha mestra do servidor",
+      "description": "Esta senha libera o painel de administração, onde você instala sistemas, gerencia mundos e configura módulos antes de entrar em jogo.",
+      "adminPassword": "Senha do administrador",
+      "placeholderPass": "Digite a senha mestra",
+      "confirmPassword": "Confirmar senha",
+      "placeholderConfirm": "Repita a senha",
+      "submitting": "Configurando...",
+      "submit": "Salvar e continuar",
+      "errorEmpty": "Escolha uma senha para o administrador.",
+      "errorShort": "A senha precisa ter pelo menos 4 caracteres.",
+      "errorMismatch": "As senhas não conferem.",
+      "errorGeneric": "Falha ao concluir o setup"
+    },
+    "worldJoin": {
+      "backToSetup": "Configuração",
+      "title": "Juntar-se à sessão de jogo",
+      "loadingWorlds": "Carregando mundos...",
+      "loadingUsers": "Carregando usuários...",
+      "world": "Mundo",
+      "user": "Personagem / usuário",
+      "selectUserPlaceholder": "Selecione um usuário",
+      "password": "Senha",
+      "passwordPlaceholder": "Senha do mundo ou do usuário",
+      "joining": "Entrando...",
+      "submit": "Juntar-se à sessão de jogo",
+      "descriptionTitle": "Descrição do mundo",
+      "noDesc": "Sem descrição disponível.",
+      "statSystem": "Sistema",
+      "statLanguage": "Idioma",
+      "statPlayers": "Jogadores",
+      "selectWorldPrompt": "Selecione um mundo para ver os detalhes.",
+      "errorLoadWorlds": "Falha ao carregar mundos",
+      "errorLoadUsers": "Falha ao carregar jogadores",
+      "errorJoin": "Falha ao entrar no mundo"
+    }
+  },
+  "worldJoin": {
+    "backToSetup": "Configuração"
+  }
+}

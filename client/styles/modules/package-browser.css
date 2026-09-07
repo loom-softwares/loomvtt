@@ -1,0 +1,196 @@
+/* Package Browser (catalogo comunidade) — layout funcional apenas.
+   Estetica/polish fica com o design pass separado, ver modules.css pro
+   padrao visual de referencia (cores, cards). */
+
+.package-browser-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 0;
+}
+
+.package-browser-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  padding-bottom: 0.75rem;
+}
+
+.package-browser-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding-bottom: 0.875rem;
+}
+
+.package-browser-category {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  background: transparent;
+  border: 1px solid rgba(180, 150, 120, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.package-browser-category:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.package-browser-category.active {
+  background: rgba(180, 150, 120, 0.18);
+  border-color: rgba(180, 150, 120, 0.5);
+  color: #f3ece0;
+}
+
+.package-browser-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.package-browser-search {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--color-bg-surface, rgba(13, 15, 22, 0.8));
+  border: 1px solid var(--color-border, rgba(180, 150, 120, 0.3));
+  color: #f3ece0;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+}
+
+.package-browser-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.package-browser-empty-icon {
+  font-size: 2rem;
+  color: rgba(180, 150, 120, 0.45);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.package-browser-empty-hint {
+  font-size: 0.82rem;
+  color: #9aa4b2;
+  max-width: 380px;
+  margin: 0.5rem auto 0;
+  line-height: 1.5;
+}
+
+.package-browser-list {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.875rem;
+  align-content: start;
+  padding-right: 0.25rem;
+}
+
+.package-browser-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(13, 15, 22, 0.8);
+  border: 1px solid rgba(180, 150, 120, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.package-browser-entry-banner {
+  width: 100%;
+  height: 132px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.package-browser-entry-body {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem;
+}
+
+.package-browser-entry-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.package-browser-entry-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #f3ece0;
+}
+
+.package-browser-entry-version {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.package-browser-entry-desc {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.package-browser-entry-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.package-browser-entry-author {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex: 1;
+}
+
+.package-browser-entry-link {
+  color: #94a3b8;
+}
+
+.package-browser-manual {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(180, 150, 120, 0.3);
+  background: rgba(0, 0, 0, 0.25);
+  margin: 0.75rem -1.5rem -1.5rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.package-browser-manual label {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.package-browser-manual-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.package-browser-manual-row input {
+  flex: 1;
+  box-sizing: border-box;
+  background: var(--color-bg-surface, rgba(13, 15, 22, 0.8));
+  border: 1px solid var(--color-border, rgba(180, 150, 120, 0.3));
+  color: #f3ece0;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+}

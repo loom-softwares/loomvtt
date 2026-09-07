@@ -1,0 +1,38 @@
+{
+  "en": {
+    "app": {
+      "title": "Loom VTT",
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success"
+    },
+    "common": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "yes": "Yes",
+      "no": "No",
+      "ok": "OK"
+    }
+  },
+  "pt-BR": {
+    "app": {
+      "title": "Loom VTT",
+      "loading": "Carregando...",
+      "error": "Erro",
+      "success": "Sucesso"
+    },
+    "common": {
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "edit": "Editar",
+      "close": "Fechar",
+      "yes": "Sim",
+      "no": "Não",
+      "ok": "OK"
+    }
+  }
+}

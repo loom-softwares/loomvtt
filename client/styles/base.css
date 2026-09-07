@@ -1,0 +1,171 @@
+/* CSS Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  background: var(--color-bg-surface-hover);
+  border-color: color-mix(in srgb, var(--color-border) 80%, var(--color-text-primary));
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  background: var(--color-bg-deep);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+  /* Elegant focus ring */
+}
+
+textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  opacity: 1;
+  transition: opacity var(--transition-normal);
+}
+
+#windows {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+#windows>* {
+  pointer-events: auto;
+}
+
+#toasts {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+#toasts>* {
+  pointer-events: auto;
+}
+
+/* ==========================================
+   SHELL LAYOUT — reusable full-screen pattern
+   (fixed header / scrollable content / fixed footer)
+   Same technique already used in .loom-window-header/body/footer
+   (windows.css) — extracted here so any screen can reuse
+   without duplicating the same 6 properties in each screen CSS.
+   ========================================== */
+.shell-header,
+.shell-footer {
+  flex-shrink: 0;
+}
+
+.shell-body {
+  flex: 1;
+  min-height: 0;
+  /* CRITICAL: without this, flex/grid items do not shrink and overflow-y:auto
+     below has no effect — content simply leaks out of the screen. */
+  overflow-y: auto;
+}
+
+/* ==========================================
+   LAYOUT UTILITIES — generic global flex
+   ========================================== */
+.flexrow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: stretch;
+  align-items: center;
+  gap: 5px;
+}
+
+.flexrow>* {
+  flex: 1;
+}
+
+.flexcol {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.flexcol>* {
+  flex: 1;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.flex2 {
+  flex: 2;
+}
+
+.flex3 {
+  flex: 3;
+}

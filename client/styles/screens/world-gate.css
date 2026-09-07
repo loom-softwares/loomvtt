@@ -1,0 +1,856 @@
+/* ==========================================================================
+   Enter World — "Warp & Weft" direction.
+   ==========================================================================
+
+   Anteroom, not dialog: the world art occupies everything, the name is anchored
+   at the base in large type, and the entry is a band at the footer. No central
+   box, no frame, no rounded corners.
+
+   RULES FOR THIS FILE
+   1. Every selector lives under .world-gate. Nothing loose, nothing global.
+   2. Tokens declared in the .world-gate root, not in :root.
+   3. Shares the world-forge.css palette on purpose — they are the two
+      screens of the same anteroom — but tokens are redeclared here so
+      that each file remains self-contained.
+   ========================================================================== */
+
+.world-gate {
+  --wg-ground: #0a0d14;
+  --wg-ground-deep: #06080d;
+  --wg-warp-lit: rgba(122, 140, 180, 0.3);
+
+  --wg-linen: #e9e3d6;
+  --wg-linen-mid: #9aa0ae;
+  --wg-linen-dim: #5d6472;
+
+  --wg-madder: #c8452e;
+  --wg-madder-lit: #e05b41;
+  --wg-online: #10b981;
+
+  --wg-display: 'Bahnschrift', 'Archivo Narrow', 'Roboto Condensed', 'Helvetica Neue', system-ui, sans-serif;
+  --wg-body: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --wg-mono: 'Cascadia Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
+
+  --wg-col: 88px;
+
+  position: fixed;
+  inset: 0;
+  /* Below 100: the window-manager stacks windows starting at 100, and in a
+     tie the screen would win by coming later in the DOM — the File Picker would
+     open behind this screen. */
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--wg-ground);
+  color: var(--wg-linen);
+  font-family: var(--wg-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.world-gate *,
+.world-gate *::before,
+.world-gate *::after {
+  box-sizing: border-box;
+}
+
+/* World art, bleeding to the edge. The image enters via inline style
+   in the template because the URL comes from the database. */
+.wg-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-position: center;
+  background-size: cover;
+}
+
+.wg-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 8, 13, 0.2) 0%, rgba(6, 8, 13, 0.62) 55%, rgba(6, 8, 13, 0.96) 100%);
+}
+
+/* Without cover art the background cannot be flat — two ink halos
+   sustain the screen on their own. */
+.wg-art.is-blank {
+  background-image:
+    radial-gradient(80% 60% at 22% 18%, rgba(109, 37, 48, 0.55) 0%, rgba(109, 37, 48, 0) 62%),
+    radial-gradient(90% 70% at 78% 30%, rgba(45, 58, 120, 0.5) 0%, rgba(45, 58, 120, 0) 66%),
+    linear-gradient(180deg, #14101a 0%, #0a0d14 62%, #06080d 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Top
+   -------------------------------------------------------------------------- */
+
+.wg-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 30px calc(var(--wg-col) / 2);
+}
+
+.wg-brand {
+  font-family: var(--wg-display);
+  font-size: 17px;
+  font-weight: 700;
+  font-stretch: 78%;
+  letter-spacing: 0.08em;
+  color: var(--wg-linen);
+}
+
+.wg-rule {
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  background: var(--wg-warp-lit);
+}
+
+.wg-exit {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.wg-exit input {
+  width: 190px;
+  padding: 4px 0 7px;
+  border: 0;
+  border-bottom: 1px solid var(--wg-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wg-linen);
+  font-family: var(--wg-body);
+  font-size: 14px;
+  transition: border-color 200ms ease;
+}
+
+.wg-exit input::placeholder {
+  color: var(--wg-linen-dim);
+}
+
+.wg-exit input:focus {
+  border-bottom-color: var(--wg-madder);
+  outline: 0;
+}
+
+.wg-link {
+  padding: 0 0 6px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--wg-linen-dim);
+  font-family: var(--wg-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.wg-link:hover {
+  border-bottom-color: var(--wg-madder);
+  color: var(--wg-linen);
+}
+
+.wg-link:focus-visible {
+  outline: 2px solid var(--wg-madder-lit);
+  outline-offset: 3px;
+}
+
+/* External tunnel link — only the admin sees it. */
+.wg-tunnel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding-top: 4px;
+}
+
+.wg-tunnel-label {
+  font-family: var(--wg-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-tunnel input {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0 5px;
+  border: 0;
+  border-bottom: 1px solid var(--wg-warp-lit);
+  background: transparent;
+  color: var(--wg-linen-mid);
+  font-family: var(--wg-mono);
+  font-size: 11px;
+}
+
+/* --------------------------------------------------------------------------
+   Middle: world identity
+   -------------------------------------------------------------------------- */
+
+.wg-mid {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  min-height: 0;
+  padding: 0 calc(var(--wg-col) / 2) 48px;
+}
+
+.wg-world {
+  max-width: 46ch;
+}
+
+.wg-kicker {
+  margin: 0 0 18px;
+  font-family: var(--wg-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--wg-madder-lit);
+}
+
+.wg-name {
+  margin: 0 0 24px;
+  font-family: var(--wg-display);
+  font-size: clamp(38px, 5vw, 68px);
+  font-weight: 700;
+  font-stretch: 78%;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  color: var(--wg-linen);
+  text-wrap: balance;
+}
+
+/* Cut by lines, not scrollbar: an internal scroll here would cut the
+   sentence in the middle of a line and force scrolling inside text that is
+   ambiance, not mandatory content. */
+.wg-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 58ch;
+  margin: 0 0 24px;
+  color: var(--wg-linen-mid);
+  font-size: 14px;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.wg-facts {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 620px;
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--wg-warp-lit);
+}
+
+.wg-fact {
+  padding-right: 40px;
+}
+
+.wg-fact dt {
+  margin-bottom: 5px;
+  font-family: var(--wg-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-fact dd {
+  margin: 0;
+  font-family: var(--wg-mono);
+  font-size: 13px;
+  color: var(--wg-linen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Entry band
+   -------------------------------------------------------------------------- */
+
+.wg-gate {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-top: 1px solid var(--wg-warp-lit);
+  background: rgba(6, 8, 13, 0.82);
+  backdrop-filter: blur(2px);
+}
+
+.wg-roster-side {
+  padding: 26px calc(var(--wg-col) / 2) 28px;
+  border-right: 1px solid var(--wg-warp-lit);
+}
+
+/* --------------------------------------------------------------------------
+   Presence: who is already in the session. Read-only.
+   Separated from identity choice on purpose — they are two different
+   jobs. This one is short by nature (never exceeds table size);
+   the other needs to handle 100 names.
+   -------------------------------------------------------------------------- */
+
+.wg-gate-label {
+  margin: 0 0 16px;
+  font-family: var(--wg-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-gate-label b {
+  font-weight: 400;
+  color: var(--wg-linen);
+}
+
+.wg-stack {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wg-stack li {
+  margin-left: -10px;
+}
+
+.wg-stack li:first-child {
+  margin-left: 0;
+}
+
+.wg-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--wg-ground-deep);
+  color: #0a0d14;
+  font-family: var(--wg-display);
+  font-size: 16px;
+  font-weight: 700;
+  font-stretch: 78%;
+}
+
+.wg-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Present gets green ring; it's the only state color in this band. */
+.wg-stack .wg-face {
+  box-shadow: 0 0 0 2px var(--wg-ground-deep), 0 0 0 3px var(--wg-online);
+}
+
+.wg-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--wg-ground-deep);
+  background: rgba(122, 140, 180, 0.16);
+  color: var(--wg-linen-mid);
+  font-family: var(--wg-mono);
+  font-size: 11px;
+}
+
+.wg-nobody {
+  margin: 0;
+  font-family: var(--wg-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--wg-linen-dim);
+}
+
+/* --------------------------------------------------------------------------
+   Identity: search by name with suggestions
+   -------------------------------------------------------------------------- */
+
+.wg-combo {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+/* The band lives in the footer of the screen, so the list opens UPWARDS. Opening
+   downwards it would go out of the window and become unreachable. */
+.wg-suggest {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  z-index: 3;
+  max-height: 246px;
+  overflow-y: auto;
+  margin: 0 0 8px;
+  padding: 0;
+  border: 1px solid var(--wg-warp-lit);
+  background: #0b0f18;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wg-linen-dim) transparent;
+}
+
+.wg-suggest[hidden] {
+  display: none;
+}
+
+.wg-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--wg-linen);
+  font-family: var(--wg-body);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wg-opt:hover:not(:disabled),
+.wg-opt.is-marked:not(:disabled) {
+  background: rgba(95, 115, 216, 0.16);
+}
+
+.wg-opt:focus-visible {
+  outline: 2px solid var(--wg-madder-lit);
+  outline-offset: -2px;
+}
+
+.wg-opt .wg-face {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.wg-opt-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wg-opt-tag {
+  flex-shrink: 0;
+  font-family: var(--wg-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-opt:disabled {
+  cursor: not-allowed;
+}
+
+.wg-opt:disabled .wg-opt-name {
+  color: var(--wg-linen-dim);
+}
+
+.wg-opt:disabled .wg-opt-tag {
+  color: var(--wg-online);
+}
+
+.wg-opt:disabled .wg-face {
+  filter: saturate(0.4) brightness(0.7);
+}
+
+.wg-suggest-empty {
+  padding: 14px;
+  font-family: var(--wg-mono);
+  font-size: 11px;
+  color: var(--wg-linen-dim);
+}
+
+/* Chosen: the avatar enters next to the name, on the field's own line. */
+.wg-chosen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--wg-madder);
+}
+
+.wg-chosen[hidden] {
+  display: none;
+}
+
+.wg-chosen .wg-face {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  box-shadow: none;
+  font-size: 14px;
+}
+
+.wg-chosen-name {
+  flex: 1;
+  overflow: hidden;
+  color: var(--wg-linen);
+  font-size: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wg-form-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 26px calc(var(--wg-col) / 2) 28px;
+}
+
+.wg-entry {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.wg-field {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wg-field label {
+  font-family: var(--wg-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-field input {
+  padding: 10px;
+  border: 0;
+  border-bottom: 1px solid var(--wg-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wg-linen);
+  font-family: var(--wg-body);
+  font-size: 18px;
+  transition: border-color 200ms ease;
+}
+
+.wg-field input::placeholder {
+  color: var(--wg-linen-dim);
+}
+
+.wg-field input:focus {
+  border-bottom-color: var(--wg-madder);
+  outline: 0;
+}
+
+.wg-hint {
+  margin: 0;
+  font-family: var(--wg-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--wg-linen-dim);
+}
+
+.wg-hint b {
+  font-weight: 400;
+  color: var(--wg-linen);
+}
+
+.wg-btn {
+  padding: 15px 30px;
+  border: 1px solid var(--wg-madder);
+  border-radius: 0;
+  background: var(--wg-madder);
+  color: #fff3ee;
+  font-family: var(--wg-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.wg-btn:hover:not(:disabled) {
+  border-color: var(--wg-madder-lit);
+  background: var(--wg-madder-lit);
+}
+
+.wg-btn:focus-visible {
+  outline: 2px solid var(--wg-madder-lit);
+  outline-offset: 2px;
+}
+
+.wg-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wg-actions-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.wg-actions-row .wg-btn {
+  flex: 1;
+}
+
+.wg-btn-google-icon {
+  flex-shrink: 0;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wg-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.wg-btn-google-icon:hover:not(:disabled) {
+  border-color: var(--wg-linen-dim);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wg-btn-google-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wg-btn-discord-icon {
+  flex-shrink: 0;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wg-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.wg-btn-discord-icon:hover:not(:disabled) {
+  border-color: var(--wg-linen-dim);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wg-btn-discord-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wg-btn-quiet {
+  border-color: var(--wg-warp-lit);
+  background: transparent;
+  color: var(--wg-linen-mid);
+}
+
+.wg-btn-quiet:hover:not(:disabled) {
+  border-color: var(--wg-linen-dim);
+  background: transparent;
+  color: var(--wg-linen);
+}
+
+.wg-oauth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 12px 0 8px;
+  color: var(--wg-linen-dim, #71717a);
+  font-family: var(--wg-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.wg-oauth-divider::before,
+.wg-oauth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wg-oauth-divider span {
+  padding: 0 10px;
+}
+
+.wg-btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  font-family: var(--wg-sans, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wg-btn-google:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.wg-btn-google:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wg-btn-google .google-icon {
+  flex-shrink: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Error state
+   -------------------------------------------------------------------------- */
+
+.wg-failure {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  margin: auto;
+  padding: calc(var(--wg-col) / 2);
+  max-width: 46ch;
+}
+
+.wg-failure h1 {
+  margin: 0;
+  font-family: var(--wg-display);
+  font-size: 40px;
+  font-weight: 700;
+  font-stretch: 78%;
+  line-height: 1;
+  color: var(--wg-linen);
+}
+
+.wg-failure p {
+  margin: 0;
+  color: var(--wg-linen-mid);
+  font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .world-gate {
+    --wg-col: 56px;
+    overflow-y: auto;
+  }
+
+  .wg-gate {
+    grid-template-columns: 1fr;
+  }
+
+  .wg-roster-side {
+    border-right: 0;
+    border-bottom: 1px solid var(--wg-warp-lit);
+  }
+
+  .wg-mid {
+    padding-bottom: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .world-gate *,
+  .world-gate *::before,
+  .world-gate *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Brand and search field (complements)
+   -------------------------------------------------------------------------- */
+
+.wg-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wg-mark img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  /* The world art behind is unpredictable; the shadow ensures the logo
+     stands out on both clear sky and dark stone. */
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.85));
+}
+
+.wg-combo label {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--wg-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wg-linen-dim);
+}
+
+.wg-search {
+  width: 100%;
+  padding: 4px 3px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--wg-warp-lit);
+  border-radius: 0;
+  background: transparent;
+  color: var(--wg-linen);
+  font-family: var(--wg-body);
+  font-size: 18px;
+  transition: border-color 200ms ease;
+}
+
+.wg-search::placeholder {
+  color: var(--wg-linen-dim);
+}
+
+.wg-search:focus {
+  border-bottom-color: var(--wg-madder);
+  outline: 0;
+}
+
+.wg-search[hidden] {
+  display: none;
+}

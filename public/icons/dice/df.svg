@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Fate/Fudge die: diamond shape -->
+  <polygon points="50,5 95,50 50,95 5,50" fill="#2a2a4a" stroke="#6366f1" stroke-width="3"/>
+  <polygon points="50,15 85,50 50,85 15,50" fill="none" stroke="#4a4a7a" stroke-width="1"/>
+  <text x="50" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#e2e8f0">dF</text>
+</svg>

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "playing-cards-standard",
+    "name": "Baralho Tradicional (54 Cartas)",
+    "description": "Baralho completo de 52 cartas tradicionais e 2 coringas.",
+    "file": "/cards/playing-cards/deck.json",
+    "count": 54,
+    "back": "/cards/backs/fantasy-01.png",
+    "preview": "/cards/playing-cards/101.png"
+  },
+  {
+    "id": "tarot-complete",
+    "name": "Baralho de Tarô Completo (78 Cartas)",
+    "description": "Baralho de Tarô completo com 22 Arcanos Maiores e 56 Arcanos Menores.",
+    "file": "/cards/tarot-cards/deck.json",
+    "count": 78,
+    "back": "/cards/backs/fantasy-02.png",
+    "preview": "/cards/tarot-cards/major00.jpg"
+  }
+]
