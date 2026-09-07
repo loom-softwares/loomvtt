@@ -44,6 +44,13 @@ Please read our [Contributing Guidelines](./CONTRIBUTING.md) before opening an i
 
 ---
 
+## Documentation
+
+**[Developer Documentation](./docs/README.md)**
+Full SDK reference, REST API docs, WebSocket event reference, guides for creating systems and addons, and code examples — available in English and Portuguese (PT-BR).
+
+---
+
 ## Other Important Links
 
 **[Changelog](./CHANGELOG.md)**

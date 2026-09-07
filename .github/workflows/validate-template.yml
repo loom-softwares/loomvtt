@@ -1,0 +1,71 @@
+name: ✅ Validate Issue Template
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for template usage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const title = issue.title || '';
+
+            // Known template markers — each template has at least one of these headings
+            const templateMarkers = [
+              'LoomVTT Version',
+              'What happened',
+              'Feature Area',
+              'Performance Area',
+              'Documentation Type',
+              'Question Area',
+            ];
+
+            const usedTemplate = templateMarkers.some(marker => body.includes(marker));
+
+            // Also skip if opened by a bot or the maintainer
+            const skipUsers = ['sammore2', 'github-actions[bot]'];
+            if (skipUsers.includes(issue.user.login)) {
+              console.log('Skipping validation for maintainer/bot.');
+              return;
+            }
+
+            if (!usedTemplate) {
+              const comment = `⚠️ **This issue was not opened using one of the provided templates.**
+
+To help us address your report efficiently, please close this issue and reopen it using the appropriate template:
+
+- 🐛 [Bug Report](../issues/new?template=bug_report.yml)
+- ✨ [Feature Request](../issues/new?template=feature_request.yml)
+- ⚡ [Performance Issue](../issues/new?template=performance.yml)
+- 📚 [Documentation Request](../issues/new?template=docs_request.yml)
+- ❓ [Question](../issues/new?template=question.yml)
+- 🔒 [Security Vulnerability](../blob/main/SECURITY.md) *(private disclosure)*
+
+This issue will be closed automatically in 3 days if no update is made.`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: comment,
+              });
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['needs-info'],
+              });
+
+              console.log(`Issue #${issue.number} did not use a template. Comment posted.`);
+            } else {
+              console.log(`Issue #${issue.number} used a valid template. ✅`);
+            }

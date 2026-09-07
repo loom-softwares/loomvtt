@@ -1,0 +1,50 @@
+name: 🏷️ Auto Label
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Apply label from issue template
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const title = issue.title || '';
+
+            // Labels already set by the issue form template
+            // This step ensures they're applied even if the form is bypassed
+            const existing = issue.labels.map(l => l.name);
+
+            const rules = [
+              { pattern: /\[Bug\]/i,         label: 'bug' },
+              { pattern: /\[Feature\]/i,      label: 'enhancement' },
+              { pattern: /\[Performance\]/i,  label: 'performance' },
+              { pattern: /\[Docs\]/i,         label: 'documentation' },
+              { pattern: /\[Question\]/i,     label: 'question' },
+            ];
+
+            const toAdd = [];
+            for (const rule of rules) {
+              if (rule.pattern.test(title) && !existing.includes(rule.label)) {
+                toAdd.push(rule.label);
+              }
+            }
+
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: toAdd,
+              });
+              console.log(`Added labels: ${toAdd.join(', ')}`);
+            } else {
+              console.log('No labels to add (already set or no match).');
+            }

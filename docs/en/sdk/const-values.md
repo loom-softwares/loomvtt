@@ -1,0 +1,91 @@
+# Constants — Global `CONST` (`const.ts`)
+
+Engine constants that converted systems reference as **loose global**, that is,
+**outside** the `Loom` namespace. Exposed at runtime as `window.CONST` (and also
+under `Loom.CONST` as a convenience, but the form converted systems use is loose
+`CONST`).
+
+Source: `client/core/const.ts`, single export `CONST_VALUES`.
+
+> **Broad coverage purpose (08/26/2026):** ~90 constant groups, not just
+> what has already appeared in a known system — the list of names follows the
+> public reference format that converted systems expect. Values checked against
+> public doc in the most used/risky groups (see list below); the rest
+> follows proprietary knowledge of stable format for years. If something is
+> missing or a value doesn't match what a system expects, add/fix it
+> — it's not a closed list.
+
+## Available Groups
+
+Ownership/user: `DOCUMENT_OWNERSHIP_LEVELS`, `DOCUMENT_META_OWNERSHIP_LEVELS`,
+`USER_ROLES`, `USER_ROLE_NAMES`, `USER_PERMISSIONS`.
+
+Active Effects: `ACTIVE_EFFECT_CHANGE_TYPES`, `ACTIVE_EFFECT_CHANGE_PHASES`,
+`ACTIVE_EFFECT_DURATION_UNITS`, `ACTIVE_EFFECT_TIME_DURATION_UNITS`,
+`ACTIVE_EFFECT_EXPIRY_EVENTS`, `ACTIVE_EFFECT_SHOW_ICON`.
+
+Chat: `CHAT_MESSAGE_STYLES`.
+
+Grid/geometry: `GRID_TYPES`, `GRID_MIN_SIZE`, `GRID_DIAGONALS`, `GRID_SNAPPING_MODES`.
+
+Edges (walls-as-graph): `EDGE_DIRECTIONS`, `EDGE_DIRECTION_MODES`,
+`EDGE_RESTRICTION_TYPES`, `EDGE_SENSE_TYPES`.
+
+Walls: `WALL_DOOR_TYPES`, `WALL_DOOR_STATES`, `WALL_DOOR_INTERACTIONS`,
+`WALL_MOVEMENT_TYPES`, `WALL_RESTRICTION_TYPES`.
+
+Light/vision: `LIGHTING_LEVELS`, `OCCLUSION_MODES`, `TILE_OCCLUSION_MODES`,
+`TOKEN_OCCLUSION_MODES`.
+
+Tokens: `TOKEN_DISPOSITIONS`, `TOKEN_DISPLAY_MODES`, `TOKEN_SHAPES`,
+`TOKEN_TURN_MARKER_MODES`, `MOVEMENT_DIRECTIONS`, `DEFAULT_TOKEN`.
+
+Regions: `REGION_EVENTS`, `REGION_MOVEMENT_SEGMENTS`, `REGION_VISIBILITY`.
+
+Drawings/Macros/Cards/Playlists: `DRAWING_FILL_TYPES`, `MACRO_TYPES`, `MACRO_SCOPES`,
+`CARD_DRAW_MODES`, `PLAYLIST_MODES`, `PLAYLIST_SORT_MODES`.
+
+Document types: `FOLDER_MAX_DEPTH`, `FOLDER_DOCUMENT_TYPES`,
+`COMPENDIUM_DOCUMENT_TYPES`, `BASE_DOCUMENT_TYPE`, `EMBEDDED_DOCUMENT_TYPES`,
+`WORLD_DOCUMENT_TYPES`, `PRIMARY_DOCUMENT_TYPES`, `ALL_DOCUMENT_TYPES`,
+`SYSTEM_SPECIFIC_COMPENDIUM_TYPES`, `DOCUMENT_LINK_TYPES`, `TABLE_RESULT_TYPES`,
+`JOURNAL_ENTRY_PAGE_FORMATS`.
+
+Files/media: `AUDIO_FILE_EXTENSIONS`, `VIDEO_FILE_EXTENSIONS`,
+`IMAGE_FILE_EXTENSIONS`, `TEXT_FILE_EXTENSIONS`, `FONT_FILE_EXTENSIONS`,
+`GRAPHICS_FILE_EXTENSIONS`, `HTML_FILE_EXTENSIONS`, `MEDIA_FILE_CATEGORIES`,
+`MEDIA_MIME_TYPES`, `UPLOADABLE_FILE_EXTENSIONS`, `FILE_CATEGORIES`,
+`FILE_PICKER_PUBLIC_DIRS`.
+
+Canvas/UI: `CANVAS_PERFORMANCE_MODES`, `CURSOR_STYLES`, `COMBAT_ANNOUNCEMENTS`,
+`FONT_WEIGHTS`, `CSS_THEMES`, `TEXT_ANCHOR_POINTS`, `TEXTURE_DATA_FIT_MODES`,
+`TEXTURE_FILE_EXTENSIONS`.
+
+Text/sanitization: `TEXT_ENRICH_EMBED_MAX_DEPTH`, `ALLOWED_HTML_TAGS`,
+`ALLOWED_HTML_ATTRIBUTES`, `ALLOWED_URL_SCHEMES`,
+`ALLOWED_URL_SCHEMES_APPLIED_TO_ATTRIBUTES`, `TRUSTED_IFRAME_DOMAINS`,
+`SHOWDOWN_OPTIONS`.
+
+Config/setup: `KEYBINDING_PRECEDENCE`, `SETTING_SCOPES`, `PACKAGE_TYPES`,
+`PACKAGE_AVAILABILITY_CODES`, `SETUP_PACKAGE_PROGRESS`, `SETUP_VIEWS`,
+`SOFTWARE_UPDATE_CHANNELS`, `GAME_VIEWS`, `COMPATIBILITY_MODES`,
+`FOG_EXPLORATION_MODES`, `AUDIO_CHANNELS`.
+
+Misc: `IDLE_THRESHOLD_MS`, `CLIPPER_SCALING_FACTOR`, `SORT_INTEGER_DENSITY`,
+`PASSWORD_SAFE_STRING`, `ASCII`, `WEBSITE_URL`, `WEBSITE_API_URL`,
+`WORLD_JOIN_THEMES`, `DIRECTORY_SEARCH_MODES`, `CORE_SUPPORTED_LANGUAGES`,
+`TIMEOUTS`.
+
+## Example
+
+```js
+// Converted systems reference CONST as a loose global
+const isOwner = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER; // 3
+const isGM = userRole === CONST.USER_ROLES.GAMEMASTER;  // 4
+
+// Active Effects — lowercase keys, value is application priority
+const mode = CONST.ACTIVE_EFFECT_CHANGE_TYPES.override; // 50
+
+// Equivalent under the Loom namespace
+const same = Loom.CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER === 2; // true
+```

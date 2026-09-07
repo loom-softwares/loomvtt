@@ -1,0 +1,29 @@
+name: 📋 Auto Assign to Maintainer
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Assign to maintainer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const maintainer = 'sammore2';
+            const issueNumber = context.payload.issue.number;
+            const currentAssignees = context.payload.issue.assignees.map(a => a.login);
+
+            if (!currentAssignees.includes(maintainer)) {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                assignees: [maintainer],
+              });
+              console.log(`Assigned issue #${issueNumber} to ${maintainer}`);
+            }

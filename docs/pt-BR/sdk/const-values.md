@@ -1,0 +1,91 @@
+# Constantes — `CONST` global (`const.ts`)
+
+Constantes de engine que sistemas convertidos referenciam como **global solto**, ou
+seja, **fora** do namespace `Loom`. Exposto em runtime como `window.CONST` (e também
+sob `Loom.CONST` como conveniência, mas a forma que sistemas convertidos usam é `CONST`
+solto).
+
+Fonte: `client/core/const.ts`, export único `CONST_VALUES`.
+
+> **Cobertura ampla de propósito (26/08/2026):** ~90 grupos de constantes, não só o
+> que já apareceu em sistema conhecido — a lista de nomes segue o formato de
+> referência público que sistemas convertidos esperam. Valores conferidos contra
+> a doc pública nos grupos mais usados/arriscados (ver lista abaixo); o resto
+> segue conhecimento próprio de formato estável há anos. Se algo estiver
+> faltando ou um valor não bater com o que um sistema espera, adicione/corrija
+> — não é lista fechada.
+
+## Grupos disponíveis
+
+Ownership/usuário: `DOCUMENT_OWNERSHIP_LEVELS`, `DOCUMENT_META_OWNERSHIP_LEVELS`,
+`USER_ROLES`, `USER_ROLE_NAMES`, `USER_PERMISSIONS`.
+
+Active Effects: `ACTIVE_EFFECT_CHANGE_TYPES`, `ACTIVE_EFFECT_CHANGE_PHASES`,
+`ACTIVE_EFFECT_DURATION_UNITS`, `ACTIVE_EFFECT_TIME_DURATION_UNITS`,
+`ACTIVE_EFFECT_EXPIRY_EVENTS`, `ACTIVE_EFFECT_SHOW_ICON`.
+
+Chat: `CHAT_MESSAGE_STYLES`.
+
+Grid/geometria: `GRID_TYPES`, `GRID_MIN_SIZE`, `GRID_DIAGONALS`, `GRID_SNAPPING_MODES`.
+
+Edges (paredes-como-grafo): `EDGE_DIRECTIONS`, `EDGE_DIRECTION_MODES`,
+`EDGE_RESTRICTION_TYPES`, `EDGE_SENSE_TYPES`.
+
+Paredes: `WALL_DOOR_TYPES`, `WALL_DOOR_STATES`, `WALL_DOOR_INTERACTIONS`,
+`WALL_MOVEMENT_TYPES`, `WALL_RESTRICTION_TYPES`.
+
+Luz/visão: `LIGHTING_LEVELS`, `OCCLUSION_MODES`, `TILE_OCCLUSION_MODES`,
+`TOKEN_OCCLUSION_MODES`.
+
+Tokens: `TOKEN_DISPOSITIONS`, `TOKEN_DISPLAY_MODES`, `TOKEN_SHAPES`,
+`TOKEN_TURN_MARKER_MODES`, `MOVEMENT_DIRECTIONS`, `DEFAULT_TOKEN`.
+
+Regions: `REGION_EVENTS`, `REGION_MOVEMENT_SEGMENTS`, `REGION_VISIBILITY`.
+
+Drawings/Macros/Cards/Playlists: `DRAWING_FILL_TYPES`, `MACRO_TYPES`, `MACRO_SCOPES`,
+`CARD_DRAW_MODES`, `PLAYLIST_MODES`, `PLAYLIST_SORT_MODES`.
+
+Tipos de documento: `FOLDER_MAX_DEPTH`, `FOLDER_DOCUMENT_TYPES`,
+`COMPENDIUM_DOCUMENT_TYPES`, `BASE_DOCUMENT_TYPE`, `EMBEDDED_DOCUMENT_TYPES`,
+`WORLD_DOCUMENT_TYPES`, `PRIMARY_DOCUMENT_TYPES`, `ALL_DOCUMENT_TYPES`,
+`SYSTEM_SPECIFIC_COMPENDIUM_TYPES`, `DOCUMENT_LINK_TYPES`, `TABLE_RESULT_TYPES`,
+`JOURNAL_ENTRY_PAGE_FORMATS`.
+
+Arquivos/mídia: `AUDIO_FILE_EXTENSIONS`, `VIDEO_FILE_EXTENSIONS`,
+`IMAGE_FILE_EXTENSIONS`, `TEXT_FILE_EXTENSIONS`, `FONT_FILE_EXTENSIONS`,
+`GRAPHICS_FILE_EXTENSIONS`, `HTML_FILE_EXTENSIONS`, `MEDIA_FILE_CATEGORIES`,
+`MEDIA_MIME_TYPES`, `UPLOADABLE_FILE_EXTENSIONS`, `FILE_CATEGORIES`,
+`FILE_PICKER_PUBLIC_DIRS`.
+
+Canvas/UI: `CANVAS_PERFORMANCE_MODES`, `CURSOR_STYLES`, `COMBAT_ANNOUNCEMENTS`,
+`FONT_WEIGHTS`, `CSS_THEMES`, `TEXT_ANCHOR_POINTS`, `TEXTURE_DATA_FIT_MODES`,
+`TEXTURE_FILE_EXTENSIONS`.
+
+Texto/sanitização: `TEXT_ENRICH_EMBED_MAX_DEPTH`, `ALLOWED_HTML_TAGS`,
+`ALLOWED_HTML_ATTRIBUTES`, `ALLOWED_URL_SCHEMES`,
+`ALLOWED_URL_SCHEMES_APPLIED_TO_ATTRIBUTES`, `TRUSTED_IFRAME_DOMAINS`,
+`SHOWDOWN_OPTIONS`.
+
+Config/setup: `KEYBINDING_PRECEDENCE`, `SETTING_SCOPES`, `PACKAGE_TYPES`,
+`PACKAGE_AVAILABILITY_CODES`, `SETUP_PACKAGE_PROGRESS`, `SETUP_VIEWS`,
+`SOFTWARE_UPDATE_CHANNELS`, `GAME_VIEWS`, `COMPATIBILITY_MODES`,
+`FOG_EXPLORATION_MODES`, `AUDIO_CHANNELS`.
+
+Diversos: `IDLE_THRESHOLD_MS`, `CLIPPER_SCALING_FACTOR`, `SORT_INTEGER_DENSITY`,
+`PASSWORD_SAFE_STRING`, `ASCII`, `WEBSITE_URL`, `WEBSITE_API_URL`,
+`WORLD_JOIN_THEMES`, `DIRECTORY_SEARCH_MODES`, `CORE_SUPPORTED_LANGUAGES`,
+`TIMEOUTS`.
+
+## Exemplo
+
+```js
+// Sistemas convertidos referenciam CONST como global solto
+const isOwner = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER; // 3
+const isGM = userRole === CONST.USER_ROLES.GAMEMASTER;  // 4
+
+// Active Effects — chaves minúsculas, valor é prioridade de aplicação
+const mode = CONST.ACTIVE_EFFECT_CHANGE_TYPES.override; // 50
+
+// Equivalente sob o namespace Loom
+const same = Loom.CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER === 2; // true
+```
