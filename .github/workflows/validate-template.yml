@@ -1,4 +1,4 @@
-name: ✅ Validate Issue Template
+name: Validate Issue Template
 
 on:
   issues:
@@ -17,9 +17,7 @@ jobs:
           script: |
             const issue = context.payload.issue;
             const body = issue.body || '';
-            const title = issue.title || '';
 
-            // Known template markers — each template has at least one of these headings
             const templateMarkers = [
               'LoomVTT Version',
               'What happened',
@@ -31,7 +29,6 @@ jobs:
 
             const usedTemplate = templateMarkers.some(marker => body.includes(marker));
 
-            // Also skip if opened by a bot or the maintainer
             const skipUsers = ['sammore2', 'github-actions[bot]'];
             if (skipUsers.includes(issue.user.login)) {
               console.log('Skipping validation for maintainer/bot.');
@@ -39,18 +36,20 @@ jobs:
             }
 
             if (!usedTemplate) {
-              const comment = `⚠️ **This issue was not opened using one of the provided templates.**
-
-To help us address your report efficiently, please close this issue and reopen it using the appropriate template:
-
-- 🐛 [Bug Report](../issues/new?template=bug_report.yml)
-- ✨ [Feature Request](../issues/new?template=feature_request.yml)
-- ⚡ [Performance Issue](../issues/new?template=performance.yml)
-- 📚 [Documentation Request](../issues/new?template=docs_request.yml)
-- ❓ [Question](../issues/new?template=question.yml)
-- 🔒 [Security Vulnerability](../blob/main/SECURITY.md) *(private disclosure)*
-
-This issue will be closed automatically in 3 days if no update is made.`;
+              const comment = [
+                '⚠️ **This issue was not opened using one of the provided templates.**',
+                '',
+                'To help us address your report efficiently, please close this issue and reopen it using the appropriate template:',
+                '',
+                '- 🐛 [Bug Report](../../issues/new?template=bug_report.yml)',
+                '- ✨ [Feature Request](../../issues/new?template=feature_request.yml)',
+                '- ⚡ [Performance Issue](../../issues/new?template=performance.yml)',
+                '- 📚 [Documentation Request](../../issues/new?template=docs_request.yml)',
+                '- ❓ [Question](../../issues/new?template=question.yml)',
+                '- 🔒 [Security Vulnerability](../../blob/main/SECURITY.md) *(private disclosure)*',
+                '',
+                'This issue will be closed automatically in 3 days if no update is made.',
+              ].join('\n');
 
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -66,7 +65,7 @@ This issue will be closed automatically in 3 days if no update is made.`;
                 labels: ['needs-info'],
               });
 
-              console.log(`Issue #${issue.number} did not use a template. Comment posted.`);
+              console.log('Issue #' + issue.number + ' did not use a template. Comment posted.');
             } else {
-              console.log(`Issue #${issue.number} used a valid template. ✅`);
+              console.log('Issue #' + issue.number + ' used a valid template.');
             }
