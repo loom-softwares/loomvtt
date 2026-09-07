@@ -49,6 +49,7 @@ export class BugReportWindow extends BaseWindow {
       icon: '<i class="fa-solid fa-bug"></i>',
       width: 680,
       height: 'auto',
+      showFooter: false,
     } as BaseWindowOptions);
     this.worldId = props.worldId;
   }
@@ -176,6 +177,10 @@ export class BugReportWindow extends BaseWindow {
           </a>
         </div>
         ` : ''}
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;border-top:1px solid var(--color-border);padding-top:12px">
+          <button class="btn btn-secondary" data-action="cancel-form">Cancelar</button>
+          <button class="btn" data-action="save">Salvar</button>
+        </div>
       </div>
     `;
   }
