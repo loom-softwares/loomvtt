@@ -27,6 +27,7 @@ interface CompendiumPack {
 }
 
 const TYPE_ICONS: Record<string, string> = {
+  // Pack-level types (`pack.type`) — fallback when an entry's own type isn't listed below.
   Actor: 'fa-solid fa-user-group',
   Item: 'fa-solid fa-briefcase',
   Scene: 'fa-solid fa-map',
@@ -34,6 +35,32 @@ const TYPE_ICONS: Record<string, string> = {
   RollTable: 'fa-solid fa-dice',
   Cards: 'fa-solid fa-layer-group',
   Adventure: 'fa-solid fa-map-location-dot',
+  // Entry-level types (`entry.type`, e.g. an item's own `weapon`/`spell`/`race`...).
+  // Without these every item-type entry fell through to the generic `Item` briefcase.
+  spell: 'fa-solid fa-wand-sparkles',
+  weapon: 'fa-solid fa-khanda',
+  armor: 'fa-solid fa-shield-halved',
+  feature: 'fa-solid fa-star',
+  language: 'fa-solid fa-comments',
+  race: 'fa-solid fa-dna',
+  class: 'fa-solid fa-chess-knight',
+  subclass: 'fa-solid fa-chess-bishop',
+  background: 'fa-solid fa-scroll',
+  feat: 'fa-solid fa-medal',
+  npc: 'fa-solid fa-dragon',
+};
+
+/** School-specific icon for `spell` entries — falls back to `TYPE_ICONS.spell` when
+ * the school is missing/unrecognized (e.g. a homebrew or malformed entry). */
+const SPELL_SCHOOL_ICONS: Record<string, string> = {
+  abjuration: 'fa-solid fa-shield',
+  conjuration: 'fa-solid fa-hand-sparkles',
+  divination: 'fa-solid fa-eye',
+  enchantment: 'fa-solid fa-heart-circle-bolt',
+  evocation: 'fa-solid fa-fire',
+  illusion: 'fa-solid fa-masks-theater',
+  necromancy: 'fa-solid fa-skull',
+  transmutation: 'fa-solid fa-flask',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -283,7 +310,10 @@ export class CompendiumPackWindow extends BaseWindow {
   private entryTemplate(entry: any): string {
     const name = entry?.name || entry?.id || 'Entry';
     const imgUrl = entry?.imgUrl || entry?.data?.imgUrl || '';
-    const typeIcon = TYPE_ICONS[entry?.type] ?? TYPE_ICONS[this.pack?.type ?? ''] ?? 'fa-solid fa-file';
+    const typeIcon = (entry?.type === 'spell' && SPELL_SCHOOL_ICONS[entry?.data?.school])
+      || TYPE_ICONS[entry?.type]
+      || TYPE_ICONS[this.pack?.type ?? '']
+      || 'fa-solid fa-file';
 
     const thumb = imgUrl
       ? `<img class="cp-entry-thumb" src="${this.esc(imgUrl)}" alt="" />`
