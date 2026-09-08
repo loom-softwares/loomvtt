@@ -56,6 +56,7 @@ um nome singular.
 | `ping` | Payload original do ping | Rebroadcast pra sala do world (ping de latência/posição estilo Ctrl+click) |
 | `pong` | `{ timestamp, ...dadosOriginais }` | Mandado de volta só pra quem enviou o `ping` |
 | `canvas.ping` | `{ ...data, userColor }` | Marcador visual compartilhado (Ctrl+click) |
+| `canvas.floatingText` | `{ x, y, text, color, options }` | Texto/dano flutuante sincronizado no canvas para todos os jogadores |
 
 ## Eventos de Dados do Mundo
 

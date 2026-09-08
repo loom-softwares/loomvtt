@@ -13,6 +13,7 @@ import { createWrappable } from '../core/wrappable.js';
 import type { Wrappable } from '../core/wrappable.js';
 import { gameContext } from '../core/game-context.js';
 import { wsClient } from '../core/ws-client.js';
+import { actorsCollection } from '../core/actors-collection.js';
 import { throttle } from '../core/utils.js';
 import { transitionEffectRegistry } from './transition-effect-registry.js';
 
@@ -235,6 +236,10 @@ export interface CastMemberData {
   lightDimRange?: number;
   lightBrightRange?: number;
   lightColor?: string;
+  systemData?: Record<string, any>;
+  bar1?: { attribute: string; color?: string };
+  bar2?: { attribute: string; color?: string };
+  displayBars?: number;
   /** Timestamp (server) de quando o move foi recebido — usado só pra descartar ecos fora de ordem. */
   movedAt?: number;
 }
@@ -254,6 +259,46 @@ export interface NoiseData {
 
 export type MoveCallback = (id: string, x: number, y: number) => void;
 export type TileClickCallback = (id: string, event: FederatedPointerEvent) => void;
+
+function getHealthColor(pct: number): number {
+  const p = Math.max(0, Math.min(1, pct));
+  let r: number, g: number, b: number;
+  if (p > 0.5) {
+    const t = (p - 0.5) * 2;
+    r = Math.round(241 + (46 - 241) * t);
+    g = Math.round(196 + (204 - 196) * t);
+    b = Math.round(15 + (113 - 15) * t);
+  } else {
+    const t = p * 2;
+    r = Math.round(231 + (241 - 231) * t);
+    g = Math.round(76 + (196 - 76) * t);
+    b = Math.round(60 + (15 - 60) * t);
+  }
+  return (r << 16) | (g << 8) | b;
+}
+
+function resolveTokenAttribute(data: CastMemberData, attrPath: string): { value: number; max: number } | null {
+  if (!attrPath) return null;
+  const actor = data.actorId ? (actorsCollection.get ? (actorsCollection.get(data.actorId) as any) : null) : null;
+  const sys = actor?.system || actor?.systemData || data.systemData || {};
+
+  const cleanPath = attrPath.replace(/^system\./, '');
+  const parts = cleanPath.split('.');
+  let curr: any = sys;
+  for (const p of parts) {
+    if (curr == null) return null;
+    curr = curr[p];
+  }
+  if (curr == null) return null;
+  if (typeof curr === 'number') {
+    return { value: curr, max: curr };
+  }
+  if (typeof curr === 'object' && typeof curr.value === 'number') {
+    const max = typeof curr.max === 'number' ? curr.max : curr.value;
+    return { value: curr.value, max };
+  }
+  return null;
+}
 
 const DEFAULT_GRID_SIZE = 50;
 const DEFAULT_GRID_COLOR = '#ffffff';
@@ -564,6 +609,8 @@ export class CanvasManager {
   private onTileClick: ((tileId: string, event: FederatedPointerEvent) => void) | null = null;
   private selectionBoxGraphics!: Graphics;
   private draggedOriginPos: Map<string, { x: number; y: number }> = new Map();
+  private tokenResourceCache: Map<string, { val1?: number; val2?: number }> = new Map();
+  private unsubFloatingText: (() => void) | null = null;
 
   setCurrentUserId(id: string | null): void {
     this.currentUserId = id;
@@ -658,47 +705,88 @@ export class CanvasManager {
     console.warn(`executeTileTriggersManually called but tile triggers not initialized: ${tileId}, ${event}`);
   }
 
-  showFloatingText(worldX: number, worldY: number, textStr: string, color: string = '#ffffff'): void {
-    const text = new Text({
-      text: textStr,
+  showFloatingText(
+    targetOrX: number | string | { x: number; y: number },
+    yOrText?: number | string,
+    textStr?: string,
+    color: string = '#ffffff',
+    options?: { fontSize?: number; duration?: number; broadcast?: boolean }
+  ): void {
+    let worldX = 0;
+    let worldY = 0;
+    let text = '';
+    let finalColor = color;
+    let finalOptions = options || {};
+
+    if (typeof targetOrX === 'string') {
+      const t = this.tokens.get(targetOrX);
+      const td = this.tokenData.get(targetOrX);
+      worldX = t?.x ?? td?.x ?? 0;
+      worldY = (t?.y ?? td?.y ?? 0) - TOKEN_RADIUS;
+      text = String(yOrText ?? '');
+      if (typeof textStr === 'string') finalColor = textStr;
+      if (typeof color === 'object') finalOptions = color as any;
+    } else if (typeof targetOrX === 'object' && targetOrX !== null) {
+      worldX = targetOrX.x;
+      worldY = targetOrX.y;
+      text = String(yOrText ?? '');
+      if (typeof textStr === 'string') finalColor = textStr;
+      if (typeof color === 'object') finalOptions = color as any;
+    } else {
+      worldX = Number(targetOrX);
+      worldY = Number(yOrText ?? 0);
+      text = String(textStr ?? '');
+    }
+
+    if (!text) return;
+
+    if (finalOptions.broadcast && wsClient) {
+      wsClient.send('canvas.floatingText', {
+        x: worldX,
+        y: worldY,
+        text,
+        color: finalColor,
+        options: { fontSize: finalOptions.fontSize, duration: finalOptions.duration },
+      });
+    }
+
+    const fontSize = finalOptions.fontSize || 24;
+    const duration = finalOptions.duration || 1200; // ~1.2s
+
+    const textObj = new Text({
+      text,
       style: {
         fontFamily: 'Arial',
-        fontSize: 24,
-        fill: color,
-        stroke: { color: 0x000000, width: 4 },
+        fontSize,
+        fill: finalColor,
+        stroke: { color: 0x000000, width: Math.max(3, Math.round(fontSize / 6)) },
         fontWeight: 'bold',
       }
     });
 
-    text.anchor.set(0.5, 1);
-    text.x = worldX;
-    text.y = worldY;
-    // Escalar inversamente para que o texto mantenha o tamanho legível em qualquer zoom
-    text.scale.set(1 / this.zoomLevel);
+    textObj.anchor.set(0.5, 1);
+    textObj.x = worldX;
+    textObj.y = worldY;
+    textObj.scale.set(1 / this.zoomLevel);
 
-    this.layers.interface.addChild(text);
+    this.layers.interface.addChild(textObj);
 
     const startY = worldY;
-    // 40 pixels de tela = 40 / zoomLevel no mundo
     const endY = worldY - (40 / this.zoomLevel);
-
-    const duration = 1200; // ~1.2s
     const startTime = performance.now();
 
     const tick = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-
-      // Ease out quad
       const ease = 1 - (1 - progress) * (1 - progress);
 
-      text.y = startY + (endY - startY) * ease;
-      text.alpha = 1 - ease;
+      textObj.y = startY + (endY - startY) * ease;
+      textObj.alpha = 1 - ease;
 
       if (progress < 1) {
         requestAnimationFrame(tick);
       } else {
-        text.destroy();
+        textObj.destroy();
       }
     };
 
@@ -1122,13 +1210,25 @@ export class CanvasManager {
 
   private setSelection(ids: string[]): void {
     for (const prevId of this.selectedTokenIds) {
-      const ring = this.tokens.get(prevId)?.getChildByLabel?.('selection-ring');
+      const token = this.tokens.get(prevId);
+      const ring = token?.getChildByLabel?.('selection-ring');
       if (ring) ring.visible = false;
+      const data = this.tokenData.get(prevId);
+      if (data?.displayBars === 10) {
+        const bars = token?.getChildByLabel?.('resource-bars');
+        if (bars) bars.visible = false;
+      }
     }
     this.selectedTokenIds = new Set(ids);
     for (const id of this.selectedTokenIds) {
-      const ring = this.tokens.get(id)?.getChildByLabel?.('selection-ring');
+      const token = this.tokens.get(id);
+      const ring = token?.getChildByLabel?.('selection-ring');
       if (ring) ring.visible = true;
+      const data = this.tokenData.get(id);
+      if (data?.displayBars === 10) {
+        const bars = token?.getChildByLabel?.('resource-bars');
+        if (bars) bars.visible = true;
+      }
     }
     // Preview de visão: GM enxerga o que o token selecionado vê (e nada além disso)
     if (this.isGM) this.setGMVisionPreview(ids);
@@ -1578,6 +1678,11 @@ export class CanvasManager {
 
     this.unsubCursor = wsClient.on('user.cursor', (data: { userId: string; userName: string; userColor?: string; x: number; y: number }) => {
       this.updateRemoteCursor(data);
+    });
+    this.unsubFloatingText = wsClient.on('canvas.floatingText', (data: any) => {
+      if (data && typeof data.x === 'number' && typeof data.y === 'number' && data.text) {
+        this.showFloatingText(data.x, data.y, data.text, data.color, { ...data.options, broadcast: false });
+      }
     });
     this.app.ticker.add(() => this.pruneStaleCursors());
 
@@ -4245,6 +4350,27 @@ export class CanvasManager {
       }
     }
 
+    // Floating delta detection for monitored vital resource (HP / Bar 1)
+    const bar1Attr = data.bar1?.attribute !== undefined ? data.bar1.attribute : 'attributes.hp';
+    const bar1Res = resolveTokenAttribute(data, bar1Attr);
+    const prevRes = this.tokenResourceCache.get(data.id);
+
+    if (bar1Res && prevRes && prevRes.val1 !== undefined) {
+      const delta = bar1Res.value - prevRes.val1;
+      if (delta !== 0) {
+        const color = delta < 0 ? '#e74c3c' : '#2ecc71';
+        const sign = delta > 0 ? `+${delta}` : `${delta}`;
+        this.showFloatingText(data.x, data.y - TOKEN_RADIUS, sign, color);
+      }
+    }
+
+    if (bar1Res) {
+      this.tokenResourceCache.set(data.id, {
+        val1: bar1Res.value,
+        val2: data.bar2?.attribute ? resolveTokenAttribute(data, data.bar2.attribute)?.value : undefined,
+      });
+    }
+
     this.tokenData.set(data.id, data);
     let token = this.tokens.get(data.id);
 
@@ -4424,11 +4550,87 @@ export class CanvasManager {
         container.addChild(moveIcon);
       }
 
-      // Status markers — fixed row below the token
+      // ── Resource Bars (Bar 1: Bottom, Bar 2: Top) ──────────────────────────
+      const displayBars = data.displayBars ?? 20; // 20 = OWNER_HOVER
+      const isOwner = Boolean(
+        this.isGM ||
+        (this.currentUserId && (data.ownership?.[this.currentUserId] ?? data.ownership?.default ?? 0) >= 3)
+      );
+      const isControlled = this.selectedTokenIds?.has(data.id) ?? false;
+
+      let barsVisible = false;
+      if (displayBars === 50) { // Always
+        barsVisible = true;
+      } else if (displayBars === 40 && isOwner) { // Owner Always
+        barsVisible = true;
+      } else if (displayBars === 10 && isControlled) { // Control
+        barsVisible = true;
+      }
+
+      const barContainer = new Container();
+      barContainer.label = 'resource-bars';
+      barContainer.visible = barsVisible;
+
+      const bar1Attr = data.bar1?.attribute !== undefined ? data.bar1.attribute : 'attributes.hp';
+      const bar2Attr = data.bar2?.attribute || '';
+
+      const bar1Res = resolveTokenAttribute(data, bar1Attr);
+      const bar2Res = bar2Attr ? resolveTokenAttribute(data, bar2Attr) : null;
+
+      const barW = Math.max(TOKEN_RADIUS * 1.6, 44);
+      const barH = 5;
+
+      const drawBar = (yPos: number, current: number, max: number, colorDef?: string) => {
+        const bg = new Graphics();
+        bg.roundRect(-barW / 2, yPos, barW, barH, 2);
+        bg.fill({ color: 0x111111, alpha: 0.85 });
+        bg.stroke({ color: 0x000000, width: 1, alpha: 0.9 });
+        barContainer.addChild(bg);
+
+        const pct = max > 0 ? Math.max(0, Math.min(1, current / max)) : 0;
+        if (pct > 0) {
+          const fill = new Graphics();
+          let fillColor = 0x2ecc71;
+          if (!colorDef || colorDef === 'dynamic') {
+            fillColor = getHealthColor(pct);
+          } else if (colorDef.startsWith('#')) {
+            fillColor = parseInt(colorDef.replace('#', '0x'), 16);
+          } else if (!isNaN(Number(colorDef))) {
+            fillColor = Number(colorDef);
+          }
+          fill.roundRect(-barW / 2 + 0.5, yPos + 0.5, Math.max(2, (barW - 1) * pct), barH - 1, 1.5);
+          fill.fill({ color: fillColor, alpha: 0.95 });
+          barContainer.addChild(fill);
+        }
+      };
+
+      let bottomBarOffset = 0;
+      // Bar 1 (Bottom - Health)
+      if (bar1Res && bar1Res.max > 0) {
+        drawBar(ext + 3, bar1Res.value, bar1Res.max, data.bar1?.color);
+        bottomBarOffset = barH + 4;
+      }
+
+      // Bar 2 (Top - Resource/Mana)
+      if (bar2Res && bar2Res.max > 0) {
+        drawBar(-ext - barH - 3, bar2Res.value, bar2Res.max, data.bar2?.color);
+      }
+
+      if (barContainer.children.length > 0) {
+        container.addChild(barContainer);
+
+        if (displayBars === 30 || (displayBars === 20 && isOwner)) {
+          container.eventMode = 'static';
+          container.on('pointerenter', () => { barContainer.visible = true; });
+          container.on('pointerleave', () => { barContainer.visible = false; });
+        }
+      }
+
+      // Status markers — fixed row below the token (offset below bottom bar if present)
       if (data.statusMarkers && data.statusMarkers.length > 0) {
         const statusContainer = new Container();
         statusContainer.x = 0;
-        statusContainer.y = ext;
+        statusContainer.y = ext + bottomBarOffset;
 
         data.statusMarkers.forEach((marker, index) => {
           const statusIcon = this.createStatusIcon(marker);
@@ -5339,10 +5541,12 @@ export class CanvasManager {
       this.fovDirty = true;
       this.updateFOV();
     }
+    this.tokenResourceCache.delete(id);
   }
 
   /** Removes every token from the canvas — used when switching stages, since each stage only shows its own cast. */
   clearTokens(): void {
+    this.tokenResourceCache.clear();
     if (this.isGM && this.gmVisionPreview) this.setGMVisionPreview([]);
     for (const id of [...this.tokens.keys()]) {
       this.removeToken(id);
@@ -6597,6 +6801,8 @@ export class CanvasManager {
     this.destroyed = true;
     this.unsubCursor?.();
     this.unsubCursor = null;
+    this.unsubFloatingText?.();
+    this.unsubFloatingText = null;
     if (this.weatherAnimId !== null) {
       cancelAnimationFrame(this.weatherAnimId);
       this.weatherAnimId = null;

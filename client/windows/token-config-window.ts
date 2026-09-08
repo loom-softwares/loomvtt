@@ -16,6 +16,7 @@ import { FilePickerWindow } from './file-picker-window.js';
 import { showConfirm } from '../components/dialog.js';
 import { t } from '../lib/i18n.js';
 import { usersCollection } from '../core/users-collection.js';
+import { actorsCollection } from '../core/actors-collection.js';
 import { systemRegistry } from '../core/system-registry.js';
 import { flatSheetFields, handleDotsClick, handleSquareCounterClick } from '../components/sheet-schema.js';
 import { getDefaultRingScale } from '../canvas/canvas-manager.js';
@@ -57,6 +58,9 @@ interface CastMember {
   lightAnimation?: string;
   systemData?: Record<string, any>;
   barGridSize?: number;
+  bar1?: { attribute: string; color?: string };
+  bar2?: { attribute: string; color?: string };
+  displayBars?: number;
   movementAction?: string;
   elevation?: number;
   locked?: boolean;
@@ -81,6 +85,32 @@ const VISION_MODES = [
   { value: 'darkvision', label: 'Darkvision (esverdeado, reduz cor)' },
   { value: 'monochrome', label: 'Monocromático (escala de cinza)' },
 ];
+
+const BAR_DISPLAY_MODES = [
+  { value: 0, labelKey: 'tokenConfig.barDisplayNever' },
+  { value: 10, labelKey: 'tokenConfig.barDisplayControl' },
+  { value: 20, labelKey: 'tokenConfig.barDisplayOwnerHover' },
+  { value: 30, labelKey: 'tokenConfig.barDisplayHover' },
+  { value: 40, labelKey: 'tokenConfig.barDisplayOwner' },
+  { value: 50, labelKey: 'tokenConfig.barDisplayAlways' },
+];
+
+function findResourceAttributes(obj: Record<string, any>, prefix = ''): Array<{ path: string; label: string }> {
+  const result: Array<{ path: string; label: string }> = [];
+  if (!obj || typeof obj !== 'object') return result;
+
+  for (const [k, v] of Object.entries(obj)) {
+    const currPath = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object') {
+      if ('value' in v && 'max' in v && typeof (v as any).value === 'number') {
+        result.push({ path: currPath, label: `${currPath} (${(v as any).value}/${(v as any).max})` });
+      } else {
+        result.push(...findResourceAttributes(v, currPath));
+      }
+    }
+  }
+  return result;
+}
 
 export class TokenConfigWindow extends BaseWindow {
   private castMember: CastMember | null = null;
@@ -314,7 +344,76 @@ export class TokenConfigWindow extends BaseWindow {
 
     const schema = systemRegistry.getActive()?.getSheetSchema?.(this.castMember.kind ?? '') ?? null;
 
+    const actor = c.actorId ? (actorsCollection.get ? (actorsCollection.get(c.actorId) as any) : null) : null;
+    const actorSystem = actor?.system || actor?.systemData || {};
+    const mergedSystem = { ...c.systemData, ...actorSystem };
+    const resources = findResourceAttributes(mergedSystem);
+
+    const commonPaths = ['attributes.hp', 'hp', 'attributes.mana', 'mana'];
+    for (const cp of commonPaths) {
+      if (!resources.some(r => r.path === cp)) {
+        resources.push({ path: cp, label: cp });
+      }
+    }
+
+    const bar1Attr = c.bar1?.attribute ?? 'attributes.hp';
+    const bar1Color = c.bar1?.color ?? 'dynamic';
+    const bar2Attr = c.bar2?.attribute ?? '';
+    const bar2Color = c.bar2?.color ?? '#3498db';
+    const displayBars = c.displayBars ?? 20;
+
     const resourcesHtml = `
+      <fieldset>
+        <legend>${t('tokenConfig.resourceBars')}</legend>
+        <div class="form-group">
+          <label>${t('tokenConfig.barDisplay')}</label>
+          <select name="displayBars">
+            ${BAR_DISPLAY_MODES.map(m => `<option value="${m.value}" ${displayBars === m.value ? 'selected' : ''}>${t(m.labelKey)}</option>`).join('')}
+          </select>
+          <small>${t('tokenConfig.barDisplayHint')}</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+          <div style="flex: 1; padding: 0.75rem; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;"><i class="fa-solid fa-heart" style="color: #e74c3c;"></i> ${t('tokenConfig.bar1Title')}</div>
+            <div class="form-group">
+              <label>${t('tokenConfig.monitoredAttr')}</label>
+              <select name="bar1Attribute">
+                <option value="" ${!bar1Attr ? 'selected' : ''}>${t('tokenConfig.noneOption')}</option>
+                ${resources.map(r => `<option value="${r.path}" ${bar1Attr === r.path ? 'selected' : ''}>${r.label}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>${t('tokenConfig.colorStyle')}</label>
+              <select name="bar1Color">
+                <option value="dynamic" ${bar1Color === 'dynamic' ? 'selected' : ''}>${t('tokenConfig.dynamicColor')}</option>
+                <option value="#2ecc71" ${bar1Color === '#2ecc71' ? 'selected' : ''}>${t('tokenConfig.greenColor')}</option>
+                <option value="#e74c3c" ${bar1Color === '#e74c3c' ? 'selected' : ''}>${t('tokenConfig.redColor')}</option>
+                <option value="#3498db" ${bar1Color === '#3498db' ? 'selected' : ''}>${t('tokenConfig.blueColor')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="flex: 1; padding: 0.75rem; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;"><i class="fa-solid fa-bolt" style="color: #3498db;"></i> ${t('tokenConfig.bar2Title')}</div>
+            <div class="form-group">
+              <label>${t('tokenConfig.monitoredAttr')}</label>
+              <select name="bar2Attribute">
+                <option value="" ${!bar2Attr ? 'selected' : ''}>${t('tokenConfig.noneOption')}</option>
+                ${resources.map(r => `<option value="${r.path}" ${bar2Attr === r.path ? 'selected' : ''}>${r.label}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>${t('tokenConfig.barColor')}</label>
+              <div class="color-input-group">
+                <input type="color" name="bar2Color" value="${bar2Color === 'dynamic' ? '#3498db' : bar2Color}" oninput="this.nextElementSibling.value = this.value" />
+                <input type="text" value="${bar2Color}" oninput="this.previousElementSibling.value = this.value" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
       <fieldset>
         <legend>${t('tokenConfig.systemData')}</legend>
         ${schema
@@ -543,6 +642,16 @@ export class TokenConfigWindow extends BaseWindow {
         ? Number(data.ringScale) / 100
         : getDefaultRingScale(finalRingUrl);
 
+      const bar1 = {
+        attribute: data.bar1Attribute !== undefined ? data.bar1Attribute : (this.castMember.bar1?.attribute ?? 'attributes.hp'),
+        color: data.bar1Color ?? (this.castMember.bar1?.color ?? 'dynamic'),
+      };
+      const bar2 = {
+        attribute: data.bar2Attribute !== undefined ? data.bar2Attribute : (this.castMember.bar2?.attribute ?? ''),
+        color: data.bar2Color ?? (this.castMember.bar2?.color ?? '#3498db'),
+      };
+      const displayBars = Number(data.displayBars ?? (this.castMember.displayBars ?? 20));
+
       const isProto = this.props.isPrototype || this.castMember.id.startsWith('actor-');
       if (!isProto) {
         await api.put(`/cast/${this.castMember.id}`, {
@@ -576,6 +685,9 @@ export class TokenConfigWindow extends BaseWindow {
           lightAnimation: data.lightAnimation || 'none',
           systemData,
           barGridSize: Number(data.barGridSize ?? 1),
+          bar1,
+          bar2,
+          displayBars,
           movementAction: data.movementAction || 'walk',
           elevation: Number(data.elevation ?? 0),
           locked: !!data.locked,
@@ -611,6 +723,9 @@ export class TokenConfigWindow extends BaseWindow {
         lightAnimation: data.lightAnimation || 'none',
         systemData,
         barGridSize: Number(data.barGridSize ?? 1),
+        bar1,
+        bar2,
+        displayBars,
         movementAction: data.movementAction || 'walk',
         elevation: Number(data.elevation ?? 0),
         locked: !!data.locked,
@@ -620,10 +735,10 @@ export class TokenConfigWindow extends BaseWindow {
 
       this.castMember = updated;
       this.props.onUpdated(updated);
-      showToast('Token atualizado!', 'success');
+      showToast(t('tokenConfig.tokenUpdated'), 'success');
       windowManager.close(this.options.id);
     } catch (err: any) {
-      showToast(err?.message || 'Erro ao salvar configurações do token', 'error');
+      showToast(err?.message || t('tokenConfig.tokenUpdateError'), 'error');
     }
   }
 

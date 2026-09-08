@@ -47,6 +47,8 @@ export class SetupHubScreen extends BaseComponent {
 
   constructor(container: HTMLElement) {
     super(container);
+    // Ao entrar no Setup Hub, qualquer sessão in-game residual deve ser encerrada
+    api.post('/worlds/session/logout', {}).catch(() => {});
     this.news = this.defaultNews();
     this.render();
     this.mountTab(this.currentTab);

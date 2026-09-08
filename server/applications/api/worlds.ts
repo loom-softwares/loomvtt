@@ -17,7 +17,7 @@ import { UsersDocument } from '../schemas/users.schema.js';
 import logger from '../utils/logger.js';
 import { requireAdminSession } from './setup.js';
 import { Signal } from '../signals/index.js';
-import { signToken, verifyToken, extractToken, WORLD_COOKIE, ADMIN_COOKIE, requireAuth, requireWorldMatch, sessionCookieOptions } from '../middleware/auth.js';
+import { signToken, verifyToken, extractToken, WORLD_COOKIE, ADMIN_COOKIE, requireAuth, requireWorldMatch, sessionCookieOptions, worldCookieOptions, rotateWorldBootId } from '../middleware/auth.js';
 import { requireGM, isGM } from '../middleware/permissions.js';
 import { connectedUsers } from '../../index.js';
 import { syncPackagesTable, getRulesetBackgroundUrl } from './marketplace.js';
@@ -186,6 +186,9 @@ worldsRouter.post('/', requireAdminSession, async (req, res) => {
 
     // Auto-create a GM user for the world
     await UsersDocument.create({ worldId: world.id, name: 'Gamemaster', role: 4, color: '#e74c3c' });
+
+    // Limpa qualquer cookie de mundo anterior para que o novo mundo inicie limpo
+    res.clearCookie(WORLD_COOKIE);
 
     logger.info('World created', { id: world.id, name });
     res.status(201).json(world);
@@ -370,6 +373,15 @@ worldsRouter.delete('/:id', requireAdminSession, async (req, res) => {
     Signal.broadcast('worlds.deleted', { worldId: id });
     Signal.broadcast('users.deleted', { worldId: id });
 
+    // Limpa o cookie se pertencia a esse mundo deletado
+    const worldToken = extractToken(req, WORLD_COOKIE);
+    if (worldToken) {
+      const payload = await verifyToken(worldToken);
+      if (payload?.worldId === id) {
+        res.clearCookie(WORLD_COOKIE);
+      }
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -484,7 +496,7 @@ worldsRouter.post('/:id/launch-gm', requireAdminSession, async (req, res) => {
       worldId: req.params.id,
     }, '24h');
 
-    res.cookie(WORLD_COOKIE, token, sessionCookieOptions(req));
+    res.cookie(WORLD_COOKIE, token, worldCookieOptions(req));
 
     res.json({
       token,
@@ -505,11 +517,13 @@ worldsRouter.post('/:id/launch-gm', requireAdminSession, async (req, res) => {
 });
 
 // ─── DEACTIVATE WORLD ─────────────────────────────────────────────────────────
-worldsRouter.post('/deactivate', requireAdminSession, async (_req, res) => {
+worldsRouter.post('/deactivate', requireAuth, requireGM, async (_req, res) => {
   try {
     await db('worlds').update({ isActive: false });
     clearActiveWorldDb();
+    rotateWorldBootId();
     Signal.broadcast('world.deactivated');
+    res.clearCookie(WORLD_COOKIE);
     logger.info('Active world deactivated');
     res.json({ success: true });
   } catch (err: any) {
@@ -911,7 +925,7 @@ worldsRouter.post('/:worldId/join', joinLimiter, async (req, res) => {
       worldId: req.params.worldId,
     }, '24h');
 
-    res.cookie(WORLD_COOKIE, token, sessionCookieOptions(req));
+    res.cookie(WORLD_COOKIE, token, worldCookieOptions(req));
 
     // Sessão vive só no cookie HttpOnly — client (world-login.ts) descarta o
     // body inteiro e só confia no cookie, então não duplicar o JWT aqui.
@@ -1003,7 +1017,7 @@ worldsRouter.post('/:worldId/oauth-join', joinLimiter, async (req, res) => {
           userColor: user.color,
           worldId: req.params.worldId,
         }, '24h');
-        res.cookie(WORLD_COOKIE, token, sessionCookieOptions(req));
+        res.cookie(WORLD_COOKIE, token, worldCookieOptions(req));
         return res.json({
           pending: false,
           token,
@@ -1038,7 +1052,7 @@ worldsRouter.post('/:worldId/oauth-join', joinLimiter, async (req, res) => {
       worldId: req.params.worldId,
     }, '24h');
 
-    res.cookie(WORLD_COOKIE, token, sessionCookieOptions(req));
+    res.cookie(WORLD_COOKIE, token, worldCookieOptions(req));
 
     res.json({
       pending: false,

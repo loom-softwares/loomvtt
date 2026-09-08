@@ -2404,10 +2404,10 @@ export class Sidebar extends BaseComponent {
         }
         await api.post('/setup/login', { password });
       }
-      await api.post('/worlds/session/logout', {});
       await api.post('/worlds/deactivate');
+      await api.post('/worlds/session/logout', {});
       showToast(t('sidebar.settingsReturnToSetup'), 'success');
-      window.location.href = '/';
+      window.location.href = '/setup';
     } catch (e: any) {
       showToast(e?.message || 'Erro ao voltar para configuração', 'error');
     }

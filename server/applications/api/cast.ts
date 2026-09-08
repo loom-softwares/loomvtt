@@ -62,6 +62,9 @@ castRouter.post('/', async (req, res) => {
     folderId = '',
     elevation = 0,
     levelId = '',
+    bar1,
+    bar2,
+    displayBars = 20,
   } = req.body;
   let stageId = req.body.stageId;
   const worldId = (req as any).auth?.worldId || req.body.worldId;
@@ -139,6 +142,9 @@ castRouter.post('/', async (req, res) => {
       worldId,
       elevation,
       levelId,
+      bar1,
+      bar2,
+      displayBars,
     });
     if (result.error) return res.status(400).json({ error: result.error });
     const created = result.data;
@@ -222,6 +228,9 @@ castRouter.put('/:id', async (req, res) => {
   if (lightColor     !== undefined) updates.lightColor     = lightColor;
   if (lightAnimation !== undefined) updates.lightAnimation = lightAnimation;
   if (barGridSize    !== undefined) updates.barGridSize    = Number(barGridSize);
+  if (req.body.bar1  !== undefined) updates.bar1           = req.body.bar1;
+  if (req.body.bar2  !== undefined) updates.bar2           = req.body.bar2;
+  if (req.body.displayBars !== undefined) updates.displayBars = Number(req.body.displayBars);
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: 'No valid fields provided for update.' });
@@ -244,7 +253,7 @@ castRouter.put('/:id', async (req, res) => {
 
 castRouter.put('/:id/token', async (req, res) => {
   const { id } = req.params;
-  const { avatarUrl, ringColor, ringUrl, ringEffect, ringScale, shape, effects, statusMarkers, systemData, elevation, levelId, locked, hidden, movementAction, targetedBy, tintColor, opacity, rotation, scale, sightEnabled, sightRange, sightAngle, sightMode, detectionModes, lightDimRange, lightBrightRange, lightColor, lightAnimation, barGridSize } = req.body;
+  const { avatarUrl, ringColor, ringUrl, ringEffect, ringScale, shape, effects, statusMarkers, systemData, elevation, levelId, locked, hidden, movementAction, targetedBy, tintColor, opacity, rotation, scale, sightEnabled, sightRange, sightAngle, sightMode, detectionModes, lightDimRange, lightBrightRange, lightColor, lightAnimation, barGridSize, bar1, bar2, displayBars } = req.body;
 
   const updates: Record<string, any> = {};
   if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
@@ -276,6 +285,9 @@ castRouter.put('/:id/token', async (req, res) => {
   if (lightColor     !== undefined) updates.lightColor     = lightColor;
   if (lightAnimation !== undefined) updates.lightAnimation = lightAnimation;
   if (barGridSize    !== undefined) updates.barGridSize    = Number(barGridSize);
+  if (bar1           !== undefined) updates.bar1           = bar1;
+  if (bar2           !== undefined) updates.bar2           = bar2;
+  if (displayBars    !== undefined) updates.displayBars    = Number(displayBars);
 
   try {
     const result = await CastsDocument.update(id, updates, { req });

@@ -899,6 +899,9 @@ async function ensureWorldSchema(db: Knex): Promise<void> {
       t.string('lightColor').defaultTo('#ffffff');
       t.string('lightAnimation').defaultTo('none');
       t.integer('barGridSize').defaultTo(1);
+      t.text('bar1').defaultTo('{"attribute":"attributes.hp","color":"dynamic"}');
+      t.text('bar2').defaultTo('{"attribute":"","color":"#3498db"}');
+      t.integer('displayBars').defaultTo(20);
       t.timestamps(true, true, true);
     });
   } else {
@@ -925,6 +928,9 @@ async function ensureWorldSchema(db: Knex): Promise<void> {
       ['ringUrl',        (t) => t.string('ringUrl').defaultTo('')],
       ['ringEffect',     (t) => t.string('ringEffect').defaultTo('none')],
       ['ringScale',      (t) => t.float('ringScale').defaultTo(1.6)],
+      ['bar1',           (t) => t.text('bar1').defaultTo('{"attribute":"attributes.hp","color":"dynamic"}')],
+      ['bar2',           (t) => t.text('bar2').defaultTo('{"attribute":"","color":"#3498db"}')],
+      ['displayBars',    (t) => t.integer('displayBars').defaultTo(20)],
     ];
     for (const [col, add] of castCols) {
       if (!(await db.schema.hasColumn('cast', col))) {

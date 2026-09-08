@@ -45,6 +45,9 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 | `lightColor` | `string` | `'#ffffff'` | Cor da luz |
 | `lightAnimation` | `string` | `'none'` | Animação da luz |
 | `barGridSize` | `number` | `1` | Grid size da barra |
+| `bar1` | `object` | `{"attribute":"attributes.hp","color":"dynamic"}` | Configuração da barra 1 (inferior - vida) |
+| `bar2` | `object` | `{"attribute":"","color":"#3498db"}` | Configuração da barra 2 (superior - mana/recurso) |
+| `displayBars` | `number` | `20` | Visibilidade das barras (`0` Nunca, `10` Control, `20` Hover Dono/GM, `30` Hover Todos, `40` Sempre Dono/GM, `50` Sempre Todos) |
 | `createdAt` | `string` | — | Timestamp de criação |
 | `updatedAt` | `string` | — | Timestamp de atualização |
 

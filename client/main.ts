@@ -402,6 +402,26 @@ const GAME_PAUSE_STUB = class GamePause extends LoomSidebarTab { };
     return import('cannon-es');
   },
 
+  canvas: {
+    get active() {
+      return CanvasManager.activeInstance;
+    },
+    showFloatingText(
+      target: string | number | { x: number; y: number },
+      textOrY?: string | number,
+      textStr?: string,
+      color: string = '#ffffff',
+      options?: { fontSize?: number; duration?: number; broadcast?: boolean }
+    ) {
+      const cm = CanvasManager.activeInstance;
+      if (!cm) {
+        console.warn('Loom.canvas.showFloatingText: CanvasManager not active');
+        return;
+      }
+      cm.showFloatingText(target, textOrY, textStr, color, options);
+    },
+  },
+
   // utilities and stubs under Loom namespace
   utils: {
     debounce,

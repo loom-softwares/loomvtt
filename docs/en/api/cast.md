@@ -45,6 +45,9 @@ Cast members — characters, NPCs, monsters placed on a stage.
 | `lightColor` | `string` | `'#ffffff'` | Light color |
 | `lightAnimation` | `string` | `'none'` | Light animation |
 | `barGridSize` | `number` | `1` | Bar grid size |
+| `bar1` | `object` | `{"attribute":"attributes.hp","color":"dynamic"}` | Bar 1 config (bottom - health) |
+| `bar2` | `object` | `{"attribute":"","color":"#3498db"}` | Bar 2 config (top - mana/resource) |
+| `displayBars` | `number` | `20` | Bar display mode (`0` Never, `10` Control, `20` Owner/GM Hover, `30` Hover, `40` Owner/GM Always, `50` Always) |
 | `createdAt` | `string` | — | Creation timestamp |
 | `updatedAt` | `string` | — | Update timestamp |
 

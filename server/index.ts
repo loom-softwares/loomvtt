@@ -1552,6 +1552,14 @@ io.on('connection', (socket: any) => {
         }
       }
 
+      // ── Canvas Floating Text ───────────────────────────────────────────────────
+      else if (type === 'canvas.floatingText') {
+        const worldId = auth.worldId;
+        if (worldId) {
+          broadcastToWorld(type, worldId, data, socketId);
+        }
+      }
+
       // ── Tile Effect Broadcast ──────────────────────────────────────────────────
       else if (type === 'tile.effect') {
         if (isRateLimited(socketId)) {

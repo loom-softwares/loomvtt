@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import { getConfigPath } from '../database/db.js';
 import { WorldsDocument } from '../schemas/worlds.schema.js';
 import logger from '../utils/logger.js';
-import { signToken, verifyToken, extractToken, ADMIN_COOKIE, sessionCookieOptions, wasAdminSessionReplaced } from '../middleware/auth.js';
+import { signToken, verifyToken, extractToken, ADMIN_COOKIE, WORLD_COOKIE, sessionCookieOptions, wasAdminSessionReplaced } from '../middleware/auth.js';
 
 export const setupRouter = Router();
 
@@ -114,6 +114,7 @@ setupRouter.post('/login', loginLimiter, async (req, res) => {
     const token = await signToken({ admin: true }, '24h');
 
     res.cookie(ADMIN_COOKIE, token, sessionCookieOptions(req));
+    res.clearCookie(WORLD_COOKIE);
 
     // Sessão vive só no cookie HttpOnly — client não usa `token` da resposta
     // (confirmado: admin-login.ts ignora o body do POST), então não duplicar
@@ -127,6 +128,7 @@ setupRouter.post('/login', loginLimiter, async (req, res) => {
 /** POST /api/setup/logout — clear admin session */
 setupRouter.post('/logout', (_req, res) => {
   res.clearCookie(ADMIN_COOKIE);
+  res.clearCookie(WORLD_COOKIE);
   res.json({ success: true });
 });
 
@@ -137,6 +139,10 @@ setupRouter.get('/verify', async (req, res) => {
   if (!token) return res.json({ valid: false });
   const payload = await verifyToken(token);
   if (payload) {
+    if (payload.admin) {
+      // No Setup Hub, sessões antigas de mundo em cookie devem ser limpas
+      res.clearCookie(WORLD_COOKIE);
+    }
     return res.json({ valid: true, admin: payload.admin || false });
   }
   const replaced = await wasAdminSessionReplaced(token);

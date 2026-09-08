@@ -54,6 +54,7 @@ routes that call `Signal.broadcast` manually instead often chose a singular name
 | `ping` | Original ping payload | Rebroadcast to the world room (Ctrl+click-style latency/position ping) |
 | `pong` | `{ timestamp, ...originalData }` | Sent back only to the sender of `ping` |
 | `canvas.ping` | `{ ...data, userColor }` | Shared visual ping marker (Ctrl+click) |
+| `canvas.floatingText` | `{ x, y, text, color, options }` | Synchronized floating text/damage on the canvas for all players |
 
 ## World Data Events
 

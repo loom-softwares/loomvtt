@@ -4,27 +4,42 @@ import { db } from '../database/db.js';
 import { activeWorldId } from '../database/world-db.js';
 import crypto from 'crypto';
 
-// Persistido no banco (mesmo esquema do jwtSecret abaixo) — nao regenera a
-// cada restart normal do processo (isso derrubava a sessao de admin em TODO
-// dispositivo/navegador toda vez que o server reiniciava, ex: apos um crash,
-// update, ou simplesmente `tsx watch` recarregando em dev). So muda se
-// alguem apagar a linha `boot_id` da tabela `settings` de proposito — ainda
-// da pra forcar logout geral assim quando precisar de verdade.
-let bootId: string | null = null;
+// adminBootId é persistido no banco para que o login do admin no Setup Hub
+// sobreviva à reinicialização do Loom.
+// worldBootId para os mundos é mantido apenas em memória: quando o Loom fecha
+// ou quando o mundo é encerrado, um novo worldBootId é gerado, deslogando APENAS
+// as sessões do mundo (jogadores e GM in-game), mantendo a sessão de admin ativa.
+let adminBootId: string | null = null;
+let worldBootId = crypto.randomBytes(8).toString('hex');
 
-async function getBootId(): Promise<string> {
-  if (bootId) return bootId;
+export function rotateWorldBootId(): void {
+  worldBootId = crypto.randomBytes(8).toString('hex');
+}
 
-  const row = await db('settings').where({ key: 'boot_id' }).first();
+async function getAdminBootId(): Promise<string> {
+  if (adminBootId) return adminBootId;
+
+  const row = await db('settings').where({ key: 'admin_boot_id' }).first();
   if (row?.value) {
-    bootId = row.value as string;
-    return bootId;
+    adminBootId = row.value as string;
+    return adminBootId;
+  }
+
+  const legacy = await db('settings').where({ key: 'boot_id' }).first();
+  if (legacy?.value) {
+    adminBootId = legacy.value as string;
+    await db('settings').insert({ key: 'admin_boot_id', value: adminBootId }).catch(() => {});
+    return adminBootId;
   }
 
   const generated = crypto.randomBytes(8).toString('hex');
-  await db('settings').insert({ key: 'boot_id', value: generated });
-  bootId = generated;
-  return bootId;
+  await db('settings').insert({ key: 'admin_boot_id', value: generated });
+  adminBootId = generated;
+  return adminBootId;
+}
+
+function getWorldBootId(): string {
+  return worldBootId;
 }
 
 let jwtSecret: string | null = null;
@@ -115,24 +130,33 @@ export interface JwtPayload {
 }
 
 export async function signToken(payload: JwtPayload, expiresIn: string | number = '24h'): Promise<string> {
-  const [secret, boot] = await Promise.all([getJwtSecret(), getBootId()]);
+  const secret = await getJwtSecret();
   const extra: Partial<JwtPayload> = {};
+  let boot: string;
   if (payload.admin) {
     extra.adminSessionId = await issueNewAdminSessionId();
+    boot = await getAdminBootId();
+  } else {
+    boot = getWorldBootId();
   }
   return jwt.sign({ ...payload, ...extra, bootId: boot }, secret, { expiresIn: expiresIn as any });
 }
 
 export async function verifyToken(token: string): Promise<JwtPayload | null> {
   try {
-    const [secret, boot] = await Promise.all([getJwtSecret(), getBootId()]);
+    const secret = await getJwtSecret();
     const payload = jwt.verify(token, secret) as JwtPayload;
     if (payload.admin) {
       const currentAdminSessionId = await getCurrentAdminSessionId();
       if (!currentAdminSessionId || payload.adminSessionId !== currentAdminSessionId) return null;
       void touchAdminSession(); // fire-and-forget, nao atrasa a resposta
+      const adminBoot = await getAdminBootId();
+      if (payload.bootId !== adminBoot) return null;
+      return payload;
     }
-    if (payload.bootId !== boot) return null;
+
+    const worldBoot = getWorldBootId();
+    if (payload.bootId !== worldBoot) return null;
     return payload;
   } catch {
     return null;
@@ -181,27 +205,47 @@ export async function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function requireAuth(req: any, res: any, next: any) {
-  // Sessao de mundo manda dentro do mundo — mesmo um admin logado como
-  // "Jogador" numa sessao fica limitado ao papel daquele token ali. Poder de
-  // admin so vale fora de sessao de mundo (rotas do Setup Hub usam
-  // requireAdmin, que le o cookie de admin direto e nao passa por aqui).
+  const claimed = req.params?.worldId || (req.baseUrl?.includes('worlds') ? req.params?.id : undefined) || req.query?.worldId || req.body?.worldId;
+
   const worldToken = extractToken(req, WORLD_COOKIE);
+  let worldPayload: JwtPayload | null = null;
   if (worldToken) {
-    const payload = await verifyToken(worldToken);
-    if (payload) {
-      req.auth = payload;
-      return next();
-    }
+    worldPayload = await verifyToken(worldToken);
   }
 
   const adminToken = extractToken(req, ADMIN_COOKIE);
-  if (!adminToken) return res.status(401).json({ error: 'Authentication required' });
+  let adminPayload: JwtPayload | null = null;
+  if (adminToken) {
+    const payload = await verifyToken(adminToken);
+    if (payload?.admin) adminPayload = payload;
+  }
 
-  const payload = await verifyToken(adminToken);
-  if (!payload?.admin) return res.status(401).json({ error: 'Invalid or expired token' });
+  // Se o token de mundo existir:
+  // - Se a requisição visa um mundo específico (`claimed`) diferente do token de mundo
+  //   (ex: usuário estava em outro mundo ou o mundo foi recriado) e o usuário possui sessão de admin válida,
+  //   o token de admin assume a precedência para permitir o gerenciamento no Setup Hub / World Users Setup.
+  // - Se o mundo ativo está rodando e o token aponta para um mundo inativo diferente,
+  //   e há sessão de admin válida, a sessão de admin também assume a precedência.
+  // - Caso contrário, o token de mundo governa a requisição in-game (preservando papéis de Jogador vs GM).
+  if (worldPayload) {
+    const mismatchClaimed = claimed && worldPayload.worldId && claimed !== worldPayload.worldId;
+    const mismatchActive = activeWorldId && worldPayload.worldId && worldPayload.worldId !== activeWorldId;
 
-  req.auth = payload;
-  next();
+    if ((mismatchClaimed || mismatchActive) && adminPayload) {
+      req.auth = adminPayload;
+      return next();
+    }
+
+    req.auth = worldPayload;
+    return next();
+  }
+
+  if (adminPayload) {
+    req.auth = adminPayload;
+    return next();
+  }
+
+  return res.status(401).json({ error: 'Authentication required' });
 }
 
 /**
@@ -223,10 +267,24 @@ export function sessionCookieOptions(req: Request) {
   };
 }
 
+/**
+ * Opções de cookie para a sessão do mundo.
+ * Sem maxAge: é um cookie de sessão legítimo do navegador.
+ * A sessão morre automaticamente no navegador assim que ele for fechado.
+ */
+export function worldCookieOptions(req: Request) {
+  const isHttps = req.secure || req.get('x-forwarded-proto') === 'https';
+  return {
+    httpOnly: true,
+    secure: isHttps,
+    sameSite: 'lax' as const,
+  };
+}
+
 /** Rejects if the request targets a worldId different from the one the token was issued for. Admin tokens bypass this (they have no worldId). Supports worldId in req.params, req.query, and req.body. */
 export function requireWorldMatch(req: any, res: any, next: any) {
   if (req.auth?.admin) return next();
-  const claimed = req.params?.worldId || req.query?.worldId || req.body?.worldId;
+  const claimed = req.params?.worldId || (req.baseUrl?.includes('worlds') ? req.params?.id : undefined) || req.query?.worldId || req.body?.worldId;
   if (claimed && req.auth?.worldId && claimed !== req.auth.worldId) {
     return res.status(403).json({ error: 'Token does not belong to this world' });
   }

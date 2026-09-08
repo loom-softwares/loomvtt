@@ -54,6 +54,10 @@ Global API exposed to addons and systems on the client side.
   LoomHandlebarsMixin,
   statusEffects: statusEffectRegistry,
   transitions: transitionEffectRegistry,
+  canvas: {
+    get active() { return CanvasManager.activeInstance; },
+    showFloatingText(target, text, color?, options?),
+  },
   get three() { return import('three'); },
   get cannon() { return import('cannon-es'); },
 };
@@ -101,6 +105,7 @@ Global API exposed to addons and systems on the client side.
 | `transitions`                 | `TransitionEffectRegistry`                     | Scene transition effects registry (see `transitions.md`)          |
 | `three`                      | `Promise<typeof import('three')>` (getter)     | Loads Three.js on demand — only downloads the chunk if an addon accesses it  |
 | `cannon`                     | `Promise<typeof import('cannon-es')>` (getter) | Loads cannon-es on demand, same logic                           |
+| `canvas`                     | `{ active, showFloatingText }`                 | Access to active CanvasManager and universal floating text/damage API |
 | `user`                       | `{ id, name, color, role, isGM, targets }` (getter) | Current user session + `targets` (own getter): cast members currently targeted by them — see example below |
 
 ## Usage example in addon
@@ -110,6 +115,10 @@ Global API exposed to addons and systems on the client side.
 Loom.LoomHooks.on('actor.created', (actor) => {
   console.log('Actor created:', actor.name);
 });
+
+// Display floating scrolling text or damage over a token (with broadcast)
+Loom.canvas.showFloatingText(token.id, '-12', '#e74c3c', { broadcast: true });
+Loom.canvas.showFloatingText(token.id, 'CRITICAL HIT!', '#ffd700');
 
 // Create window
 await Loom.windowManager.open('my-window', MyWindowClass, { data: {} });
