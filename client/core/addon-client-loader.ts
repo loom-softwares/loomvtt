@@ -11,6 +11,7 @@ import { clog } from '../lib/client-logger.js';
 import { settingsRegistry } from './settings-registry.js';
 import { rulesetI18n } from './ruleset-i18n.js';
 import { getLocale } from '../lib/i18n.js';
+import { systemRegistry } from './system-registry.js';
 
 /** Extracts stack trace (if available) so the full error appears in the log line, avoiding the need to expand the object in the console. */
 function formatLoadError(err: unknown): string {
@@ -80,6 +81,7 @@ interface PackageInfo {
   active?: boolean;
   styles?: string[];
   scripts?: string[];
+  compendiums?: string[];
   languages?: { lang: string; name?: string; path: string }[];
   settings?: Array<{
     key: string;
@@ -285,6 +287,14 @@ export async function loadClientAddons(activeSystemId?: string, worldId?: string
     const url = `/marketplace/rulesets/${pkg.name}/${pkg.client}?v=${Date.now()}`;
     try {
       await import(/* @vite-ignore */ url);
+      // The ruleset's SystemRegistry.register() call (inside the module just imported)
+      // only knows its own hardcoded fields — it has no access to `pkg`, the parsed
+      // ruleset.json fetched here. Attach it now so UI can read manifest-only fields
+      // (e.g. `compendiums`, for the "Restore System Compendium" button) without a
+      // second fetch. Map stores objects by reference, so mutating the object `get()`
+      // returns updates the registry entry in place.
+      const registered = systemRegistry.get(pkg.name);
+      if (registered) registered.manifest = pkg;
       systemLoaded = pkg.name;
       clog.success(`[SYSTEM] "${pkg.name}" loaded from ${url}`);
     } catch (err) {

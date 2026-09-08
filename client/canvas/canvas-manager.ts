@@ -277,14 +277,14 @@ function getHealthColor(pct: number): number {
   return (r << 16) | (g << 8) | b;
 }
 
-function resolveTokenAttribute(data: CastMemberData, attrPath: string): { value: number; max: number } | null {
-  if (!attrPath) return null;
-  const actor = data.actorId ? (actorsCollection.get ? (actorsCollection.get(data.actorId) as any) : null) : null;
-  const sys = actor?.system || actor?.systemData || data.systemData || {};
+const HP_RESOURCE_ALIASES = ['resources.health', 'attributes.hp', 'hp', 'health', 'attributes.health', 'attributes.hitPoints'];
+const MANA_RESOURCE_ALIASES = ['resources.mana', 'attributes.mana', 'mana', 'attributes.mp', 'mp', 'resources.magic'];
 
-  const cleanPath = attrPath.replace(/^system\./, '');
-  const parts = cleanPath.split('.');
-  let curr: any = sys;
+function extractAttrFromObject(obj: any, path: string): { value: number; max: number } | null {
+  if (!obj || !path) return null;
+  const clean = path.replace(/^system\./, '');
+  const parts = clean.split('.');
+  let curr: any = obj;
   for (const p of parts) {
     if (curr == null) return null;
     curr = curr[p];
@@ -293,10 +293,56 @@ function resolveTokenAttribute(data: CastMemberData, attrPath: string): { value:
   if (typeof curr === 'number') {
     return { value: curr, max: curr };
   }
-  if (typeof curr === 'object' && typeof curr.value === 'number') {
-    const max = typeof curr.max === 'number' ? curr.max : curr.value;
-    return { value: curr.value, max };
+  if (typeof curr === 'object') {
+    const val = typeof curr.value === 'number' ? curr.value : (typeof curr.current === 'number' ? curr.current : null);
+    if (val !== null) {
+      const max = typeof curr.max === 'number' ? curr.max : val;
+      return { value: val, max };
+    }
   }
+  return null;
+}
+
+function resolveTokenAttribute(data: CastMemberData, attrPath: string): { value: number; max: number } | null {
+  if (!attrPath) return null;
+  const actor = data.actorId ? (actorsCollection.get ? (actorsCollection.get(data.actorId) as any) : null) : null;
+  const sys = actor?.system || actor?.systemData || data.systemData || {};
+
+  const cleanPath = attrPath.replace(/^system\./, '');
+
+  // 1. Direct lookup in sys, actor or token data
+  let res = extractAttrFromObject(sys, cleanPath);
+  if (res) return res;
+  if (actor) {
+    res = extractAttrFromObject(actor, cleanPath);
+    if (res) return res;
+  }
+  if (data.systemData) {
+    res = extractAttrFromObject(data.systemData, cleanPath);
+    if (res) return res;
+  }
+
+  // 2. Alias fallback (e.g. attributes.hp <-> resources.health)
+  let aliases: string[] = [];
+  if (HP_RESOURCE_ALIASES.includes(cleanPath)) {
+    aliases = HP_RESOURCE_ALIASES.filter((a) => a !== cleanPath);
+  } else if (MANA_RESOURCE_ALIASES.includes(cleanPath)) {
+    aliases = MANA_RESOURCE_ALIASES.filter((a) => a !== cleanPath);
+  }
+
+  for (const alias of aliases) {
+    res = extractAttrFromObject(sys, alias);
+    if (res) return res;
+    if (actor) {
+      res = extractAttrFromObject(actor, alias);
+      if (res) return res;
+    }
+    if (data.systemData) {
+      res = extractAttrFromObject(data.systemData, alias);
+      if (res) return res;
+    }
+  }
+
   return null;
 }
 
@@ -4351,7 +4397,9 @@ export class CanvasManager {
     }
 
     // Floating delta detection for monitored vital resource (HP / Bar 1)
-    const bar1Attr = data.bar1?.attribute !== undefined ? data.bar1.attribute : 'attributes.hp';
+    const b1Parsed = typeof data.bar1 === 'string' ? (() => { try { return JSON.parse(data.bar1 as any); } catch { return null; } })() : data.bar1;
+    const b2Parsed = typeof data.bar2 === 'string' ? (() => { try { return JSON.parse(data.bar2 as any); } catch { return null; } })() : data.bar2;
+    const bar1Attr = b1Parsed?.attribute !== undefined ? b1Parsed.attribute : 'attributes.hp';
     const bar1Res = resolveTokenAttribute(data, bar1Attr);
     const prevRes = this.tokenResourceCache.get(data.id);
 
@@ -4367,7 +4415,7 @@ export class CanvasManager {
     if (bar1Res) {
       this.tokenResourceCache.set(data.id, {
         val1: bar1Res.value,
-        val2: data.bar2?.attribute ? resolveTokenAttribute(data, data.bar2.attribute)?.value : undefined,
+        val2: b2Parsed?.attribute ? resolveTokenAttribute(data, b2Parsed.attribute)?.value : undefined,
       });
     }
 
@@ -4571,8 +4619,10 @@ export class CanvasManager {
       barContainer.label = 'resource-bars';
       barContainer.visible = barsVisible;
 
-      const bar1Attr = data.bar1?.attribute !== undefined ? data.bar1.attribute : 'attributes.hp';
-      const bar2Attr = data.bar2?.attribute || '';
+      const b1 = typeof data.bar1 === 'string' ? (() => { try { return JSON.parse(data.bar1 as any); } catch { return null; } })() : data.bar1;
+      const b2 = typeof data.bar2 === 'string' ? (() => { try { return JSON.parse(data.bar2 as any); } catch { return null; } })() : data.bar2;
+      const bar1Attr = b1?.attribute !== undefined ? b1.attribute : 'attributes.hp';
+      const bar2Attr = b2?.attribute || '';
 
       const bar1Res = resolveTokenAttribute(data, bar1Attr);
       const bar2Res = bar2Attr ? resolveTokenAttribute(data, bar2Attr) : null;
@@ -4607,13 +4657,13 @@ export class CanvasManager {
       let bottomBarOffset = 0;
       // Bar 1 (Bottom - Health)
       if (bar1Res && bar1Res.max > 0) {
-        drawBar(ext + 3, bar1Res.value, bar1Res.max, data.bar1?.color);
+        drawBar(ext + 3, bar1Res.value, bar1Res.max, b1?.color);
         bottomBarOffset = barH + 4;
       }
 
       // Bar 2 (Top - Resource/Mana)
       if (bar2Res && bar2Res.max > 0) {
-        drawBar(-ext - barH - 3, bar2Res.value, bar2Res.max, data.bar2?.color);
+        drawBar(-ext - barH - 3, bar2Res.value, bar2Res.max, b2?.color);
       }
 
       if (barContainer.children.length > 0) {

@@ -20,7 +20,8 @@ import { api } from '../core/api.js';
  */
 export abstract class LoomActorSheet<DocType extends Record<string, any> = any> extends LoomDocumentSheet<DocType> {
   protected get documentName(): string { return 'actor'; }
-  protected get apiRoute(): string { return '/actors'; }
+  protected _apiRouteOverride: string | undefined;
+  protected get apiRoute(): string { return this._apiRouteOverride ?? '/actors'; }
 
   constructor(props: { actorId?: string; documentId?: string; worldId?: string; id?: string;[key: string]: any }) {
     // Two callers with different shapes: the app instantiates directly with `actorId`, and the mixin

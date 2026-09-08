@@ -1428,6 +1428,9 @@ export class GameHudScreen {
       traits: parseField(member.traits, {}),
       ownership: parseField(member.ownership, {}),
       systemData: parseField(member.systemData, {}),
+      bar1: parseField(member.bar1, null),
+      bar2: parseField(member.bar2, null),
+      displayBars: member.displayBars !== undefined && member.displayBars !== null ? Number(member.displayBars) : 20,
     };
   }
 

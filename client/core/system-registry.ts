@@ -32,6 +32,12 @@ export interface LoomSystem {
   rollField?(field: SheetField, actor: any, dispatch: (formula: string) => void): boolean | Promise<boolean>;
   getSheetSchema?(actorType: string): SheetSchema | null;
   getItemSheetSchema?(itemType: string): SheetSchema | null;
+  /**
+   * The ruleset's parsed `ruleset.json` (set by `loadClientAddons` right after the
+   * system's client script registers), so UI can read manifest-only fields like
+   * `compendiums` without a second fetch. Absent until the ruleset finishes loading.
+   */
+  manifest?: Record<string, any>;
   styles?: string;
   changelogUrl?: string;
   wikiUrl?: string;

@@ -21,6 +21,9 @@ interface CastMember {
   colorHex?: string;
   ringColor?: string;
   shape?: string;
+  bar1?: { attribute: string; color?: string };
+  bar2?: { attribute: string; color?: string };
+  displayBars?: number;
 }
 
 const STATUS_OPTIONS = [
@@ -210,6 +213,9 @@ export class TokenHud {
             locked: !!m.locked,
             hidden: !!m.hidden,
             ownership: (m as any).ownership ?? {},
+            bar1: m.bar1,
+            bar2: m.bar2,
+            displayBars: m.displayBars,
           },
           onUpdated: (updated: CastMember) => this.onUpdated(updated),
         });

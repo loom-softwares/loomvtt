@@ -94,7 +94,8 @@ export class JournalWindow extends BaseWindow {
     await super.destroy();
   }
 
-  protected get apiRoute(): string { return '/journals'; }
+  protected _apiRouteOverride: string | undefined;
+  protected get apiRoute(): string { return this._apiRouteOverride ?? '/journals'; }
 
   private async load(): Promise<void> {
     try {

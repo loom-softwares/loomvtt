@@ -95,6 +95,36 @@ const BAR_DISPLAY_MODES = [
   { value: 50, labelKey: 'tokenConfig.barDisplayAlways' },
 ];
 
+function formatResourceLabel(path: string, val?: number, max?: number): string {
+  const FRIENDLY_NAMES: Record<string, string> = {
+    'resources.health': 'HP / Vida',
+    'attributes.hp': 'HP / Vida',
+    'hp': 'HP / Vida',
+    'health': 'HP / Vida',
+    'resources.mana': 'Mana',
+    'attributes.mana': 'Mana',
+    'mana': 'Mana',
+    'mp': 'Mana',
+  };
+
+  let friendly = FRIENDLY_NAMES[path];
+  if (!friendly) {
+    const spellSlotMatch = path.match(/spellSlots\.(\d+)/i);
+    if (spellSlotMatch) {
+      friendly = `Espaço de Magia Nvl ${spellSlotMatch[1]}`;
+    } else {
+      const clean = path.replace(/^(system|resources|attributes)\./, '');
+      const parts = clean.split('.');
+      friendly = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' > ');
+    }
+  }
+
+  if (val !== undefined && max !== undefined) {
+    return `${friendly} (${val}/${max}) [${path}]`;
+  }
+  return `${friendly} [${path}]`;
+}
+
 function findResourceAttributes(obj: Record<string, any>, prefix = ''): Array<{ path: string; label: string }> {
   const result: Array<{ path: string; label: string }> = [];
   if (!obj || typeof obj !== 'object') return result;
@@ -103,7 +133,7 @@ function findResourceAttributes(obj: Record<string, any>, prefix = ''): Array<{ 
     const currPath = prefix ? `${prefix}.${k}` : k;
     if (v && typeof v === 'object') {
       if ('value' in v && 'max' in v && typeof (v as any).value === 'number') {
-        result.push({ path: currPath, label: `${currPath} (${(v as any).value}/${(v as any).max})` });
+        result.push({ path: currPath, label: formatResourceLabel(currPath, (v as any).value, (v as any).max) });
       } else {
         result.push(...findResourceAttributes(v, currPath));
       }
@@ -125,7 +155,12 @@ export class TokenConfigWindow extends BaseWindow {
       height: 'auto',
       bannerImage: '/images/general-banners/ruins-banner.png',
     } as BaseWindowOptions);
-    this.castMember = { ...props.castMember };
+    this.castMember = {
+      ...props.castMember,
+      bar1: typeof props.castMember.bar1 === 'string' ? (() => { try { return JSON.parse(props.castMember.bar1 as any); } catch { return null; } })() : props.castMember.bar1,
+      bar2: typeof props.castMember.bar2 === 'string' ? (() => { try { return JSON.parse(props.castMember.bar2 as any); } catch { return null; } })() : props.castMember.bar2,
+      displayBars: props.castMember.displayBars !== undefined ? Number(props.castMember.displayBars) : 20,
+    };
     this.tabs = new Tabs([
       { id: 'identity', label: 'Identidade', icon: 'fa-solid fa-id-card' },
       { id: 'appearance', label: 'Aparência', icon: 'fa-solid fa-image' },
@@ -349,18 +384,23 @@ export class TokenConfigWindow extends BaseWindow {
     const mergedSystem = { ...c.systemData, ...actorSystem };
     const resources = findResourceAttributes(mergedSystem);
 
-    const commonPaths = ['attributes.hp', 'hp', 'attributes.mana', 'mana'];
-    for (const cp of commonPaths) {
-      if (!resources.some(r => r.path === cp)) {
-        resources.push({ path: cp, label: cp });
-      }
+    const hasHp = resources.some(r => ['attributes.hp', 'resources.health', 'hp', 'health'].includes(r.path));
+    const hasMana = resources.some(r => ['attributes.mana', 'resources.mana', 'mana', 'mp'].includes(r.path));
+
+    if (!hasHp) {
+      resources.unshift({ path: 'attributes.hp', label: formatResourceLabel('attributes.hp') });
+    }
+    if (!hasMana) {
+      resources.push({ path: 'attributes.mana', label: formatResourceLabel('attributes.mana') });
     }
 
-    const bar1Attr = c.bar1?.attribute ?? 'attributes.hp';
+    const defaultHpPath = resources.find(r => ['attributes.hp', 'resources.health', 'hp', 'health'].includes(r.path))?.path ?? 'attributes.hp';
+
+    const bar1Attr = c.bar1?.attribute !== undefined ? c.bar1.attribute : defaultHpPath;
     const bar1Color = c.bar1?.color ?? 'dynamic';
     const bar2Attr = c.bar2?.attribute ?? '';
     const bar2Color = c.bar2?.color ?? '#3498db';
-    const displayBars = c.displayBars ?? 20;
+    const displayBars = Number(c.displayBars ?? 20);
 
     const resourcesHtml = `
       <fieldset>
