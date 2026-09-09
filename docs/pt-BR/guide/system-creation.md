@@ -75,7 +75,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Obrigatório**. Define que o pacote é para LoomVTT |
 | `type`         | `"ruleset"`    | **Obrigatório**. Define que é um sistema    |
-| `engineVersion`| `string`       | Faixa de versão exigida (ex: `>=0.1.0`)     |
+| `engineVersion`| `string`       | Faixa de versão exigida — min e/ou max, ex: `>=0.1.0`, `<2.0.0`, ou `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Nome do autor                              |
 | `repository`   | `string`       | URL do repositório/código-fonte            |
 | `description`  | `string`       | Descrição do pacote                       |
@@ -93,6 +93,10 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 | `dependencies` | `string[]`     | Addons/sistemas que devem estar ativos      |
 | `conflicts`    | `string[]`     | Addons/sistemas que NÃO podem estar ativos |
 
+- `engineVersion`: Informativo, não é portão rígido. Número inteiro sozinho funciona
+  (`"1"`, `">=2"`), e uma clausula mal formatada é logada e ignorada em vez de bloquear
+  a instalação. Uma versão realmente fora da faixa declarada ainda instala — o
+  instalador devolve uma string `warning` (mostrada como toast) em vez de recusar.
 - `itemTypes`: Array opcional com os tipos de item extras que este sistema usa (ex:
   `["force-power", "talent", "class", "species"]`). **Necessário mesmo já declarando
   `itemTypes` em `defineSystem({...})` no `client.js`** — rulesets nunca executam código no

@@ -61,7 +61,7 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Required**. Defines that the package is for LoomVTT |
 | `type`         | `"addon"`      | **Required**. Defines that it is an addon      |
-| `engineVersion`| `string`       | Required version range (e.g., `>=0.1.0`)     |
+| `engineVersion`| `string`       | Required version range — min and/or max, e.g. `>=0.1.0`, `<2.0.0`, or `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Author name                              |
 | `repository`   | `string`       | Repository/source code URL            |
 | `description`  | `string`       | Package description                       |
@@ -79,6 +79,12 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `dependencies` | `string[]`     | Addons/systems that must be active      |
 | `conflicts`    | `string[]`     | Addons/systems that MUST NOT be active |
 | `settings`     | `SettingDef[]` | Addon settings                    |
+
+- `engineVersion` is informational, not a hard gate. Bare integers work (`"1"`, `">=2"`), as
+  does a plain typo or unparseable clause — those get logged and ignored rather than
+  blocking the install. If the version genuinely falls outside the declared range, the
+  install still proceeds; the installer just returns a non-fatal `warning` string (shown
+  as a toast) so whoever's installing can judge for themselves whether it's safe.
 
 ## Client-side
 
