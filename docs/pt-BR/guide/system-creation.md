@@ -62,7 +62,8 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   "dependencies": [],
   "conflicts": [],
   "compendiums": [
-    "compendiums/classes.json"
+    "compendiums/classes.sqlite",
+    { "type": "remote", "apiUrl": "https://xxxx.supabase.co/rest/v1", "apiKeyEnvVar": "MY_PUBLISHER_DB_KEY" }
   ]
 }
 ```
@@ -86,7 +87,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 | `client`       | `string`       | Entry point client-side (`.js`)           |
 | `core`         | `string`       | **NÃO UTILIZADO**. (Sistemas rodam apenas no client) |
 | `styles`       | `string[]`     | Array de paths para arquivos CSS          |
-| `compendiums`  | `string[]`     | Array de paths para compêndios JSON       |
+| `compendiums`  | `(string \| RemoteCompendiumSource)[]` | Paths de packs `.sqlite` locais, ou declarações de fonte remota |
 | `languages`    | `Array`        | Array de definições de idioma (`lang`, `name`, `path`) |
 | `signals`      | `string[]`     | Nomes de Signals que este sistema escuta      |
 | `dependencies` | `string[]`     | Addons/sistemas que devem estar ativos      |
@@ -99,7 +100,9 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   então a validação de tipo em `POST/PUT /api/items` só enxerga o que estiver aqui, neste
   JSON estático. Tipos fora da lista nativa (`weapon, spell, armor, equipment, consumable,
   tool, treasure, other`) e fora deste array são silenciosamente rebaixados pra `equipment`.
-- `compendiums`: Array opcional contendo caminhos (relativos à pasta do ruleset) de arquivos JSON representando pacotes de compêndio pré-prontos do sistema. Eles serão importados automaticamente e de forma idempotente quando um mundo for ativado/lançado com esse sistema ativo. (Formato do JSON: `{ "name": "...", "type": "Item", "entries": [...] }`).
+- `compendiums`: Array opcional de fontes de compêndio, lidas em tempo real e só pra navegação — **nunca** copiadas pro banco do mundo na ativação. Cada GM decide, entry por entry, se materializa aquilo no próprio mundo (drag-and-drop, ou a ação "salvar no meu compêndio"), o que grava só aquela entry, nunca o pack inteiro. Dois tipos de item:
+  - **Local** — uma string simples, o caminho (relativo à pasta do addon/ruleset) de um arquivo `.sqlite` com uma tabela `pack_meta` (1 linha: `name`, `type`) e uma tabela `entries` (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Monta um com `scripts/build-compendium-pack.mjs`.
+  - **Remota** — um objeto `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, pra conteúdo hospedado por terceiro (ex: um módulo pago que uma editora mantém no próprio banco). `apiUrl` precisa ser um endpoint `https://` que fale o contrato PostgREST (a API REST automática do Supabase já serve isso de graça se a editora nomear as tabelas/views dela como `pack_meta`/`entries` com as colunas acima) — `http://` é rejeitado direto. **A credencial em si nunca vai no manifest** — `apiKeyEnvVar` é só o *nome* de uma variável de ambiente que quem instala o addon configura no próprio `.env` do servidor dele, com a chave que a editora passou por fora. Ver [Fontes remotas de compêndio: modelo de segurança](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo antes de distribuir uma dessas.
 - `languages`: Array opcional com pacotes de idioma do sistema. O VTT carrega o JSON e faz o registro automático (usando *deep merge*) para popular o objeto `Loom.i18n`.
 - `styles`: Array opcional com os caminhos (relativos à pasta do ruleset) dos arquivos `.css`
   a injetar. **Ter os arquivos na pasta `styles/` não é suficiente** — só o que estiver
@@ -107,6 +110,48 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   [`addon-client-loader.ts`](../../client/core/addon-client-loader.ts) só injeta o que está
   neste array). Esquecer de declarar aqui é o motivo mais comum de "a ficha renderiza mas
   sem nenhum estilo aplicado".
+
+### Fontes remotas de compêndio: modelo de segurança
+
+Uma fonte remota de compêndio é acesso de rede real ao banco de um terceiro, protegido
+por uma credencial de verdade — trate declarar uma dessas com o mesmo cuidado que
+qualquer integração que guarda o segredo de outra pessoa. O que o core garante de fato, e
+o que fica fora do controle dele:
+
+- **A credencial nunca passa pelo manifest, por uma request ou por uma resposta.** O
+  `addon.json`/`ruleset.json` do addon só carrega `apiKeyEnvVar` (um *nome*). O valor real
+  é lido do lado do servidor a partir de `process.env` uma única vez, no boot, antes de
+  importar o código (`core`) de qualquer addon — depois disso é apagado do `process.env` e
+  fica só num mapa privado dentro de `server/applications/addons/compendium-source.ts`
+  (`getScrubbedEnvVar`). Nenhum addon carregado depois — malicioso ou não — consegue mais
+  lê-la, mesmo todo addon rodando no mesmo processo do servidor.
+- **`http://` é rejeitado.** `assertSecureApiUrl()` em `compendium-source.ts` bloqueia
+  qualquer `apiUrl` que não seja `https://`, pra chave não viajar em texto claro na rede.
+- **Navegar uma fonte remota exige `compendiumEdit` (GM), não só estar logado.** Toda rota
+  `/api/compendium/sources*` exige isso — senão qualquer conta de jogador no mundo
+  conseguiria usar a rota em loop e fazer o servidor devolver o pack pago inteiro em nome
+  dela, não só o que o GM licenciou.
+- **Conteúdo de fonte remota é escapado antes de renderizar.** `name`, `imgUrl` etc. vêm
+  como dado de terceiro não confiável e passam por escape de HTML (ver
+  `escapeHtml`/`safeImgUrl` em `client/windows/compendium-source-window.ts` e
+  `sidebar.ts`) antes de entrar em qualquer template via `innerHTML` — um endpoint de
+  editora comprometido não consegue injetar script no client do GM só devolvendo
+  `name`/`imgUrl` maliciosos.
+
+O que isso **não** cobre, porque não é responsabilidade nossa cobrir:
+- **A segurança do próprio banco/backend da editora** (política de RLS, quem mais tem a
+  chave de serviço, rate limit, log de auditoria) é inteiramente dela. A recomendação é
+  emitir uma chave escopada, só leitura, por licença — nunca a chave `service_role` do
+  Supabase — pra uma chave vazada expor só aquele pack, não o projeto inteiro.
+- **A máquina que roda o servidor Loom** (o `.env` mora no disco de quem instalou o
+  addon). Quem tem acesso de sistema/root àquela máquina lê o arquivo — igual qualquer
+  outro segredo de qualquer outro app. Proteger essa máquina é trabalho de quem opera o
+  servidor, não algo que o core consiga garantir remotamente.
+- **O código de um addon malicioso não é isolado** do resto do processo do servidor —
+  todo `core` de addon já roda com privilégio total do servidor (disco, banco, rede),
+  independente da feature de compêndio. A limpeza de env var acima fecha o vazamento
+  *específico* de um addon ler a chave de fonte remota de outro; não é isolamento de
+  processo. Só instale addon de fonte confiável.
 
 ## Registro do Sistema
 

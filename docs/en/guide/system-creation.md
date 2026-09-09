@@ -62,7 +62,8 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
   "dependencies": [],
   "conflicts": [],
   "compendiums": [
-    "compendiums/classes.json"
+    "compendiums/classes.sqlite",
+    { "type": "remote", "apiUrl": "https://xxxx.supabase.co/rest/v1", "apiKeyEnvVar": "MY_PUBLISHER_DB_KEY" }
   ]
 }
 ```
@@ -86,7 +87,7 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
 | `client`       | `string`       | Client-side entry point (`.js`)           |
 | `core`         | `string`       | **NOT USED**. (Systems run only on the client) |
 | `styles`       | `string[]`     | Array of paths for CSS files          |
-| `compendiums`  | `string[]`     | Array of paths for JSON compendiums       |
+| `compendiums`  | `(string \| RemoteCompendiumSource)[]` | Local `.sqlite` pack paths, or remote source declarations |
 | `languages`    | `Array`        | Array of language definitions (`lang`, `name`, `path`) |
 | `signals`      | `string[]`     | Signal names that this system listens to      |
 | `dependencies` | `string[]`     | Addons/systems that must be active      |
@@ -99,7 +100,9 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
   so the type validation in `POST/PUT /api/items` only sees what is here, in this
   static JSON. Types outside the native list (`weapon, spell, armor, equipment, consumable,
   tool, treasure, other`) and outside this array are silently downgraded to `equipment`.
-- `compendiums`: Optional array containing paths (relative to the ruleset folder) of JSON files representing pre-made compendium packs of the system. They will be imported automatically and idempotently when a world is activated/launched with this system active. (JSON format: `{ "name": "...", "type": "Item", "entries": [...] }`).
+- `compendiums`: Optional array of compendium sources, read live and browse-only — **never** copied into a world's database on activation. Each GM decides, per entry, whether to materialize it into their own world (drag-and-drop, or the "save to my compendium" action), which writes exactly that one entry, never the whole pack. Two kinds of entry:
+  - **Local** — a plain string, the path (relative to the addon/ruleset folder) to a `.sqlite` file with a `pack_meta` table (1 row: `name`, `type`) and an `entries` table (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Build one with `scripts/build-compendium-pack.mjs`.
+  - **Remote** — an object `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, for content hosted by a third party (e.g. a paid module a publisher maintains on their own database). `apiUrl` must be an `https://` endpoint speaking the PostgREST contract (Supabase's auto-generated REST API works out of the box if the publisher names their tables/views `pack_meta`/`entries` with the columns above) — `http://` is rejected outright. **The credential itself never goes in the manifest** — `apiKeyEnvVar` is only the *name* of an environment variable that whoever installs the addon sets in their own server's `.env`, holding the key the publisher gave them out-of-band. See [Remote compendium sources: security model](#remote-compendium-sources-security-model) below before shipping one of these.
 - `languages`: Optional array with system language packs. The VTT loads the JSON and performs automatic registration (using *deep merge*) to populate the `Loom.i18n` object.
 - `styles`: Optional array with paths (relative to the ruleset folder) of `.css` files
   to inject. **Having the files in the `styles/` folder is not enough** — only what is
@@ -107,6 +110,47 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
   [`addon-client-loader.ts`](../../client/core/addon-client-loader.ts) only injects what is
   in this array). Forgetting to declare here is the most common reason for "the sheet renders but
   with no styles applied".
+
+### Remote compendium sources: security model
+
+A remote compendium source is real network access to a third party's database, gated by
+a real credential — treat declaring one with the same care as any other integration that
+holds someone else's secret. What the core actually guarantees, and what stays out of its
+control:
+
+- **The credential never travels through the manifest, a request, or a response.** The
+  addon's `addon.json`/`ruleset.json` only ever carries `apiKeyEnvVar` (a *name*). The
+  actual value is read server-side from `process.env` once, at boot, before any addon's
+  own code (`core`) is imported — then deleted from `process.env` and kept only in a
+  private map inside `server/applications/addons/compendium-source.ts`
+  (`getScrubbedEnvVar`). No other addon loaded afterwards — malicious or not — can read it,
+  even though every addon still runs in the same server process.
+- **`http://` is refused.** `assertSecureApiUrl()` in `compendium-source.ts` rejects any
+  `apiUrl` that isn't `https://`, so the key can't be sniffed in transit.
+- **Browsing a remote source requires `compendiumEdit` (GM), not just being logged in.**
+  Every `/api/compendium/sources*` route enforces this — otherwise any player account on
+  the world could loop the endpoint and have the server proxy the entire paid pack on
+  their behalf, not just what the GM licensed.
+- **Remote-sourced content is escaped before rendering.** `name`, `imgUrl`, etc. come back
+  as untrusted third-party data and are HTML-escaped (see `escapeHtml`/`safeImgUrl` in
+  `client/windows/compendium-source-window.ts` and `sidebar.ts`) before going into any
+  `innerHTML` template — a compromised publisher endpoint can't inject script into a GM's
+  client just by returning malicious `name`/`imgUrl` values.
+
+What this does **not** cover, because it isn't ours to cover:
+- **The publisher's own database/backend security** (RLS policies, who else has the
+  service key, rate limiting, audit logging) is entirely on the publisher. Recommend they
+  issue a scoped, read-only key per license — never their Supabase `service_role` key —
+  so a leaked key exposes only that one pack, not their whole project.
+- **The machine running the Loom server** (the `.env` file lives on whoever installed the
+  addon's own disk). Anyone with filesystem/root access to *that* machine can read it —
+  same as any other secret in any other app. Protecting that machine is the operator's
+  job, not something the core can enforce remotely.
+- **A malicious addon's own arbitrary code isn't sandboxed** from the rest of the server
+  process — every addon `core` entry point already runs with full server privilege
+  (filesystem, DB, network) regardless of the compendium feature. The env-var scrub above
+  closes the *specific* leak of one addon reading another's remote-source key; it is not
+  process isolation. Only install addons from sources you trust.
 
 ## System Registration
 

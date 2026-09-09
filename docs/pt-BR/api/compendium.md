@@ -109,13 +109,52 @@ Recria todo documento empacotado numa entry Adventure como documento novo no mun
 
 ---
 
-### POST `/restore-from-system`
+## Fontes de addon/ruleset (só leitura, nunca copiado pro mundo)
 
-Restaura manualmente os compêndios que vêm com o sistema (ruleset) ativo do mundo — o
-mesmo processo rodado automaticamente ao ativar um mundo. **Auth:**
-`requirePermission('compendiumEdit')`
+Essas rotas navegam fontes de compêndio vivas declaradas por addons/rulesets ativos
+(`manifest.compendiums` — arquivos `.sqlite` locais ou APIs remotas, ver
+[system-creation.md](../guide/system-creation.md#fontes-remotas-de-compendio-modelo-de-seguranca)
+pro modelo de segurança da fonte remota). Navegar nunca escreve nada no banco do
+mundo — só `.../import` materializa uma entry específica.
+
+**Auth nas quatro:** `requirePermission('compendiumEdit')` — de propósito não aberto pra
+qualquer jogador autenticado, já que uma fonte remota faz proxy pelo servidor usando uma
+credencial que o servidor guarda; qualquer um que conseguisse chamar essas rotas poderia
+usá-las em loop pra fazer o servidor dumpar um pack pago de terceiro inteiro, não só o
+que o GM licenciou.
+
+### GET `/sources`
+
+Lista toda fonte viva dos addons/rulesets atualmente ativos.
+
+**Response `200`:** `[{ sourceId, name, type, ownerName, ownerType }]`
+
+---
+
+### GET `/sources/:sourceId/entries`
+
+Listagem leve de entries de uma fonte (sem payload `data`). `?search=`
+
+**Response `200`:** `{ sourceId, name, type, entries: [{ id, name, type, sortOrder, imgUrl }] }`
+**Response `404`:** fonte não encontrada
+
+---
+
+### GET `/sources/:sourceId/entries/:entryId`
+
+Entry completa, incluindo `data`.
+
+**Response `404`:** entry não encontrada
+
+---
+
+### POST `/sources/:sourceId/entries/:entryId/import`
+
+Materializa UMA entry no compêndio do próprio mundo (cria o pack de destino no primeiro
+uso, nomeado a partir da fonte). Nunca copia o resto do pack de origem.
 
 **Request body:** `{ "worldId": "..." }`
 
-**Response `200`:** `{ "success": true, "count": number }`
-**Response `400`:** `worldId` ausente
+**Response `201`:** `{ packId, entry }`
+**Response `403`:** `worldId` não bate com o mundo autenticado de quem chamou
+**Response `404`:** fonte ou entry não encontrada

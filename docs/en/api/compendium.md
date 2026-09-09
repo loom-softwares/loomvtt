@@ -113,11 +113,51 @@ Recreates every document bundled in an Adventure entry as new documents in the p
 
 ---
 
-### POST `/restore-from-system`
+## Addon/ruleset sources (read-only, never copied into the world)
 
-Manually restores the compendiums that come with the active world's system (ruleset) — the same process that runs automatically when activating a world. **Auth:** `requirePermission('compendiumEdit')`
+These routes browse live compendium sources declared by active addons/rulesets
+(`manifest.compendiums` — local `.sqlite` files or remote APIs, see
+[system-creation.md](../guide/system-creation.md#remote-compendium-sources-security-model)
+for the security model of the remote kind). Browsing never writes anything to the
+world's database — only `.../import` materializes a single entry.
+
+**Auth on all four:** `requirePermission('compendiumEdit')` — intentionally not open to
+every authenticated player, since a remote source proxies through the server using a
+credential the server holds; anyone able to call these could otherwise loop them to make
+the server dump an entire third-party paid pack, not just what the GM licensed.
+
+### GET `/sources`
+
+Lists every live source from currently active addons/rulesets.
+
+**Response `200`:** `[{ sourceId, name, type, ownerName, ownerType }]`
+
+---
+
+### GET `/sources/:sourceId/entries`
+
+Lightweight entry listing for one source (no `data` payload). `?search=`
+
+**Response `200`:** `{ sourceId, name, type, entries: [{ id, name, type, sortOrder, imgUrl }] }`
+**Response `404`:** source not found
+
+---
+
+### GET `/sources/:sourceId/entries/:entryId`
+
+Full entry, including `data`.
+
+**Response `404`:** entry not found
+
+---
+
+### POST `/sources/:sourceId/entries/:entryId/import`
+
+Materializes ONE entry into the world's own compendium (creates the destination pack on
+first use, named after the source). Never copies the rest of the source pack.
 
 **Request body:** `{ "worldId": "..." }`
 
-**Response `200`:** `{ "success": true, "count": number }`
-**Response `400`:** missing `worldId`
+**Response `201`:** `{ packId, entry }`
+**Response `403`:** `worldId` doesn't match the caller's authenticated world
+**Response `404`:** source or entry not found
