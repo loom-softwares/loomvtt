@@ -149,7 +149,7 @@ Signal.listen('cast.created', (data) => {
 
 ## Installation
 
-Via Setup Hub > Modules or API:
+Via Setup Hub > Addons or API:
 
 ```bash
 curl -X POST http://localhost:3000/api/marketplace/install \

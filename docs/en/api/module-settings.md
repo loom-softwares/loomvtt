@@ -1,4 +1,4 @@
-# Module Settings
+# Addon Settings
 
 ## Endpoints
 
@@ -9,7 +9,7 @@
 
 ### GET `/:worldId/:moduleId`
 
-Lists all settings for a module in a world, as a key-value object.
+Lists all settings for an addon in a world, as a key-value object.
 
 **Response `200`:** `{ "data": { "key1": value1, ... }, "error": null }`
 
