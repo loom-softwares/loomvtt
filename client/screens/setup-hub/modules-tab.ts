@@ -6,16 +6,12 @@ import { renderGlobalProgressBar, updateGlobalProgressBarUI } from '../../compon
 import { api } from '../../core/api.js';
 import { t } from '../../lib/i18n.js';
 import { windowManager } from '../../core/window-manager.js';
-import { ModuleSettingsWindow } from '../../windows/module-settings-window.js';
+import { ModuleManifestWindow } from '../../windows/module-manifest-window.js';
 import { PackageBrowserWindow } from '../../windows/package-browser-window.js';
 import { showConfirm } from '../../components/dialog.js';
 import { cardProgressTracker } from '../../components/card-progress.js';
 import { CardGrid, CardGridItem } from '../../components/card-grid.js';
 import { showContextMenu, ContextMenuItem } from '../../components/context-menu.js';
-
-// Setup Hub manages modules before any world is active — settings
-// made here are global (not per world), they use a fixed sentinel worldId.
-const GLOBAL_SETTINGS_WORLD_ID = 'global';
 
 // Import CSS
 import '../../styles/modules/modules.css';
@@ -31,6 +27,8 @@ interface PackageInfo {
   coverUrl?: string;
   description?: string;
   active?: boolean;
+  dependencies?: string[];
+  conflicts?: string[];
   settings?: Array<{
     key: string;
     type: 'string' | 'number' | 'boolean';
@@ -203,14 +201,13 @@ export class ModulesTab extends BaseComponent {
     const pkg = this.packages.find((p) => p.name === item.id);
     if (!pkg) return;
 
-    const menuItems: ContextMenuItem[] = [];
-    if (pkg.settings?.length) {
-      menuItems.push({
-        icon: '<i class="fa-solid fa-gear"></i>',
-        label: t('setupHub.modules.moduleSettings'),
-        action: () => this.openModuleSettings(pkg.name, pkg.type)
-      });
-    }
+    const menuItems: ContextMenuItem[] = [
+      {
+        icon: '<i class="fa-solid fa-folder-tree"></i>',
+        label: t('setupHub.modules.manifestEdit'),
+        action: () => this.openModuleManifest(pkg),
+      },
+    ];
     menuItems.push({
       icon: '<i class="fa-solid fa-trash"></i>',
       label: t('setupHub.modules.uninstall'),
@@ -248,14 +245,18 @@ export class ModulesTab extends BaseComponent {
     return div.innerHTML;
   }
 
-  private openModuleSettings(name: string, type: 'addon' | 'ruleset'): void {
-    const pkg = this.packages.find((p) => p.name === name && p.type === type);
-    if (!pkg || !pkg.settings?.length) return;
-
-    windowManager.open(`module-settings-${name}`, ModuleSettingsWindow, {
-      worldId: GLOBAL_SETTINGS_WORLD_ID,
-      moduleId: name,
-      manifest: { name: pkg.name, title: pkg.title, settings: pkg.settings },
+  /** Edita metadado do pacote (versão, autor, dependências...) direto no
+   * addon.json/ruleset.json em disco. Diferente de "configurações do módulo"
+   * (settings de escopo mundo/client, que o próprio addon define) — essas
+   * continuam configuradas de dentro do jogo (Game Settings), nunca aqui,
+   * porque o Setup Hub roda antes de qualquer mundo estar ativo. */
+  private openModuleManifest(pkg: PackageInfo): void {
+    windowManager.open(`module-manifest-${pkg.name}`, ModuleManifestWindow, {
+      pkg,
+      onSaved: () => {
+        this.packagesLoaded = false;
+        this.loadPackages();
+      },
     });
   }
 

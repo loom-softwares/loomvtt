@@ -250,6 +250,35 @@ marketplaceRouter.post('/:type/:name/deactivate', requireAdminSession, async (re
   }
 });
 
+// PUT /api/marketplace/:type/:name/manifest — edita metadado do pacote instalado
+// (versão, autor, dependências, conflitos...) direto no addon.json/ruleset.json.
+// Nunca aceita `core`/`client`/`name`/`settings`/`compendiums` — isso é código/
+// estrutura do addon, não metadado editável pelo Setup Hub.
+const EDITABLE_MANIFEST_FIELDS = ['title', 'version', 'author', 'repository', 'description', 'dependencies', 'conflicts'] as const;
+
+marketplaceRouter.put('/:type/:name/manifest', requireAdminSession, async (req, res) => {
+  try {
+    const root = await getMarketplaceRoot();
+    const type = req.params.type === 'ruleset' ? 'ruleset' : 'addon';
+    const { manifestPath, manifest } = await readManifest(root, type, req.params.name);
+
+    for (const field of EDITABLE_MANIFEST_FIELDS) {
+      if (req.body[field] === undefined) continue;
+      if (field === 'dependencies' || field === 'conflicts') {
+        if (!Array.isArray(req.body[field])) return res.status(400).json({ error: `${field} must be an array.` });
+        manifest[field] = req.body[field].filter((v: any) => typeof v === 'string');
+      } else {
+        manifest[field] = String(req.body[field]);
+      }
+    }
+
+    await writeManifest(manifestPath, manifest);
+    res.json({ success: true, type, name: req.params.name, manifest });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Códigos de ativação (Fase 1 do marketplace pago) ─────────────────────
 // Gerar código: acao de admin, sem consumidor de UI ainda (venda e' manual,
 // fora do app). Resgatar: por-mundo, uso unico, ja ativa o pacote no passo.
@@ -426,7 +455,7 @@ marketplaceRouter.post('/fetch-manifest', requireAdminSession, async (req, res) 
     if (!gate.ok) {
       return res.status(400).json({ error: gate.error });
     }
-    res.json({ manifest });
+    res.json({ manifest, warning: gate.warning });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

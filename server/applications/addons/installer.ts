@@ -112,7 +112,7 @@ export function compareVersions(a: string, b: string): number {
 export function validateLoomManifest(
   manifest: RemoteManifest,
   expectedType: 'addon' | 'ruleset',
-): { ok: true } | { ok: false; error: string } {
+): { ok: true; warning?: string } | { ok: false; error: string } {
   const raw = manifest as unknown as Record<string, unknown>;
 
   if (manifest.engine !== LOOM_ENGINE) {
@@ -145,19 +145,35 @@ export function validateLoomManifest(
 
   if (manifest.engineVersion) {
     const appVersion = getAppVersion();
-    const m = manifest.engineVersion.trim().match(/^(>=|>|=)?\s*(\d+(?:\.\d+)*)$/);
-    if (!m) {
-      return { ok: false, error: `engineVersion invalido: "${manifest.engineVersion}". Use ">=X.Y.Z" ou "X.Y.Z".` };
+    // Aceita 1 ou 2 clausulas separadas por espaco (min e/ou max), ex.:
+    // ">=1.0.0", "<2.0.0" ou ">=1.0.0 <2.0.0". Vale igual pra addon e ruleset
+    // — os dois passam por essa mesma funcao.
+    // `engineVersion` e informativo (pra saber contra qual versao do Loom o pacote foi
+    // feito), nao um portao rigido — uma clausula fora do formato esperado so vira
+    // warning no log e e ignorada, nunca bloqueia a instalacao inteira por causa disso.
+    const clauses = manifest.engineVersion.trim().split(/\s+/);
+    const parsed: Array<{ op: '>=' | '<=' | '>' | '<' | '='; version: string }> = [];
+    for (const clause of clauses) {
+      const m = clause.match(/^(>=|<=|>|<|=)?\s*(\d+(?:\.\d+)*)$/);
+      if (!m) {
+        logger.warn(`Clausula de engineVersion ignorada (formato invalido): "${clause}" em "${manifest.engineVersion}"`, { package: manifest.name });
+        continue;
+      }
+      parsed.push({ op: (m[1] as any) || '>=', version: m[2] });
     }
     if (appVersion) {
-      const [, op = '>=', required] = m;
-      const cmp = compareVersions(appVersion, required);
-      const satisfied = op === '=' ? cmp === 0 : op === '>' ? cmp > 0 : cmp >= 0;
-      if (!satisfied) {
-        return {
-          ok: false,
-          error: `Este pacote exige LoomVTT ${op} ${required}, mas esta instalacao e a ${appVersion}.`,
-        };
+      for (const { op, version: required } of parsed) {
+        const cmp = compareVersions(appVersion, required);
+        const satisfied = op === '=' ? cmp === 0 : op === '>' ? cmp > 0 : op === '<' ? cmp < 0 : op === '<=' ? cmp <= 0 : cmp >= 0;
+        if (!satisfied) {
+          // Fora da faixa declarada NAO bloqueia — so avisa. Um addon feito pra
+          // Loom 1.x pode funcionar perfeitamente no 2.x (ou nao); quem decide se
+          // instala mesmo assim e quem esta instalando, nao esse portao.
+          return {
+            ok: true,
+            warning: `Este pacote foi feito para LoomVTT ${op} ${required}, mas esta instalacao e a ${appVersion} — pode haver incompatibilidade.`,
+          };
+        }
       }
     }
   }
@@ -171,6 +187,8 @@ export interface InstallResult {
   type: 'addon' | 'ruleset';
   version?: string;
   error?: string;
+  /** Aviso não-bloqueante (ex: engineVersion fora da faixa declarada). */
+  warning?: string;
 }
 
 function getMarketplaceRoot(): string {
@@ -599,7 +617,7 @@ export async function installFromUrl(
     await fs.writeFile(finalManifestPath, JSON.stringify(finalManifest, null, 2) + '\n', 'utf8');
 
     logger.info('Package installed successfully', { name, type, version: manifest.version });
-    return { success: true, name, type, version: manifest.version };
+    return { success: true, name, type, version: manifest.version, warning: gate.warning };
 
   } catch (err: any) {
     logger.error('Package installation failed', { manifestUrl, error: err.message });

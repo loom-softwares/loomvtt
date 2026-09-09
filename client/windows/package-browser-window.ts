@@ -236,12 +236,13 @@ export class PackageBrowserWindow extends BaseWindow {
     this.rerenderBody();
 
     try {
-      await api.post('/marketplace/install', {
+      const result = await api.post<{ warning?: string }>('/marketplace/install', {
         manifestUrl,
         type: CATALOG_TO_INSTALLER_TYPE[this.catalogType],
         operationId,
       });
       showToast(t('setupHub.modules.installSuccess') || 'Instalado com sucesso', 'success');
+      if (result?.warning) showToast(result.warning, 'info');
       this.onInstalled?.();
     } catch (err: any) {
       showToast(err?.message || t('setupHub.modules.installError') || 'Erro ao instalar', 'error');
