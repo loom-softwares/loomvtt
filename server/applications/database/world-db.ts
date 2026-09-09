@@ -1010,16 +1010,34 @@ async function ensureWorldSchema(db: Knex): Promise<void> {
     });
   }
 
-  // 22. Compendium Packs
+  // 22. Compendium Packs — só metadado (nome/tipo/pasta). Entries moram em
+  // `compendium_entries` (1 linha por entry, nunca um blob com o pack inteiro —
+  // ver project_compendio_arquitetura_2026_09_08).
   if (!(await db.schema.hasTable('compendium_packs'))) {
     await db.schema.createTable('compendium_packs', (t) => {
       t.string('id').primary();
       t.string('worldId').notNullable();
       t.string('name').notNullable();
       t.string('type').defaultTo('Actor');
-      t.text('entries').defaultTo('[]');
       t.text('ownership').defaultTo('{}');
       t.string('folderId').defaultTo('');
+      t.timestamps(true, true, true);
+    });
+  }
+
+  // 22b. Compendium Entries — 1 linha por entry (spell, monstro, item...). `data` é o
+  // payload mecânico só daquela entry, não o array inteiro do pack.
+  if (!(await db.schema.hasTable('compendium_entries'))) {
+    await db.schema.createTable('compendium_entries', (t) => {
+      t.string('id').primary();
+      t.string('packId').notNullable();
+      t.string('worldId').notNullable();
+      t.string('name').notNullable();
+      t.string('type').defaultTo('');
+      t.integer('sortOrder').defaultTo(0);
+      t.string('imgUrl').defaultTo('');
+      t.text('ownership').defaultTo('{}');
+      t.text('data').defaultTo('{}');
       t.timestamps(true, true, true);
     });
   }

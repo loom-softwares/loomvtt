@@ -42,7 +42,11 @@ export interface AddonManifest {
     scope: 'world' | 'client'; // v1: only 'world' scope is implemented
   }>;
   styles?: string[];  // array de paths relativos para arquivos CSS
-  compendiums?: string[];
+  /** Cada item é um pack lido direto da fonte via compendium-source.ts
+   * (browse read-only). Nunca copiado pro banco do mundo na ativação — só
+   * quando 1 entry é materializada. String = caminho relativo a um `.sqlite`
+   * local. Objeto = pack remoto (ver RemoteCompendiumSource). */
+  compendiums?: CompendiumSourceDecl[];
   languages?: Array<{ lang: string; name?: string; path: string }>;
 }
 
@@ -61,8 +65,52 @@ export interface RulesetManifest {
   dependencies?: string[];
   conflicts?: string[];
   styles?: string[];  // array de paths relativos para arquivos CSS
-  compendiums?: string[];
+  compendiums?: CompendiumSourceDecl[];
   languages?: Array<{ lang: string; name?: string; path: string }>;
+}
+
+/** Pack hospedado por terceiro (ex: editora vendendo um módulo pago), sem
+ * arquivo local nenhum. `apiUrl` deve responder ao contrato PostgREST
+ * (tabelas/views `pack_meta` e `entries`) — o próprio REST automático do
+ * Supabase serve isso sem código extra do lado da editora. A credencial
+ * NUNCA fica no manifest: só o nome da env var lida no servidor de quem
+ * instala o addon (ver memory: project_compendio_arquitetura_2026_09_08). */
+export interface RemoteCompendiumSource {
+  type: 'remote';
+  apiUrl: string;
+  apiKeyEnvVar: string;
+}
+
+export type CompendiumSourceDecl = string | RemoteCompendiumSource;
+
+/** Chaves de API de fonte remota (Postgres/Supabase de terceiro), lidas do
+ * `process.env` UMA vez aqui e depois apagadas de lá (ver scrubRemoteApiKeys)
+ * — depois desse ponto, nenhum addon carregado (nem os que ainda vão ser
+ * importados) consegue ler essas env vars, só compendium-source.ts via
+ * getScrubbedEnvVar. Não é isolamento de processo de verdade (todo addon
+ * ainda roda no mesmo processo do servidor), mas fecha o vazamento direto
+ * de `process.env` entre addons pra esse caso específico. */
+const scrubbedEnv = new Map<string, string>();
+
+export function getScrubbedEnvVar(name: string): string | undefined {
+  return scrubbedEnv.get(name);
+}
+
+/** Chamado ANTES de importar o `core` de qualquer addon (allEntries só tem
+ * manifests lidos como JSON até esse ponto — nenhum addon rodou código
+ * ainda). */
+function scrubRemoteApiKeys(entries: Array<{ manifest: any }>): void {
+  for (const entry of entries) {
+    const compendiums = entry.manifest.compendiums as CompendiumSourceDecl[] | undefined;
+    if (!compendiums) continue;
+    for (const decl of compendiums) {
+      if (typeof decl === 'string' || decl.type !== 'remote') continue;
+      const value = process.env[decl.apiKeyEnvVar];
+      if (value === undefined) continue;
+      scrubbedEnv.set(decl.apiKeyEnvVar, value);
+      delete process.env[decl.apiKeyEnvVar];
+    }
+  }
 }
 
 export interface LoadedAddon {
@@ -71,6 +119,9 @@ export interface LoadedAddon {
   manifest: AddonManifest | RulesetManifest;
   loaded: boolean;
   error?: string;
+  /** Diretório absoluto do addon/ruleset — usado por compendium-source.ts pra
+   * resolver `manifest.compendiums` (caminhos relativos a arquivos `.sqlite`). */
+  dir?: string;
 }
 
 /**
@@ -138,6 +189,10 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     allEntries.filter(e => e.manifest.active !== false).map(e => e.manifest.name ?? path.basename(e.dir)),
   );
 
+  // Captura e apaga as env vars remotas ANTES de importar código de qualquer
+  // addon — depois desse ponto elas não existem mais em process.env.
+  scrubRemoteApiKeys(allEntries);
+
   for (const entry of allEntries) {
     const { dir, manifest, type } = entry;
     const name = manifest.name ?? path.basename(dir);
@@ -145,7 +200,7 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     // Skip if explicitly disabled
     if (manifest.active === false) {
       logger.info(`[AddonLoader] Skipping disabled ${type}: ${name}`);
-      loaded.push({ name, type, manifest, loaded: false, error: 'disabled' });
+      loaded.push({ name, type, manifest, loaded: false, error: 'disabled', dir });
       continue;
     }
 
@@ -153,7 +208,7 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     const missingDep = (manifest.dependencies ?? []).find((dep: string) => !activeNames.has(dep));
     if (missingDep) {
       logger.warn(`[AddonLoader] Skipping ${type} "${name}": missing dependency "${missingDep}"`);
-      loaded.push({ name, type, manifest, loaded: false, error: `missing dependency: ${missingDep}` });
+      loaded.push({ name, type, manifest, loaded: false, error: `missing dependency: ${missingDep}`, dir });
       continue;
     }
 
@@ -161,7 +216,7 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     const foundConflict = (manifest.conflicts ?? []).find((c: string) => activeNames.has(c));
     if (foundConflict) {
       logger.warn(`[AddonLoader] Skipping ${type} "${name}": conflicts with active "${foundConflict}"`);
-      loaded.push({ name, type, manifest, loaded: false, error: `conflicts with: ${foundConflict}` });
+      loaded.push({ name, type, manifest, loaded: false, error: `conflicts with: ${foundConflict}`, dir });
       continue;
     }
 
@@ -177,7 +232,7 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     // No core entry point (ou ruleset com core ignorado acima) — client-only, ainda listado
     if (!manifest.core || type === 'ruleset') {
       logger.debug(`[AddonLoader] ${type} "${name}" has no core entry — skipping execution`);
-      loaded.push({ name, type, manifest, loaded: true });
+      loaded.push({ name, type, manifest, loaded: true, dir });
       continue;
     }
 
@@ -187,14 +242,14 @@ export async function loadAllAddons(): Promise<LoadedAddon[]> {
     try {
       await import(entryUrl);
       logger.info(`[AddonLoader] Loaded ${type}: ${name}`, { entry: entryPath, url: entryUrl });
-      loaded.push({ name, type, manifest, loaded: true });
+      loaded.push({ name, type, manifest, loaded: true, dir });
     } catch (err: any) {
       logger.error(`[AddonLoader] Failed to load ${type}: ${name}`, {
         entry: entryPath,
         url: entryUrl,
         error: err.message,
       });
-      loaded.push({ name, type, manifest, loaded: false, error: err.message });
+      loaded.push({ name, type, manifest, loaded: false, error: err.message, dir });
     }
   }
 

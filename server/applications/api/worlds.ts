@@ -21,7 +21,6 @@ import { signToken, verifyToken, extractToken, WORLD_COOKIE, ADMIN_COOKIE, requi
 import { requireGM, isGM } from '../middleware/permissions.js';
 import { connectedUsers } from '../../index.js';
 import { syncPackagesTable, getRulesetBackgroundUrl } from './marketplace.js';
-import { seedSystemCompendiums } from './compendium.js';
 
 export const worldsRouter = Router();
 
@@ -400,7 +399,6 @@ worldsRouter.post('/:id/launch', requireAdminSession, async (req, res) => {
 
     await setActiveWorldDb(req.params.id);
     await saveWorldManifest(world);
-    await seedSystemCompendiums(req.params.id);
 
     res.json({ success: true, worldId: req.params.id });
   } catch (err: any) {
@@ -444,7 +442,6 @@ worldsRouter.post('/:id/activate', requireAdminSession, async (req, res) => {
 
     await setActiveWorldDb(req.params.id);
     await saveWorldManifest(world);
-    await seedSystemCompendiums(req.params.id);
 
     logger.info('World activated', { worldId: req.params.id, name: world.name });
     res.json({ success: true, worldId: req.params.id, name: world.name });
@@ -475,7 +472,6 @@ worldsRouter.post('/:id/launch-gm', requireAdminSession, async (req, res) => {
 
     await setActiveWorldDb(req.params.id);
     await saveWorldManifest(world);
-    await seedSystemCompendiums(req.params.id);
 
     // Find existing GM user or create one
     let gm = await UsersDocument.findOne<any>({ worldId: req.params.id, role: 4 });

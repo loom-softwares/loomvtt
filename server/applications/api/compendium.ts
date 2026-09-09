@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
+import path from 'path';
+import fs from 'fs';
 import { Signal } from '../signals/index.js';
 import { getDataRoot } from '../database/db.js';
 import { Compendium_packsDocument } from '../schemas/compendium_packs.schema.js';
+import { Compendium_entriesDocument } from '../schemas/compendium_entries.schema.js';
 import logger from '../utils/logger.js';
-import path from 'path';
-import fs from 'fs';
 import { requireAuth } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permissions.js';
-import { WorldsDocument } from '../schemas/worlds.schema.js';
 import { ActorsDocument } from '../schemas/actors.schema.js';
 import { ItemsDocument } from '../schemas/items.schema.js';
 import { StagesDocument } from '../schemas/stages.schema.js';
@@ -16,6 +16,7 @@ import { JournalsDocument } from '../schemas/journals.schema.js';
 import { MacrosDocument } from '../schemas/macros.schema.js';
 import { PlaylistsDocument } from '../schemas/playlists.schema.js';
 import { Playlist_soundsDocument } from '../schemas/playlist_sounds.schema.js';
+import { listSourcePacks, getSourcePackMeta, querySourceEntries, getSourceEntry } from '../addons/compendium-source.js';
 
 export const compendiumRouter = Router();
 compendiumRouter.use(requireAuth);
@@ -27,6 +28,16 @@ function packBelongsToAuthWorld(req: any, pack: { worldId: string }): boolean {
   return !!req.auth?.admin || pack.worldId === req.auth?.worldId;
 }
 
+/** Carrega um pack + suas entries (join manual, já que moram em tabelas
+ * separadas — ver project_compendio_arquitetura_2026_09_08). Mantém o mesmo
+ * formato de resposta que o client já espera (`pack.entries` como array). */
+async function loadPackWithEntries(packId: string): Promise<any | null> {
+  const pack = await Compendium_packsDocument.findById<any>(packId);
+  if (!pack) return null;
+  const entries = await Compendium_entriesDocument.find<any>({ packId, orderBy: 'sortOrder' });
+  return { ...pack, entries };
+}
+
 // GET /api/compendium — list all packs for a world
 compendiumRouter.get('/', async (req, res) => {
   try {
@@ -34,12 +45,11 @@ compendiumRouter.get('/', async (req, res) => {
     const filter: Record<string, any> = {};
     if (worldId) filter.worldId = worldId;
     const packs = await Compendium_packsDocument.find({ ...filter, orderBy: 'createdAt', orderDir: 'desc' });
-    // Return entries count without the full payload
-    const result = packs.map((p: any) => ({
+    const result = await Promise.all(packs.map(async (p: any) => ({
       id: p.id, worldId: p.worldId, name: p.name, type: p.type,
-      entryCount: p.entries.length,
+      entryCount: await Compendium_entriesDocument.count({ packId: p.id }),
       createdAt: p.createdAt, updatedAt: p.updatedAt
-    }));
+    })));
     res.json(result);
   } catch (err: any) {
     logger.error('GET /compendium failed', { error: err.message });
@@ -51,20 +61,105 @@ compendiumRouter.get('/', async (req, res) => {
 compendiumRouter.post('/', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const { id, worldId, name, type } = req.body;
-    const result = await Compendium_packsDocument.create({ id, worldId, name, type: type || 'Actor', entries: [] });
+    const result = await Compendium_packsDocument.create({ id, worldId, name, type: type || 'Actor' });
     if (result.error) return res.status(400).json({ error: result.error });
     logger.info('Compendium pack created', { id: result.data.id, worldId, name });
-    res.status(201).json(result.data);
+    res.status(201).json({ ...result.data, entries: [] });
   } catch (err: any) {
     logger.error('POST /compendium failed', { error: err.message });
     res.status(500).json({ error: 'Failed to create compendium pack.' });
   }
 });
 
-// GET /api/compendium/:id — get pack entries
+// ── Fontes de addon/ruleset (leitura direta, sem copiar pro mundo) ─────────────
+// Ver project_compendio_arquitetura_2026_09_08: navegar um compêndio de addon
+// nunca duplica o conteúdo no banco do mundo. Só "sources/.../import" materializa
+// UMA entry específica (o GM usando algo em jogo), nunca o pack inteiro.
+// Precisa vir ANTES de "/:id" — senão o Express trata "sources" como um :id.
+
+// GET /api/compendium/sources — list live compendium sources from active addons/rulesets
+// Requer compendiumEdit: fontes remotas (Postgres/Supabase de terceiro) fazem proxy com
+// a apiKey do servidor — sem essa checagem, qualquer jogador logado consegue usar essas
+// rotas em loop pra fazer nosso servidor dumpar o pack pago inteiro, não só o GM.
+compendiumRouter.get('/sources', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const sources = await listSourcePacks();
+    res.json(sources.map(s => ({ sourceId: s.sourceId, name: s.name, type: s.type, ownerName: s.ownerName, ownerType: s.ownerType })));
+  } catch (err: any) {
+    logger.error('GET /compendium/sources failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to list compendium sources.' });
+  }
+});
+
+// GET /api/compendium/sources/:sourceId/entries — lightweight entry list (no `data`)
+compendiumRouter.get('/sources/:sourceId/entries', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    const entries = await querySourceEntries(req.params.sourceId, { search: req.query.search as string | undefined });
+    res.json({ sourceId: meta.sourceId, name: meta.name, type: meta.type, entries });
+  } catch (err: any) {
+    logger.error('GET /compendium/sources/:sourceId/entries failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to read compendium source.' });
+  }
+});
+
+// GET /api/compendium/sources/:sourceId/entries/:entryId — full entry (with `data`)
+compendiumRouter.get('/sources/:sourceId/entries/:entryId', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const entry = await getSourceEntry(req.params.sourceId, req.params.entryId);
+    if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+    res.json(entry);
+  } catch (err: any) {
+    logger.error('GET /compendium/sources/:sourceId/entries/:entryId failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to read compendium entry.' });
+  }
+});
+
+// POST /api/compendium/sources/:sourceId/entries/:entryId/import — materialize ONE entry
+// into a world compendium pack. Creates the destination pack on first use (1 per
+// source per world), then inserts a single row — never the rest of the source pack.
+compendiumRouter.post('/sources/:sourceId/entries/:entryId/import', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const { worldId } = req.body;
+    if (!worldId) return res.status(400).json({ error: 'worldId is required.' });
+    if (!req.auth?.admin && worldId !== req.auth?.worldId) return res.status(403).json({ error: 'Access denied.' });
+
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    const entry = await getSourceEntry(req.params.sourceId, req.params.entryId);
+    if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+
+    let pack = (await Compendium_packsDocument.find<any>({ worldId, name: meta.name }))[0];
+    if (!pack) {
+      const created = await Compendium_packsDocument.create({ worldId, name: meta.name, type: meta.type });
+      if (created.error) return res.status(400).json({ error: created.error });
+      pack = created.data;
+    }
+
+    const result = await Compendium_entriesDocument.create({
+      packId: pack.id,
+      worldId,
+      name: entry.name,
+      type: entry.type,
+      sortOrder: entry.sortOrder,
+      imgUrl: entry.imgUrl,
+      data: entry.data,
+    });
+    if (result.error) return res.status(400).json({ error: result.error });
+
+    logger.info('Compendium entry materialized from source', { sourceId: req.params.sourceId, entryId: req.params.entryId, packId: pack.id, worldId });
+    res.status(201).json({ packId: pack.id, entry: result.data });
+  } catch (err: any) {
+    logger.error('POST /compendium/sources/:sourceId/entries/:entryId/import failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to import compendium entry.' });
+  }
+});
+
+// GET /api/compendium/:id — get pack + entries
 compendiumRouter.get('/:id', async (req, res) => {
   try {
-    const pack = await Compendium_packsDocument.findById<any>(req.params.id);
+    const pack = await loadPackWithEntries(req.params.id);
     if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
     if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
     res.json(pack);
@@ -74,7 +169,7 @@ compendiumRouter.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /api/compendium/:id — update entries (full replace or append)
+// PUT /api/compendium/:id — update pack metadata and/or full entry list (replace)
 compendiumRouter.put('/:id', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const existing = await Compendium_packsDocument.findById<any>(req.params.id);
@@ -82,20 +177,40 @@ compendiumRouter.put('/:id', requirePermission('compendiumEdit'), async (req, re
     if (!packBelongsToAuthWorld(req, existing)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
 
     const { entries, folderId, name } = req.body;
-    const updates: Record<string, any> = {};
+    const metaUpdates: Record<string, any> = {};
+    if (folderId !== undefined) metaUpdates.folderId = folderId;
+    if (name !== undefined) metaUpdates.name = String(name).trim();
+    if (Object.keys(metaUpdates).length > 0) {
+      const result = await Compendium_packsDocument.update(req.params.id, metaUpdates);
+      if (result.error) return res.status(404).json({ error: result.error });
+    }
+
     if (entries !== undefined) {
       if (!Array.isArray(entries)) return res.status(400).json({ error: 'entries must be an array.' });
-      updates.entries = entries;
+      // Replace completo — client ainda manda a lista inteira nessas ações (add/remove/
+      // drop). Cada entry agora é 1 linha, então "substituir tudo" é apagar as linhas
+      // antigas do pack e inserir as novas, nunca reescrever um blob.
+      await Compendium_entriesDocument.bulkDelete({ packId: req.params.id });
+      let sortOrder = 0;
+      for (const entry of entries) {
+        await Compendium_entriesDocument.create({
+          id: entry.id || randomUUID(),
+          packId: req.params.id,
+          worldId: existing.worldId,
+          name: entry.name || 'Entry',
+          type: entry.type || '',
+          sortOrder: sortOrder++,
+          imgUrl: entry.imgUrl || '',
+          ownership: entry.ownership || {},
+          data: entry.data || {},
+        });
+      }
     }
-    if (folderId !== undefined) updates.folderId = folderId;
-    if (name !== undefined) updates.name = String(name).trim();
 
-    if (Object.keys(updates).length === 0) {
+    if (metaUpdates.name === undefined && entries === undefined && folderId === undefined) {
       return res.status(400).json({ error: 'No valid fields provided for update.' });
     }
 
-    const result = await Compendium_packsDocument.update(req.params.id, updates);
-    if (result.error) return res.status(404).json({ error: result.error });
     res.json({ success: true, count: Array.isArray(entries) ? entries.length : undefined });
   } catch (err: any) {
     logger.error('PUT /compendium/:id failed', { error: err.message });
@@ -103,17 +218,87 @@ compendiumRouter.put('/:id', requirePermission('compendiumEdit'), async (req, re
   }
 });
 
-// DELETE /api/compendium/:id — delete a pack
+// DELETE /api/compendium/:id — delete a pack (+ its entries)
 compendiumRouter.delete('/:id', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const existing = await Compendium_packsDocument.findById<any>(req.params.id);
     if (!existing) return res.status(404).json({ error: 'Compendium pack not found.' });
     if (!packBelongsToAuthWorld(req, existing)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
+    await Compendium_entriesDocument.bulkDelete({ packId: req.params.id });
     await Compendium_packsDocument.delete(req.params.id);
     res.json({ success: true });
   } catch (err: any) {
     logger.error('DELETE /compendium/:id failed', { error: err.message });
     res.status(500).json({ error: 'Failed to delete compendium pack.' });
+  }
+});
+
+// POST /api/compendium/:id/import — GM manual backup restore: JSON file with an array of
+// entries (produced by /export below), never a ruleset/addon distribution format.
+compendiumRouter.post('/:id/import', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const { filePath: importPath } = req.body;
+    if (!importPath) return res.status(400).json({ error: 'filePath required.' });
+
+    const pack = await Compendium_packsDocument.findById<any>(req.params.id);
+    if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
+    if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
+
+    const worldCompendiumDir = path.resolve(getDataRoot(), 'worlds', pack.worldId, 'packs');
+    if (!fs.existsSync(worldCompendiumDir)) fs.mkdirSync(worldCompendiumDir, { recursive: true });
+
+    const fullPath = path.resolve(worldCompendiumDir, importPath);
+    if (!fullPath.startsWith(worldCompendiumDir)) return res.status(403).json({ error: 'Access denied.' });
+    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'File not found.' });
+
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    const imported = JSON.parse(content);
+    const entries = Array.isArray(imported) ? imported : [imported];
+
+    let sortOrder = await Compendium_entriesDocument.count({ packId: pack.id });
+    for (const entry of entries) {
+      await Compendium_entriesDocument.create({
+        id: entry.id || randomUUID(),
+        packId: pack.id,
+        worldId: pack.worldId,
+        name: entry.name || 'Entry',
+        type: entry.type || '',
+        sortOrder: sortOrder++,
+        imgUrl: entry.imgUrl || '',
+        data: entry.data || {},
+      });
+    }
+
+    const totalCount = await Compendium_entriesDocument.count({ packId: pack.id });
+    res.json({ success: true, importedCount: entries.length, totalCount });
+  } catch (err: any) {
+    logger.error('POST /compendium/:id/import failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to import compendium entries.' });
+  }
+});
+
+// POST /api/compendium/:id/export — GM manual backup to a JSON file on disk
+compendiumRouter.post('/:id/export', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const { fileName } = req.body;
+    if (!fileName) return res.status(400).json({ error: 'fileName required.' });
+    const safeName = path.basename(fileName).replace(/[^a-zA-Z0-9_\-\.]/g, '');
+
+    const pack = await Compendium_packsDocument.findById<any>(req.params.id);
+    if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
+    if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
+
+    const worldCompendiumDir = path.resolve(getDataRoot(), 'worlds', pack.worldId, 'packs');
+    if (!fs.existsSync(worldCompendiumDir)) fs.mkdirSync(worldCompendiumDir, { recursive: true });
+
+    const entries = await Compendium_entriesDocument.find<any>({ packId: pack.id, orderBy: 'sortOrder' });
+    const outPath = path.resolve(worldCompendiumDir, safeName);
+    if (!outPath.startsWith(worldCompendiumDir)) return res.status(403).json({ error: 'Access denied.' });
+    fs.writeFileSync(outPath, JSON.stringify(entries, null, 2), 'utf-8');
+    res.json({ success: true, path: safeName });
+  } catch (err: any) {
+    logger.error('POST /compendium/:id/export failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to export compendium entries.' });
   }
 });
 
@@ -124,8 +309,8 @@ compendiumRouter.get('/:packId/entries/:entryId', async (req, res) => {
     if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
     if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
 
-    const entry = pack.entries.find((e: any) => e.id === req.params.entryId);
-    if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+    const entry = await Compendium_entriesDocument.findById<any>(req.params.entryId);
+    if (!entry || entry.packId !== pack.id) return res.status(404).json({ error: 'Entry not found.' });
 
     if (pack.type === 'Actor') {
       return res.json({ id: entry.id, name: entry.name, type: entry.type, systemData: entry.data || {}, imgUrl: entry.imgUrl, ownership: entry.ownership, worldId: pack.worldId });
@@ -149,47 +334,42 @@ compendiumRouter.put('/:packId/entries/:entryId', requirePermission('compendiumE
     if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
     if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
 
-    const entryIndex = pack.entries.findIndex((e: any) => e.id === req.params.entryId);
-    if (entryIndex === -1) return res.status(404).json({ error: 'Entry not found.' });
+    const entry = await Compendium_entriesDocument.findById<any>(req.params.entryId);
+    if (!entry || entry.packId !== pack.id) return res.status(404).json({ error: 'Entry not found.' });
 
-    const entry = pack.entries[entryIndex];
     const updatePayload = req.body;
+    const updates: Record<string, any> = {};
+    if (updatePayload.name !== undefined) updates.name = updatePayload.name;
+    if (updatePayload.imgUrl !== undefined) updates.imgUrl = updatePayload.imgUrl;
 
-    if (updatePayload.name !== undefined) entry.name = updatePayload.name;
-    
-    // Extract data depending on pack type
-    entry.data = entry.data || {};
+    let data = entry.data || {};
     if (pack.type === 'Actor' && updatePayload.systemData !== undefined) {
-      entry.data = updatePayload.systemData; // LoomDocumentSheet sends the whole systemData object
+      data = updatePayload.systemData; // LoomDocumentSheet sends the whole systemData object
     } else if (pack.type === 'Item' && updatePayload.data !== undefined) {
-      entry.data = updatePayload.data;
+      data = updatePayload.data;
     } else if ((pack.type === 'JournalEntry' || pack.type === 'Journal') && updatePayload.pages !== undefined) {
-      entry.data.pages = updatePayload.pages;
+      data = { ...data, pages: updatePayload.pages };
     } else if (updatePayload.data !== undefined) {
-      entry.data = updatePayload.data;
+      data = updatePayload.data;
     }
+    updates.data = data;
 
-    if (updatePayload.imgUrl !== undefined) entry.imgUrl = updatePayload.imgUrl;
-
-    pack.entries[entryIndex] = entry;
-
-    const result = await Compendium_packsDocument.update(req.params.packId, { entries: pack.entries });
+    const result = await Compendium_entriesDocument.update(req.params.entryId, updates);
     if (result.error) return res.status(500).json({ error: result.error });
+    const updated = result.data as any;
 
     let responsePayload;
     if (pack.type === 'Actor') {
-      responsePayload = { id: entry.id, name: entry.name, type: entry.type, systemData: entry.data, imgUrl: entry.imgUrl, ownership: entry.ownership, worldId: pack.worldId };
+      responsePayload = { id: updated.id, name: updated.name, type: updated.type, systemData: updated.data, imgUrl: updated.imgUrl, ownership: updated.ownership, worldId: pack.worldId };
     } else if (pack.type === 'Item') {
-      responsePayload = { id: entry.id, name: entry.name, type: entry.type, data: entry.data, imgUrl: entry.imgUrl, ownership: entry.ownership, worldId: pack.worldId };
+      responsePayload = { id: updated.id, name: updated.name, type: updated.type, data: updated.data, imgUrl: updated.imgUrl, ownership: updated.ownership, worldId: pack.worldId };
     } else if (pack.type === 'JournalEntry' || pack.type === 'Journal') {
-      responsePayload = { id: entry.id, name: entry.name, type: entry.type, pages: entry.data?.pages || [], ownership: entry.ownership, worldId: pack.worldId };
+      responsePayload = { id: updated.id, name: updated.name, type: updated.type, pages: updated.data?.pages || [], ownership: updated.ownership, worldId: pack.worldId };
     } else {
-      responsePayload = { id: entry.id, name: entry.name, type: entry.type, data: entry.data, imgUrl: entry.imgUrl, ownership: entry.ownership, worldId: pack.worldId };
+      responsePayload = { id: updated.id, name: updated.name, type: updated.type, data: updated.data, imgUrl: updated.imgUrl, ownership: updated.ownership, worldId: pack.worldId };
     }
-    
-    // Transmitir WebSocket de atualização de entrada para os clients
+
     Signal.broadcast('compendium.entry.updated', { packId: pack.id, entry: responsePayload });
-    
     return res.json(responsePayload);
   } catch (err: any) {
     logger.error('PUT /compendium/entries failed', { error: err.message });
@@ -197,67 +377,8 @@ compendiumRouter.put('/:packId/entries/:entryId', requirePermission('compendiumE
   }
 });
 
-// POST /api/compendium/:id/import — import entries from a JSON file on disk
-compendiumRouter.post('/:id/import', requirePermission('compendiumEdit'), async (req, res) => {
-  try {
-    const { filePath: importPath } = req.body;
-    if (!importPath) return res.status(400).json({ error: 'filePath required.' });
-
-    const pack = await Compendium_packsDocument.findById<any>(req.params.id);
-    if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
-    if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
-
-    const worldCompendiumDir = path.resolve(getDataRoot(), 'worlds', pack.worldId, 'packs');
-    if (!fs.existsSync(worldCompendiumDir)) {
-      fs.mkdirSync(worldCompendiumDir, { recursive: true });
-    }
-
-    const fullPath = path.resolve(worldCompendiumDir, importPath);
-    if (!fullPath.startsWith(worldCompendiumDir)) return res.status(403).json({ error: 'Access denied.' });
-    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'File not found.' });
-
-    const content = fs.readFileSync(fullPath, 'utf-8');
-    const imported = JSON.parse(content);
-    const entries = Array.isArray(imported) ? imported : [imported];
-    const existing = pack.entries as any[];
-    existing.push(...entries);
-    await Compendium_packsDocument.update(req.params.id, { entries: existing });
-    res.json({ success: true, importedCount: entries.length, totalCount: existing.length });
-  } catch (err: any) {
-    logger.error('POST /compendium/:id/import failed', { error: err.message });
-    res.status(500).json({ error: 'Failed to import compendium entries.' });
-  }
-});
-
-// POST /api/compendium/:id/export — export pack entries to a JSON file on disk
-compendiumRouter.post('/:id/export', requirePermission('compendiumEdit'), async (req, res) => {
-  try {
-    const { fileName } = req.body;
-    if (!fileName) return res.status(400).json({ error: 'fileName required.' });
-    const safeName = path.basename(fileName).replace(/[^a-zA-Z0-9_\-\.]/g, '');
-
-    const pack = await Compendium_packsDocument.findById<any>(req.params.id);
-    if (!pack) return res.status(404).json({ error: 'Compendium pack not found.' });
-    if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
-
-    const worldCompendiumDir = path.resolve(getDataRoot(), 'worlds', pack.worldId, 'packs');
-    if (!fs.existsSync(worldCompendiumDir)) {
-      fs.mkdirSync(worldCompendiumDir, { recursive: true });
-    }
-
-    const outPath = path.resolve(worldCompendiumDir, safeName);
-    if (!outPath.startsWith(worldCompendiumDir)) return res.status(403).json({ error: 'Access denied.' });
-    fs.writeFileSync(outPath, JSON.stringify(pack.entries, null, 2), 'utf-8');
-    res.json({ success: true, path: safeName });
-  } catch (err: any) {
-    logger.error('POST /compendium/:id/export failed', { error: err.message });
-    res.status(500).json({ error: 'Failed to export compendium entries.' });
-  }
-});
-
-// Helper: Seed compendiums from system ruleset.json
-/** POST /api/compendium/:id/adventure-entry — snapshots selected world documents into one
- * bundled entry (Adventure pack type). Actors carry their owned items along; playlists carry
+// POST /api/compendium/:id/adventure-entry — snapshots selected world documents into one
+/** bundled entry (Adventure pack type). Actors carry their owned items along; playlists carry
  * their sounds. Stages are captured WITHOUT their placeables (cast/walls/lights/tiles/notes/
  * drawings) — those reference other documents by id and would need full remapping on import,
  * which this pass doesn't do. Stages import as blank maps; content is added back manually. */
@@ -335,22 +456,25 @@ compendiumRouter.post('/:id/adventure-entry', requirePermission('compendiumEdit'
       playlists.push({ ...playlistFields, _embeddedSounds: strippedSounds });
     }
 
-    const entry = {
-      id: randomUUID(),
+    // Adventure entry é 1 snapshot só — schemaless por natureza (bundle heterogêneo),
+    // então continua sendo 1 linha com `data` carregando tudo. Isso não é o mesmo
+    // problema do pack de ruleset: aqui é 1 entry, não milhares.
+    const entryId = randomUUID();
+    const result = await Compendium_entriesDocument.create({
+      id: entryId,
+      packId: pack.id,
+      worldId,
       name: name.trim(),
       type: 'Adventure',
       data: { actors, items, stages, journals, macros, playlists },
-    };
-
-    const entries = [...(pack.entries || []), entry];
-    const result = await Compendium_packsDocument.update(pack.id, { entries });
+    });
     if (result.error) return res.status(400).json({ error: result.error });
 
     logger.info('Adventure entry bundled', {
-      packId: pack.id, entryId: entry.id,
+      packId: pack.id, entryId,
       counts: { actors: actors.length, items: items.length, stages: stages.length, journals: journals.length, macros: macros.length, playlists: playlists.length },
     });
-    res.status(201).json(entry);
+    res.status(201).json(result.data);
   } catch (err: any) {
     logger.error('POST /compendium/:id/adventure-entry failed', { error: err.message });
     res.status(500).json({ error: 'Failed to bundle adventure entry.' });
@@ -367,8 +491,8 @@ compendiumRouter.post('/:id/adventure-entry/:entryId/import', requirePermission(
     if (!packBelongsToAuthWorld(req, pack)) return res.status(403).json({ error: 'Compendium pack belongs to a different world.' });
     if (pack.type !== 'Adventure') return res.status(400).json({ error: 'Pack is not an Adventure pack.' });
 
-    const entry = (pack.entries || []).find((e: any) => e.id === req.params.entryId);
-    if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+    const entry = await Compendium_entriesDocument.findById<any>(req.params.entryId);
+    if (!entry || entry.packId !== pack.id) return res.status(404).json({ error: 'Entry not found.' });
 
     const worldId = pack.worldId;
     const bundle = entry.data || {};
@@ -423,77 +547,3 @@ compendiumRouter.post('/:id/adventure-entry/:entryId/import', requirePermission(
     res.status(500).json({ error: 'Failed to import adventure entry.' });
   }
 });
-
-export async function seedSystemCompendiums(worldId: string): Promise<number> {
-  let count = 0;
-  try {
-    const world = await WorldsDocument.findById<any>(worldId);
-    if (!world || !world.system || world.system === 'generic') return 0;
-    
-    const marketplaceRoot = path.join(getDataRoot(), 'marketplace');
-    const rulesetDir = path.join(marketplaceRoot, 'rulesets', world.system);
-    const manifestPath = path.join(rulesetDir, 'ruleset.json');
-    
-    if (!fs.existsSync(manifestPath)) return 0;
-    
-    const manifestRaw = fs.readFileSync(manifestPath, 'utf-8');
-    const manifest = JSON.parse(manifestRaw);
-    
-    if (!manifest.compendiums || !Array.isArray(manifest.compendiums)) return 0;
-    
-    for (const relPath of manifest.compendiums) {
-      try {
-        const packPath = path.resolve(rulesetDir, relPath);
-        if (!packPath.startsWith(rulesetDir) || !fs.existsSync(packPath)) {
-          logger.warn(`Compendium pack not found: ${relPath}`);
-          continue;
-        }
-        
-        const packDataRaw = fs.readFileSync(packPath, 'utf-8');
-        const packData = JSON.parse(packDataRaw);
-        
-        if (!packData.name || !packData.entries) {
-          logger.warn(`Invalid compendium pack format in ${relPath}`);
-          continue;
-        }
-        
-        const existing = await Compendium_packsDocument.find({ worldId, name: packData.name });
-        if (existing.length > 0) continue; 
-        
-        const result = await Compendium_packsDocument.create({
-          worldId,
-          name: packData.name,
-          type: packData.type || 'Item',
-          entries: packData.entries
-        });
-        
-        if (!result.error) {
-          logger.info(`Seeded system compendium "${packData.name}"`, { worldId, system: world.system });
-          count++;
-        } else {
-          logger.error(`Error saving compendium ${packData.name}`, { error: result.error });
-        }
-      } catch (packErr: any) {
-        logger.error(`Error processing compendium pack ${relPath}`, { error: packErr.message });
-      }
-    }
-  } catch (err: any) {
-    logger.error('Failed to seed system compendiums', { worldId, error: err.message });
-  }
-  return count;
-}
-
-// POST /api/compendium/restore-from-system — GM manual restore
-compendiumRouter.post('/restore-from-system', requirePermission('compendiumEdit'), async (req, res) => {
-  try {
-    const { worldId } = req.body;
-    if (!worldId) return res.status(400).json({ error: 'worldId is required' });
-    
-    const count = await seedSystemCompendiums(worldId);
-    res.json({ success: true, count });
-  } catch (err: any) {
-    logger.error('POST /compendium/restore-from-system failed', { error: err.message });
-    res.status(500).json({ error: 'Failed to restore system compendiums.' });
-  }
-});
-

@@ -63,6 +63,7 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (..
   };
 }
 import { CompendiumPackWindow } from '../../windows/compendium-pack-window.js';
+import { CompendiumSourceWindow } from '../../windows/compendium-source-window.js';
 import { t } from '../../lib/i18n.js';
 
 type RollMode = 'public' | 'gmroll' | 'blindroll' | 'selfroll';
@@ -189,6 +190,16 @@ interface CompendiumPackSummary {
   folderId?: string;
 }
 
+/** Pack vivo de um addon/ruleset — nunca copiado pro banco do mundo, só
+ * navegado direto da fonte (ver compendium-source.ts no server). */
+interface CompendiumSourceSummary {
+  sourceId: string;
+  name: string;
+  type: string;
+  ownerName: string;
+  ownerType: 'addon' | 'ruleset';
+}
+
 interface MacroSummary {
   id: string;
   name: string;
@@ -303,6 +314,8 @@ export class Sidebar extends BaseComponent {
   private volumeAmbient = 0.5;
   private compendiumPacks: CompendiumPackSummary[] = [];
   private compendiumPacksLoaded = false;
+  private compendiumSources: CompendiumSourceSummary[] = [];
+  private compendiumSourcesLoaded = false;
   private combat: any = null;
   private combatLoaded = false;
   private liveVisionOnDrag = true;
@@ -704,6 +717,14 @@ export class Sidebar extends BaseComponent {
         this.compendiumFolders = [];
       }
       this.compendiumFoldersLoaded = true;
+    }
+    if (!this.compendiumSourcesLoaded) {
+      try {
+        this.compendiumSources = await api.get<CompendiumSourceSummary[]>('/compendium/sources');
+      } catch {
+        this.compendiumSources = [];
+      }
+      this.compendiumSourcesLoaded = true;
     }
   }
 
@@ -1481,7 +1502,6 @@ export class Sidebar extends BaseComponent {
       ${canEditCompendium ? `<div class="sidebar-header-actions">
             <button class="btn" data-action="create-compendium-pack">${t('sidebar.compendiumCreate')}</button>
             <button class="btn btn-secondary" data-action="create-compendium-folder" title="Nova Pasta"><i class="fa-solid fa-folder-plus"></i></button>
-            ${(systemRegistry.getActive() as any)?.manifest?.compendiums && this.userRole >= 4 ? `<button class="btn btn-secondary" data-action="restore-system-compendium" title="Restaurar Compêndios do Sistema"><i class="fa-solid fa-rotate"></i></button>` : ''}
           </div>` : ''}
       ${this.renderSearchBox('compendium', 'Procurar Compêndios')}
       ${this.compendiumPacks.length === 0 && this.compendiumFolders.length === 0
@@ -1493,6 +1513,12 @@ export class Sidebar extends BaseComponent {
         : `<div class="sidebar-actor-list">
             ${this.renderCompendiumListGrouped()}
           </div>`}
+      ${this.compendiumSources.length > 0 ? `
+        <div class="sidebar-section-label">Compêndios do Sistema/Addons</div>
+        <div class="sidebar-actor-list">
+          ${this.compendiumSources.map((s) => this.renderCompendiumSourceItem(s)).join('')}
+        </div>
+      ` : ''}
     `;
 
     const combatTab = `
@@ -2197,15 +2223,10 @@ export class Sidebar extends BaseComponent {
       if (playlistId) void this.deletePlaylistSound(playlistId, id);
     } else if (action === 'open-compendium-pack' && id) {
       windowManager.open(`compendium-pack-${id}`, CompendiumPackWindow, { packId: id });
+    } else if (action === 'open-compendium-source' && id) {
+      windowManager.open(`compendium-source-${id}`, CompendiumSourceWindow, { sourceId: id, worldId: this.worldId });
     } else if (action === 'create-compendium-pack') {
       this.createCompendiumPack();
-    } else if (action === 'restore-system-compendium') {
-      void (async () => {
-        await api.post(`/compendium/restore-from-system`, { worldId: this.worldId });
-        this.compendiumPacksLoaded = false;
-        await this.loadCompendiumPacks();
-        this.render();
-      })();
     } else if (action === 'combat-next') {
       this.nextTurn();
     } else if (action === 'combat-end') {
@@ -2894,6 +2915,28 @@ export class Sidebar extends BaseComponent {
         <div class="sidebar-actor-meta">${p.sounds?.length ?? p.soundCount ?? 0} faixas</div>
       </div>
       ${this.renderPlaylistSounds(p)}`;
+  }
+
+  /** Pack de addon/ruleset — banner simplificado (sem pasta/contagem, é read-only
+   * na origem). Abre CompendiumSourceWindow, nunca CompendiumPackWindow. */
+  private renderCompendiumSourceItem(s: CompendiumSourceSummary): string {
+    const iconMap: Record<string, string> = {
+      Actor: 'fa-solid fa-user-group',
+      Item: 'fa-solid fa-briefcase',
+      Scene: 'fa-solid fa-map',
+      JournalEntry: 'fa-solid fa-book-open',
+    };
+    const icon = iconMap[s.type] || 'fa-solid fa-book';
+    return `
+      <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-id="${s.sourceId}">
+        <div class="sidebar-compendium-banner-overlay"></div>
+        <div class="sidebar-compendium-banner-content">
+          <i class="${icon}"></i>
+          <span>${this.escapeHtml(s.name)}</span>
+          <small style="opacity:0.6;margin-left:auto;">${this.escapeHtml(s.ownerName)}</small>
+        </div>
+      </div>
+    `;
   }
 
   private renderCompendiumListGrouped(): string {

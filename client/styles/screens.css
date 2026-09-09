@@ -2715,6 +2715,15 @@
  * 0-2-0 vence o .btn global de 0-1-0 sem precisar de !important. Superfície
  * chapada, canto reto, rótulo em monoespaçada maiúscula igual à segunda linha
  * das entradas. O .btn global segue intacto para o resto do app. */
+.sidebar-section-label {
+  padding: 0.5rem 0.75rem 0.2rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 .sidebar-header-actions {
   display: flex;
   flex-direction: row;
