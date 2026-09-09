@@ -554,19 +554,19 @@
         "cancel": "Cancelar"
     },
     "moduleManagement": {
-        "title": "Gerenciamento de Módulos",
-        "tabAll": "Todos os Módulos",
+        "title": "Gerenciamento de Addons",
+        "tabAll": "Todos os Addons",
         "tabActive": "Ativos",
         "tabInactive": "Inativos",
-        "searchPlaceholder": "Buscar módulos...",
-        "empty": "Nenhum módulo encontrado.",
+        "searchPlaceholder": "Buscar addons...",
+        "empty": "Nenhum addon encontrado.",
         "disableAll": "Desativar Todos",
-        "saveConfig": "Salvar Configurações do Módulo",
-        "loadError": "Erro ao carregar módulos",
-        "saving": "Salvando módulos",
+        "saveConfig": "Salvar Configurações do Addon",
+        "loadError": "Erro ao carregar addons",
+        "saving": "Salvando addons",
         "applyingConfig": "Aplicando configurações...",
         "done": "Concluído",
-        "saveError": "Erro ao salvar módulos"
+        "saveError": "Erro ao salvar addons"
     },
     "gameConfig": {
         "title": "Configurações do Jogo",
@@ -881,12 +881,12 @@
     },
     "setupHub": {
         "modules": {
-            "title": "Módulos",
-            "emptyTitle": "Nenhum módulo instalado",
-            "emptyDescription": "Instale módulos e pacotes para adicionar funcionalidades ao LoomVTT",
+            "title": "Addons",
+            "emptyTitle": "Nenhum addon instalado",
+            "emptyDescription": "Instale addons e pacotes para adicionar funcionalidades ao LoomVTT",
             "browseMarketplace": "Explorar Marketplace",
             "updateAll": "Atualizar Tudo",
-            "moduleSettings": "Configurações de Módulos",
+            "moduleSettings": "Configurações de Addons",
             "manifestEdit": "Editar Pacote",
             "manifestFolder": "Pasta",
             "manifestTitle": "Nome de Exibição",
@@ -899,25 +899,25 @@
             "manifestSaved": "Pacote atualizado com sucesso",
             "manifestSaveError": "Falha ao salvar o pacote",
             "installFromUrl": "Instalar da URL",
-            "browseTitle": "Instalar Módulo",
+            "browseTitle": "Instalar Addon",
             "installPlaceholder": "Cole a URL do manifesto aqui...",
-            "installConfirm": "Instalar Módulo",
+            "installConfirm": "Instalar Addon",
             "uninstallConfirm": "Tem certeza que deseja desinstalar \"{name}\"?",
             "toggleActivate": "Ativar",
             "toggleDeactivate": "Desativar",
             "uninstall": "Desinstalar",
             "updateCheck": "Verificando atualizações...",
-            "updateSuccess": "{count} módulos têm atualizações disponíveis",
-            "updateNone": "Todos os módulos estão atualizados",
-            "installSuccess": "Módulo instalado com sucesso",
-            "installError": "Falha ao instalar módulo",
-            "toggleSuccess": "Módulo {action}do com sucesso",
-            "toggleError": "Falha ao {action} módulo",
-            "uninstallSuccess": "Módulo desinstalado com sucesso",
-            "uninstallError": "Falha ao desinstalar módulo",
+            "updateSuccess": "{count} addons têm atualizações disponíveis",
+            "updateNone": "Todos os addons estão atualizados",
+            "installSuccess": "Addon instalado com sucesso",
+            "installError": "Falha ao instalar addon",
+            "toggleSuccess": "Addon {action}do com sucesso",
+            "toggleError": "Falha ao {action} addon",
+            "uninstallSuccess": "Addon desinstalado com sucesso",
+            "uninstallError": "Falha ao desinstalar addon",
             "typeAddon": "Addon",
             "typeRuleset": "Regras",
-            "loading": "Carregando módulos..."
+            "loading": "Carregando addons..."
         },
         "systems": {
             "browseTitle": "Instalar Sistema",
@@ -946,8 +946,8 @@
         "hub": {
             "navWorlds": "Mundos",
             "navSystems": "Sistemas",
-            "navModules": "Módulos",
-            "navAddons": "Módulos Adicionais",
+            "navModules": "Addons",
+            "navAddons": "Addons",
             "navNews": "Novidades",
             "navSettings": "Ajustes",
             "topbarTitle": "Worlds Hub",
@@ -992,7 +992,7 @@
         "nav": {
             "worlds": "Mundos",
             "systems": "Sistemas",
-            "modules": "Módulos"
+            "modules": "Addons"
         },
         "worldsTab": {
             "notScheduled": "Não agendada",

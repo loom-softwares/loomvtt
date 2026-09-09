@@ -291,7 +291,7 @@ export class ModulesTab extends BaseComponent {
     if (!pkg) return;
 
     const confirmed = await showConfirm(
-      'Uninstall Module',
+      'Uninstall Addon',
       t('setupHub.modules.uninstallConfirm', { name: pkg.title || name }),
     );
 
