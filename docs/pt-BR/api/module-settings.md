@@ -1,4 +1,4 @@
-# Module Settings
+# Configurações de Addon
 
 ## Endpoints
 
@@ -9,7 +9,7 @@
 
 ### GET `/:worldId/:moduleId`
 
-Lista todas as settings de um módulo num mundo, como objeto chave-valor.
+Lista todas as settings de um addon num mundo, como objeto chave-valor.
 
 **Response `200`:** `{ "data": { "chave1": valor1, ... }, "error": null }`
 

@@ -11,7 +11,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 └── templates/      ← templates de ficha, extensão `.hbs`
 ```
 
-> **Rulesets NÃO têm `core.js`.** Diferente de addons/módulos, sistemas de RPG rodam
+> **Rulesets NÃO têm `core.js`.** Diferente de addons, sistemas de RPG rodam
 > **100% client-side** — mesmo que você declare `"core": "core.js"` no manifesto, o
 > `AddonLoader` (`server/applications/addons/loader.ts`) detecta que é um `ruleset` e
 > ignora esse campo de propósito, só logando um aviso. Isso é um bloqueio de segurança
@@ -106,7 +106,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   tool, treasure, other`) e fora deste array são silenciosamente rebaixados pra `equipment`.
 - `compendiums`: Array opcional de fontes de compêndio, lidas em tempo real e só pra navegação — **nunca** copiadas pro banco do mundo na ativação. Cada GM decide, entry por entry, se materializa aquilo no próprio mundo (drag-and-drop, ou a ação "salvar no meu compêndio"), o que grava só aquela entry, nunca o pack inteiro. Dois tipos de item:
   - **Local** — uma string simples, o caminho (relativo à pasta do addon/ruleset) de um arquivo `.sqlite` com uma tabela `pack_meta` (1 linha: `name`, `type`) e uma tabela `entries` (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Monta um com `scripts/build-compendium-pack.mjs`.
-  - **Remota** — um objeto `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, pra conteúdo hospedado por terceiro (ex: um módulo pago que uma editora mantém no próprio banco). `apiUrl` precisa ser um endpoint `https://` que fale o contrato PostgREST (a API REST automática do Supabase já serve isso de graça se a editora nomear as tabelas/views dela como `pack_meta`/`entries` com as colunas acima) — `http://` é rejeitado direto. **A credencial em si nunca vai no manifest** — `apiKeyEnvVar` é só o *nome* de uma variável de ambiente que quem instala o addon configura no próprio `.env` do servidor dele, com a chave que a editora passou por fora. Ver [Fontes remotas de compêndio: modelo de segurança](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo antes de distribuir uma dessas.
+  - **Remota** — um objeto `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, pra conteúdo hospedado por terceiro (ex: um addon pago que uma editora mantém no próprio banco). `apiUrl` precisa ser um endpoint `https://` que fale o contrato PostgREST (a API REST automática do Supabase já serve isso de graça se a editora nomear as tabelas/views dela como `pack_meta`/`entries` com as colunas acima) — `http://` é rejeitado direto. **A credencial em si nunca vai no manifest** — `apiKeyEnvVar` é só o *nome* de uma variável de ambiente que quem instala o addon configura no próprio `.env` do servidor dele, com a chave que a editora passou por fora. Ver [Fontes remotas de compêndio: modelo de segurança](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo antes de distribuir uma dessas.
 - `languages`: Array opcional com pacotes de idioma do sistema. O VTT carrega o JSON e faz o registro automático (usando *deep merge*) para popular o objeto `Loom.i18n`.
 - `styles`: Array opcional com os caminhos (relativos à pasta do ruleset) dos arquivos `.css`
   a injetar. **Ter os arquivos na pasta `styles/` não é suficiente** — só o que estiver

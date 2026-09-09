@@ -189,7 +189,7 @@ If a window with the same ID is already open, `open` focuses it instead of creat
 
 ## Available Windows (37)
 
-ActorSheetWindow, AppConfigWindow, BugReportWindow, CompendiumPackWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalWindow, KeybindConfigWindow, LightConfigWindow, MacroEditorWindow, ModuleManagementWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PlaylistConfigWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, WallConfigWindow, WorldConfigLiteWindow
+ActorSheetWindow, AppConfigWindow, BugReportWindow, CompendiumPackWindow, CompendiumSourceWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalWindow, KeybindConfigWindow, LightConfigWindow, MacroEditorWindow, ModuleManagementWindow, ModuleManifestWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PlaylistConfigWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, WallConfigWindow, WorldConfigLiteWindow
 
 > `showSelectDialog()`/`showColorDialog()`/`showRangeDialog()` (in `client/components/
 > dialog.ts`) do not have their own registered window class — they are convenience functions

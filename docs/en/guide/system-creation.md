@@ -11,7 +11,7 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
 └── templates/      ← sheet templates, `.hbs` extension
 ```
 
-> **Rulesets DO NOT have `core.js`.** Unlike addons/modules, RPG systems run
+> **Rulesets DO NOT have `core.js`.** Unlike addons, RPG systems run
 > **100% client-side** — even if you declare `"core": "core.js"` in the manifest, the
 > `AddonLoader` (`server/applications/addons/loader.ts`) detects that it is a `ruleset` and
 > purposely ignores this field, just logging a warning. This is a deliberate security
@@ -106,7 +106,7 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
   tool, treasure, other`) and outside this array are silently downgraded to `equipment`.
 - `compendiums`: Optional array of compendium sources, read live and browse-only — **never** copied into a world's database on activation. Each GM decides, per entry, whether to materialize it into their own world (drag-and-drop, or the "save to my compendium" action), which writes exactly that one entry, never the whole pack. Two kinds of entry:
   - **Local** — a plain string, the path (relative to the addon/ruleset folder) to a `.sqlite` file with a `pack_meta` table (1 row: `name`, `type`) and an `entries` table (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Build one with `scripts/build-compendium-pack.mjs`.
-  - **Remote** — an object `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, for content hosted by a third party (e.g. a paid module a publisher maintains on their own database). `apiUrl` must be an `https://` endpoint speaking the PostgREST contract (Supabase's auto-generated REST API works out of the box if the publisher names their tables/views `pack_meta`/`entries` with the columns above) — `http://` is rejected outright. **The credential itself never goes in the manifest** — `apiKeyEnvVar` is only the *name* of an environment variable that whoever installs the addon sets in their own server's `.env`, holding the key the publisher gave them out-of-band. See [Remote compendium sources: security model](#remote-compendium-sources-security-model) below before shipping one of these.
+  - **Remote** — an object `{ "type": "remote", "apiUrl": "...", "apiKeyEnvVar": "..." }`, for content hosted by a third party (e.g. a paid addon a publisher maintains on their own database). `apiUrl` must be an `https://` endpoint speaking the PostgREST contract (Supabase's auto-generated REST API works out of the box if the publisher names their tables/views `pack_meta`/`entries` with the columns above) — `http://` is rejected outright. **The credential itself never goes in the manifest** — `apiKeyEnvVar` is only the *name* of an environment variable that whoever installs the addon sets in their own server's `.env`, holding the key the publisher gave them out-of-band. See [Remote compendium sources: security model](#remote-compendium-sources-security-model) below before shipping one of these.
 - `languages`: Optional array with system language packs. The VTT loads the JSON and performs automatic registration (using *deep merge*) to populate the `Loom.i18n` object.
 - `styles`: Optional array with paths (relative to the ruleset folder) of `.css` files
   to inject. **Having the files in the `styles/` folder is not enough** — only what is

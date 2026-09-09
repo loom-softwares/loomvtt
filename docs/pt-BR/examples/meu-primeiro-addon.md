@@ -108,9 +108,9 @@ curl -X POST http://localhost:3000/api/marketplace/install \
 
 ## 5. Ativação
 
-1. Acesse Setup Hub > Módulos
+1. Acesse Setup Hub > Addons
 2. Ative "Chat Enhancer"
-3. Ou em um mundo: Configurações > Módulos > ative por mundo
+3. Ou em um mundo: Configurações > Addons > ative por mundo
 
 ## 6. Próximos passos
 
