@@ -128,16 +128,65 @@ showConfirm('Tem certeza?').then(ok => {});
 
 ## Server-side
 
-O `core.js` (se especificado) é importado no servidor durante o boot. Tem acesso ao Signal system e ao banco:
+O `core.js` (se especificado) é importado no servidor durante o boot, uma
+vez, no mesmo processo Node do resto do app — acesso total ao banco e a
+todo módulo interno, sem sandbox. Dois pontos de extensão:
 
-```typescript
+**Sua própria tabela no banco.** LoomVTT é relacional de ponta a ponta
+(knex, sobre SQLite ou Postgres) — não tem cliente NoSQL nenhum plugado no
+app pra usar. `db` é uma instância knex apontada pro mundo atualmente ativo:
+
+```javascript
 // core.js — caminho relativo a partir de marketplace/addons/<seu-addon>/core.js
+import { db } from '../../../server/applications/database/db.js';
+
+async function ensureTable() {
+  if (!(await db.schema.hasTable('my_addon_notes'))) {
+    await db.schema.createTable('my_addon_notes', (t) => {
+      t.string('worldId').primary();
+      t.text('text').defaultTo('');
+    });
+  }
+}
+```
+
+Não existe hook pra "o banco do mundo acabou de ficar pronto" — cheque/crie
+sua tabela de forma lazy, na primeira vez que uma rota precisar dela.
+
+**Sua própria API REST.** O `app` Express principal nunca é exportado pro
+código de addon (dar acesso ao app cru deixaria um addon sobrescrever rota
+do core ou meter middleware antes da auth). `registerAddonRoutes()` monta
+seu router num namespace próprio, `/api/addons/<seu-addon>/*`, já com
+`requireAuth` aplicado:
+
+```javascript
+import { Router } from 'express';
+import { registerAddonRoutes } from '../../../server/applications/addons/addon-api.js';
+
+const router = Router();
+router.get('/notes', async (req, res) => {
+  const worldId = req.auth?.worldId;
+  res.json({ text: '...' });
+});
+registerAddonRoutes('meu-addon', router);
+```
+
+O client chama igual a qualquer endpoint do core: `api.get('/addons/meu-addon/notes')`.
+
+**Reagir ao que o core já dispara** — o outro ponto de extensão, sem rota
+nenhuma:
+
+```javascript
 import { Signal } from '../../../server/applications/signals/index.js';
 
 Signal.listen('cast.created', (data) => {
   console.log('Cast member criado:', data);
 });
 ```
+
+`Signal` é um `EventEmitter` puro do lado do servidor — nunca chega no
+navegador por conta própria; é pra reagir a outra coisa do servidor, não
+pra falar com o client (ver o [addon de exemplo completo](https://github.com/sammore2/loom-exemple-addon) com os três juntos).
 
 ## Ciclo de vida
 

@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "engine": "loom",
   "type": "addon",
-  "description": "Minimal addon example — a standalone utility window, not tied to any actor/item/system.",
+  "description": "Didactic addon example — a standalone utility window backed by its own database table and REST route (core.js), not tied to any actor/item/system.",
   "author": "LoomVTT",
+  "core": "core.js",
   "client": "main.mjs",
   "active": true,
   "styles": [

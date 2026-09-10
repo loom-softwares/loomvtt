@@ -2,11 +2,11 @@
 // Loom Demo Addon — client-side entry point
 // ══════════════════════════════════════════════════════════════
 //
-// An addon is module-agnostic: it works no matter which ruleset is active
-// (or none at all), and it never runs on the server either (see
-// server/applications/addons/loader.ts — same client-only rule as rulesets).
-// This is why an addon has no actorTypes/itemTypes/defineSystem() — it isn't
-// a system, it's a standalone feature.
+// An addon is ruleset-agnostic: it works no matter which ruleset is active
+// (or none at all). This is why it has no actorTypes/itemTypes/defineSystem()
+// — it isn't a system, it's a standalone feature. Unlike a ruleset, an addon
+// CAN run server-side too — see core.js (declared via addon.json's "core"
+// field) for the database + REST API half of this same addon.
 import { keybinds, windowManager, settings } from '/_loom/sdk/index.js';
 import { NotesWindow } from './notes-window.mjs';
 

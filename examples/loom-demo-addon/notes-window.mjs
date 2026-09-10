@@ -4,12 +4,15 @@
 //
 // `extends BaseWindow` directly (NOT LoomDocumentSheet/LoomActorSheet) —
 // this is the pattern for addons: a standalone panel with no actor/item
-// behind it, no documentId, no auto-save-to-API. Addons run 100% client-side
-// like rulesets do, so persistence here is plain localStorage, not a server
-// route (no server route exists for addon data — there's nowhere to put one).
-import { BaseWindow, settings } from '/_loom/sdk/index.js';
-
-const STORAGE_KEY = 'loom-demo-addon-notes';
+// behind it, no documentId, no auto-save-to-API for a whole document.
+//
+// The note text itself IS persisted server-side though — via `api.get`/
+// `api.put` against this same addon's own REST route (GET/PUT
+// /api/addons/loom-demo-addon/notes), which core.js registers and backs
+// with a real database table. See core.js for that half; from here it's
+// just two fetch calls, same as any core window talking to `/api/actors`
+// or `/api/items`.
+import { BaseWindow, settings, api } from '/_loom/sdk/index.js';
 
 export class NotesWindow extends BaseWindow {
   /**
@@ -26,6 +29,38 @@ export class NotesWindow extends BaseWindow {
       showFooter: false,
       ...options,
     });
+    this.text = '';
+    this.loaded = false;
+  }
+
+  /**
+   * Called once the window's DOM element exists (base-window.ts convention
+   * — see CompendiumSourceWindow for the same shape). Kicks off the fetch
+   * from here, not the constructor, since `rerenderBody()` needs a mounted
+   * element to write into.
+   * @returns {Promise<void>}
+   */
+  async mount() {
+    super.mount();
+    await this.load();
+  }
+
+  /**
+   * Fetches the current note text from this addon's own server route.
+   * Rerenders the body once the response lands.
+   * @returns {Promise<void>}
+   */
+  async load() {
+    try {
+      const res = await api.get('/addons/loom-demo-addon/notes');
+      this.text = res?.text ?? '';
+    } catch {
+      // No active world session yet, or the route isn't reachable — the
+      // textarea just starts empty instead of throwing.
+    } finally {
+      this.loaded = true;
+      this.rerenderBody();
+    }
   }
 
   /**
@@ -35,11 +70,10 @@ export class NotesWindow extends BaseWindow {
    * @returns {string} Raw HTML string representing the window body.
    */
   bodyTemplate() {
-    const saved = localStorage.getItem(STORAGE_KEY) || '';
     const fontSize = settings.get('loom-demo-addon', 'fontSize') || '14px';
     return `
       <div class="loom-demo-notes">
-        <textarea class="loom-demo-notes-textarea" style="font-size: ${this.esc(fontSize)};" placeholder="Type anything...">${this.esc(saved)}</textarea>
+        <textarea class="loom-demo-notes-textarea" style="font-size: ${this.esc(fontSize)};" placeholder="Type anything..." ${this.loaded ? '' : 'disabled'}>${this.esc(this.text)}</textarea>
       </div>
     `;
   }
@@ -59,8 +93,14 @@ export class NotesWindow extends BaseWindow {
     const root = html instanceof HTMLElement ? html : (html?.[0] ?? this.element);
     const textarea = root?.querySelector('.loom-demo-notes-textarea');
     if (!textarea) return;
+    // Debounced save — one PUT per pause in typing, not one per keystroke.
+    let saveTimer = null;
     textarea.addEventListener('input', () => {
-      localStorage.setItem(STORAGE_KEY, textarea.value);
+      this.text = textarea.value;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        void api.put('/addons/loom-demo-addon/notes', { text: this.text });
+      }, 400);
     });
   }
 

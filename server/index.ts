@@ -66,6 +66,7 @@ import { playlistsRouter } from './applications/api/playlists.js';
 import { setupRouter } from './applications/api/setup.js';
 import { systemsRouter } from './applications/api/systems.js';
 import { marketplaceRouter } from './applications/api/marketplace.js';
+import { addonsRouter } from './applications/addons/addon-api.js';
 import { systemApiRouter } from './applications/api/system.js';
 import { buffsRouter } from './applications/api/buffs.js';
 import { zonesRouter } from './applications/api/zones.js';
@@ -547,6 +548,12 @@ app.use('/api/decks', decksRouter);
 app.use('/api/fog-reveals', fogRevealsRouter);
 app.use('/api/languages', languagesRouter);
 app.use('/api/bug-reports', bugReportsRouter);
+
+// Mount per-addon routes — namespace addons register into via
+// registerAddonRoutes() in their core.js (loadAllAddons() runs later, at
+// boot, but this mount point needs to exist BEFORE the SPA catch-all below,
+// not before that call).
+app.use('/api/addons', addonsRouter);
 
 // Mount Marketplace router
 app.use('/api/marketplace', marketplaceRouter);
