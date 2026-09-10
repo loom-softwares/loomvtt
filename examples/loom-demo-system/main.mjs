@@ -13,10 +13,20 @@
 
 import { SystemRegistry, defineSystem, LoomHooks, keybinds, showToast, getWraps, sheets, settings } from '/_loom/sdk/index.js';
 import { HeroSheet } from './sheets/hero-sheet.mjs';
+import { DemoItemSheet } from './sheets/item-sheet.mjs';
 import { heroDefaults } from './data/hero.mjs';
 import { villainDefaults } from './data/villain.mjs';
 import { beastDefaults } from './data/beast.mjs';
 import { prepareData } from './data/prepare-data.mjs';
+import { enBundle, ptBundle } from './data/locales.mjs';
+
+// ── Eagerly register language bundles into Loom's central i18n engine ─
+// Ensures all {{localize "key"}} helpers in templates and scripts work immediately
+if (window.Loom?.i18n?.registerLang) {
+  window.Loom.i18n.registerLang('en', enBundle);
+  window.Loom.i18n.registerLang('pt-BR', ptBundle);
+  window.Loom.i18n.registerLang('pt', ptBundle);
+}
 
 SystemRegistry.register(defineSystem({
   id: 'loom-demo-system',
@@ -243,6 +253,20 @@ LoomHooks.on('preRoll', (ctx) => {
 // `meta.system`), replacing the default header/name block with a two-tone
 // banner, and leave the actual dice widget to the core's renderRollCard —
 // no need to reimplement dice math/formatting to have a custom look.
+/**
+ * Helper to translate keys using Loom's native i18n engine (window.Loom.i18n.localize).
+ * @param {string} key - Translation key in lang/*.json
+ * @param {string} [fallback] - Fallback text if key is unresolved
+ * @returns {string}
+ */
+function localize(key, fallback = '') {
+  const text = window.Loom?.i18n?.localize?.(key);
+  return (text && text !== key) ? text : (fallback || key);
+}
+
+// ── Custom chat card ─────────────────────────────────────────────
+// Custom roll card with standard sizing, actor portrait, high visibility,
+// clear formula / total breakdown, and native i18n support.
 getWraps().renderMessage.wrap((wrapped, msg, ctx) => {
   if (!msg.isRoll || !msg.roll || msg.roll.meta?.system !== 'Loom Demo') {
     return wrapped(msg, ctx);
@@ -250,19 +274,195 @@ getWraps().renderMessage.wrap((wrapped, msg, ctx) => {
 
   const { esc, canSeeRoll } = ctx;
   const sp = msg.speaker || {};
-  // Full actor name if the roll came from a character/villain/beast sheet,
-  // falling back to the player's own name for a roll with no actor attached.
-  const actorName = sp.actorName || msg.userName;
+  const meta = msg.roll.meta || {};
+  const actorId = meta.actorId || sp.actorId || msg.actorId;
 
-  const bodyHtml = canSeeRoll
-    ? getWraps().renderRollCard(msg.roll, esc)
-    : `<div class="sidebar-message-text sidebar-message-whisper"><i class="fa-solid fa-dice-d20"></i> roll</div>`;
+  // Resolve live actor from Loom if available
+  let liveActor = null;
+  if (actorId && window.Loom?.actors) {
+    liveActor = window.Loom.actors.get?.(actorId)
+      || window.Loom.actors.find?.((a) => a.id === actorId || a._id === actorId)
+      || (typeof window.Loom.actors === 'object' && !Array.isArray(window.Loom.actors) ? window.Loom.actors[actorId] : null);
+  }
 
-  return `<div class="sidebar-message loom-demo-card" data-message-id="${esc(msg.id || '')}">
-    <div class="loom-demo-card-header">
-      <span class="loom-demo-card-name">${esc(actorName)}</span>
+  // Resolve canvas token / cast if available
+  let liveToken = null;
+  if (actorId && window.Loom?.cast) {
+    liveToken = window.Loom.cast.get?.(actorId)
+      || window.Loom.cast.find?.((c) => c.actorId === actorId || c.id === actorId);
+  }
+
+  // Priority: live actor name > meta.actorName > speaker > user name
+  const actorName = liveActor?.name || meta.actorName || sp.actorName || msg.userName || localize('loom-demo-system.hero', 'Hero');
+
+  // Priority: live actor avatar > live token image > meta.actorAvatar > speaker avatar > user avatar
+  const actorAvatar = liveActor?.avatarUrl || liveActor?.imgUrl || liveActor?.img || liveToken?.imgUrl || liveToken?.avatarUrl || meta.actorAvatar || sp.actorAvatar || sp.avatarUrl || msg.userAvatar || '';
+
+  // Consistent portrait placeholder icon matching actor type (hero = user, villain = skull, beast = paw)
+  const actorType = liveActor?.type || meta.actorType || 'hero';
+  const actorIcon = actorType === 'villain' ? 'fa-skull' : actorType === 'beast' ? 'fa-paw' : 'fa-user';
+
+  const rollLabel = meta.label || localize('loom-demo-system.actions.roll', 'Roll');
+
+  // Core HTML baseline (contains the native avatar, author block, and core delete button)
+  const defaultHtml = wrapped(msg, ctx) || '';
+
+  // 1. Extract the exact native avatar from core defaultHtml (guarantees 100% parity with standard messages)
+  let avatarHtml = '';
+  const avatarMatch = defaultHtml.match(/<div[^>]*class="[^"]*(?:chat-avatar|sidebar-message-avatar|avatar)[^"]*"[^>]*>[\s\S]*?<\/div>/i);
+
+  if (avatarMatch) {
+    avatarHtml = avatarMatch[0];
+  } else {
+    const avatarSrc = actorAvatar || msg.userAvatar || '/icons/svg/adventurer.svg';
+    avatarHtml = `<div class="chat-avatar"><img class="chat-avatar-img" src="${esc(avatarSrc)}" alt="${esc(actorName)}" /></div>`;
+  }
+
+  // Delete message support (GM or author)
+  const isGM = Boolean(window.Loom?.user?.isGM || window.Loom?.user?.role === 'gm' || window.Loom?.user?.role === 'admin');
+  const currentUserId = window.Loom?.user?.id;
+  const isOwner = Boolean(currentUserId && (msg.userId === currentUserId || msg.author === currentUserId));
+  const canDelete = ctx.canDelete ?? (isGM || isOwner);
+
+  const msgId = msg.id || msg._id || msg.messageId || '';
+  let deleteBtnHtml = '';
+  if (canDelete) {
+    const match = defaultHtml.match(/<button[^>]*data-action="delete-message"[^>]*>[\s\S]*?<\/button>/i)
+      || defaultHtml.match(/<button[^>]*class="[^"]*(?:chat-message-delete|sidebar-message-delete|delete|trash)[^"]*"[^>]*>[\s\S]*?<\/button>/i);
+
+    if (match) {
+      // Use native core button directly — Loom's Sidebar natively handles data-action="delete-message"
+      deleteBtnHtml = match[0];
+    } else {
+      deleteBtnHtml = `<button
+        type="button"
+        class="chat-message-delete loom-card-delete-btn"
+        data-action="delete-message"
+        data-id="${esc(msgId)}"
+        title="${localize('loom-demo-system.chat.deleteMessage', 'Delete Message')}"
+      >
+        <i class="fa-solid fa-trash"></i>
+      </button>`;
+    }
+  }
+
+  if (!canSeeRoll) {
+    return `<div class="sidebar-message loom-demo-card" data-message-id="${esc(msgId)}" data-id="${esc(msgId)}" id="message-${esc(msgId)}">
+      <div class="sidebar-message-header loom-demo-card-header">
+        <div class="loom-card-identity">
+          ${avatarHtml}
+          <span class="sidebar-message-author loom-demo-card-name">${esc(actorName)}</span>
+        </div>
+        <div class="loom-card-header-actions">
+          ${deleteBtnHtml}
+        </div>
+      </div>
+      <div class="sidebar-message-body">
+        <div class="sidebar-message-text sidebar-message-whisper"><i class="fa-solid fa-dice-d20"></i> ${localize('loom-demo-system.chat.blindRoll', 'Blind roll')}</div>
+      </div>
+    </div>`;
+  }
+
+  const roll = msg.roll;
+  const diceTerm = roll.terms?.find((t) => t.kind === 'dice');
+  const d20Val = diceTerm?.rolls?.[0];
+  const modTerm = roll.terms?.find((t) => t.kind === 'modifier');
+  const modVal = modTerm?.value;
+
+  const isCrit20 = diceTerm?.faces === 20 && d20Val === 20;
+  const isCrit1 = diceTerm?.faces === 20 && d20Val === 1;
+  const critBadge = isCrit20
+    ? `<span class="loom-crit-badge crit-success">${localize('loom-demo-system.chat.critical', 'CRITICAL!')}</span>`
+    : isCrit1
+    ? `<span class="loom-crit-badge crit-fail">${localize('loom-demo-system.chat.fumble', 'FUMBLE!')}</span>`
+    : '';
+
+  // Automatically synchronize with Combat Tracker when initiative is rolled
+  if (msg.roll?.meta?.isInitiative && msg.roll.meta?.actorId) {
+    const activeCombat = window.Loom?.combat || window.Loom?.combats?.active;
+    const worldId = window.Loom?.world?.id;
+    if (activeCombat && worldId) {
+      const combatants = Array.isArray(activeCombat.combatants)
+        ? activeCombat.combatants
+        : Array.from(activeCombat.combatants?.values?.() || activeCombat.combatants || []);
+      const combatant = combatants.find(
+        (c) => c.actorId === msg.roll.meta.actorId || c.id === msg.roll.meta.actorId || c.castId === msg.roll.meta.actorId
+      );
+      if (combatant && combatant.initiative !== roll.total) {
+        const castId = combatant.castId || combatant.id;
+        window.Loom?.combats?.updateCombatant?.(worldId, castId, { initiative: roll.total })
+          ?.catch?.(() => {});
+      }
+    }
+  }
+
+  return `<div class="sidebar-message loom-demo-card" data-message-id="${esc(msgId)}" data-id="${esc(msgId)}" id="message-${esc(msgId)}">
+    <!-- Header: Actor Avatar + Identity + Actions -->
+    <div class="sidebar-message-header loom-demo-card-header">
+      <div class="loom-card-identity">
+        ${avatarHtml}
+        <div class="loom-card-titles">
+          <span class="sidebar-message-author loom-card-actor-name">${esc(actorName)}</span>
+          <span class="loom-card-roll-tag">${esc(rollLabel)}</span>
+        </div>
+      </div>
+      <div class="loom-card-header-actions">
+        <span class="loom-card-header-icon" title="${esc(rollLabel)}">
+          <i class="fa-solid ${msg.roll.meta?.isInitiative ? 'fa-bolt' : 'fa-dice-d20'}"></i>
+        </span>
+        ${deleteBtnHtml}
+      </div>
     </div>
-    <div class="sidebar-message-body">${bodyHtml}</div>
+
+    <!-- Body: Standard Sizing + Visible Roll Breakdown -->
+    <div class="loom-demo-card-body">
+      <div class="loom-card-formula-row">
+        <span class="loom-card-formula-pill">
+          <i class="fa-solid fa-dice"></i> ${esc(roll.formula)}
+        </span>
+        ${critBadge}
+      </div>
+
+      ${(() => {
+        if (msg.roll.meta?.isInitiative) {
+          const inCombat = msg.roll.meta?.inCombat;
+          return `<div class="loom-card-initiative-row">
+            <span class="loom-card-initiative-chip">
+              <i class="fa-solid fa-bolt"></i> ${localize('loom-demo-system.chat.turnOrder', 'TURN ORDER')}
+            </span>
+            ${inCombat ? `<span class="loom-initiative-status in-combat"><i class="fa-solid fa-swords"></i> ${localize('loom-demo-system.chat.combatTracker', 'Combat Tracker')}</span>` : ''}
+          </div>`;
+        }
+
+        const difficulty = msg.roll.meta?.difficulty;
+        const targetName = msg.roll.meta?.targetName;
+        if (difficulty === undefined && !targetName) return '';
+        const isSuccess = difficulty !== undefined ? (roll.total >= difficulty) : null;
+        const resultBadge = isSuccess === true
+          ? `<span class="loom-crit-badge crit-success"><i class="fa-solid fa-check"></i> ${localize('loom-demo-system.chat.success', 'SUCCESS')}</span>`
+          : isSuccess === false
+          ? `<span class="loom-crit-badge crit-fail"><i class="fa-solid fa-xmark"></i> ${localize('loom-demo-system.chat.fail', 'FAIL')}</span>`
+          : '';
+
+        return `<div class="loom-card-target-row">
+          <span class="loom-card-target-chip">
+            <i class="fa-solid fa-bullseye"></i> ${targetName ? `${localize('loom-demo-system.chat.target', 'Target')}: <strong>${esc(targetName)}</strong> (${localize('loom-demo-system.stats.defense', 'Def')} ${difficulty})` : `${localize('loom-demo-system.chat.difficulty', 'Difficulty')}: <strong>DC ${difficulty}</strong>`}
+          </span>
+          ${resultBadge}
+        </div>`;
+      })()}
+
+      <div class="loom-card-result-row">
+        <div class="loom-card-breakdown">
+          ${d20Val !== undefined ? `<span class="breakdown-die"><i class="fa-solid fa-dice-d20"></i> ${d20Val}</span>` : ''}
+          ${modVal !== undefined ? `<span class="breakdown-op">${modVal >= 0 ? '+' : '-'}</span><span class="breakdown-mod">${Math.abs(modVal)}</span>` : ''}
+        </div>
+        <div class="loom-card-total-box ${isCrit20 ? 'glow-success' : ''} ${isCrit1 ? 'glow-fail' : ''}">
+          <span class="total-label">${msg.roll.meta?.isInitiative ? localize('loom-demo-system.chat.initiative', 'INITIATIVE') : localize('loom-demo-system.chat.total', 'TOTAL')}</span>
+          <span class="total-number">${roll.total}</span>
+        </div>
+      </div>
+    </div>
   </div>`;
 });
 
@@ -281,6 +481,28 @@ keybinds.register({
 // ── Settings registration ────────────────────────────────────
 // Registers settings programmatically with Loom's central settings registry.
 // Settings declared in ruleset.json also appear in Setup Hub / Module Settings.
+settings.register('loom-demo-system', 'language', {
+  name: 'Language / Idioma',
+  hint: 'System language for sheets, roll dialogs, and chat cards',
+  scope: 'client',
+  config: true,
+  type: String,
+  choices: {
+    'pt-BR': 'Português (Brasil)',
+    'en': 'English',
+  },
+  default: 'pt-BR',
+  onChange: (val) => {
+    if (document.documentElement) {
+      document.documentElement.lang = val;
+    }
+    // Rerender open windows to reflect language change
+    window.Loom?.windows?.getAll?.()?.forEach((win) => {
+      win.rerenderBody?.();
+    });
+  },
+});
+
 settings.register('loom-demo-system', 'initiativeBonusAttr', {
   name: 'Initiative Attribute',
   hint: 'Attribute used to calculate the initiative bonus (might, swift, or wits)',
@@ -292,10 +514,9 @@ settings.register('loom-demo-system', 'initiativeBonusAttr', {
 
 // ── Custom sheet registration ────────────────────────────────
 // `sheets.catalog(docType, typeName, SheetClass)` overrides the generic
-// declarative sheet (getSheetSchema, above) for this one actor type only —
-// 'villain'/'beast' keep using the declarative path untouched, so this file
-// shows both patterns side by side.
+// declarative sheet for these types.
 sheets.catalog('actor', 'hero', HeroSheet);
+sheets.catalog('item', '*', DemoItemSheet);
 
 console.log('[Loom Demo System] Loaded!');
 

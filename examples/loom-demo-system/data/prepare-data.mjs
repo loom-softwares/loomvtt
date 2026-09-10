@@ -22,18 +22,74 @@ function computeBonuses(attrs) {
 }
 
 /**
- * Derives common transient fields without mutating the original actor document.
+ * Derives common transient fields and attaches them to the actor document.
+ * Reads from systemData/system if top-level fields are not present.
  * @param {Record<string, any>} actor - Raw actor document from the store.
- * @returns {Record<string, any>} Shallow clone with `_dots`, `_bonus`, and `_maxHp` attached.
+ * @returns {Record<string, any>} Mutated actor document with derived properties attached.
  */
 function baseDerive(actor) {
-  const a = { ...actor };
-  const attrs = a.attributes || {};
-  // Dots rating (rendered on the sheet as clickable pips)
-  a._dots = { might: attrs.might || 0, swift: attrs.swift || 0, wits: attrs.wits || 0 };
-  a._bonus = computeBonuses(attrs);
-  a._maxHp = a.hp?.max || 10;
-  return a;
+  const sd = actor.systemData || actor.system || {};
+  const rawAttrs = sd.attributes || actor.attributes || { might: 5, swift: 5, wits: 5 };
+  const rawHp = sd.hp || actor.hp || { value: 20, max: 20 };
+  const baseDefense = Number(sd.defense ?? actor.defense ?? 10);
+
+  // Aggregate bonuses from owned items (weapons, armor, accessories, scrolls)
+  const items = Array.isArray(actor.items) ? actor.items : [];
+  let itemDefenseBonus = 0;
+  let itemAttackBonus = 0;
+  let itemDamageBonus = 0;
+  let itemHpBonus = 0;
+  let itemMightBonus = 0;
+  let itemSwiftBonus = 0;
+  let itemWitsBonus = 0;
+
+  for (const item of items) {
+    const isd = item.systemData || item.data || {};
+    if (isd.defenseBonus) itemDefenseBonus += Number(isd.defenseBonus) || 0;
+    if (isd.attackBonus) itemAttackBonus += Number(isd.attackBonus) || 0;
+    if (isd.damageBonus) itemDamageBonus += Number(isd.damageBonus) || 0;
+    if (isd.hpBonus) itemHpBonus += Number(isd.hpBonus) || 0;
+    if (isd.mightBonus) itemMightBonus += Number(isd.mightBonus) || 0;
+    if (isd.swiftBonus) itemSwiftBonus += Number(isd.swiftBonus) || 0;
+    if (isd.witsBonus) itemWitsBonus += Number(isd.witsBonus) || 0;
+  }
+
+  const effectiveAttrs = {
+    might: Number(rawAttrs.might || 0) + itemMightBonus,
+    swift: Number(rawAttrs.swift || 0) + itemSwiftBonus,
+    wits: Number(rawAttrs.wits || 0) + itemWitsBonus,
+  };
+
+  const baseBonus = computeBonuses(effectiveAttrs);
+  const totalBonus = {
+    ...baseBonus,
+    attack: baseBonus.attack + itemAttackBonus,
+  };
+
+  const effectiveMaxHp = Math.max(1, Number(rawHp.max || 20) + itemHpBonus);
+  const effectiveHp = {
+    value: Number(rawHp.value ?? effectiveMaxHp),
+    max: effectiveMaxHp,
+  };
+
+  actor.rawAttributes = rawAttrs;
+  actor.attributes = effectiveAttrs;
+  actor.hp = effectiveHp;
+  actor.defense = baseDefense + itemDefenseBonus;
+  actor.baseDefense = baseDefense;
+  actor._itemDefenseBonus = itemDefenseBonus;
+  actor._itemAttackBonus = itemAttackBonus;
+  actor._itemDamageBonus = itemDamageBonus;
+  actor._itemHpBonus = itemHpBonus;
+  actor._itemAttrsBonus = {
+    might: itemMightBonus,
+    swift: itemSwiftBonus,
+    wits: itemWitsBonus,
+  };
+  actor._dots = { might: effectiveAttrs.might || 0, swift: effectiveAttrs.swift || 0, wits: effectiveAttrs.wits || 0 };
+  actor._bonus = totalBonus;
+  actor._maxHp = effectiveMaxHp;
+  return actor;
 }
 
 /**
@@ -74,5 +130,5 @@ export function prepareData(actor) {
   if (actor.type === 'hero') return prepareHero(actor);
   if (actor.type === 'villain') return prepareVillain(actor);
   if (actor.type === 'beast') return prepareBeast(actor);
-  return { ...actor };
+  return baseDerive(actor);
 }
