@@ -49,6 +49,7 @@ export class LevelConfigWindow extends BaseWindow {
       // form) and saves via `submit`. Without this, BaseWindow would draw
       // Cancel/Save at the bottom and two Save buttons would appear.
       showFooter: false,
+      bannerImage: '/images/general-banners/map-banner.png',
       ...(props.options || {})
     });
 

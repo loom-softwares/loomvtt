@@ -95,28 +95,27 @@ const BAR_DISPLAY_MODES = [
   { value: 50, labelKey: 'tokenConfig.barDisplayAlways' },
 ];
 
+// Common enough across many RPGs (not just one system) to be worth a nicer
+// label than the raw path — genuinely system-specific concepts (e.g. D&D's
+// spell slots) don't belong here; they'd only ever help D&D-shaped systems
+// and everything else already gets a readable generic fallback below.
 function formatResourceLabel(path: string, val?: number, max?: number): string {
   const FRIENDLY_NAMES: Record<string, string> = {
-    'resources.health': 'HP / Vida',
-    'attributes.hp': 'HP / Vida',
-    'hp': 'HP / Vida',
-    'health': 'HP / Vida',
-    'resources.mana': 'Mana',
-    'attributes.mana': 'Mana',
-    'mana': 'Mana',
-    'mp': 'Mana',
+    'resources.health': t('tokenConfig.resourceHealth'),
+    'attributes.hp': t('tokenConfig.resourceHealth'),
+    'hp': t('tokenConfig.resourceHealth'),
+    'health': t('tokenConfig.resourceHealth'),
+    'resources.mana': t('tokenConfig.resourceMana'),
+    'attributes.mana': t('tokenConfig.resourceMana'),
+    'mana': t('tokenConfig.resourceMana'),
+    'mp': t('tokenConfig.resourceMana'),
   };
 
   let friendly = FRIENDLY_NAMES[path];
   if (!friendly) {
-    const spellSlotMatch = path.match(/spellSlots\.(\d+)/i);
-    if (spellSlotMatch) {
-      friendly = `Espaço de Magia Nvl ${spellSlotMatch[1]}`;
-    } else {
-      const clean = path.replace(/^(system|resources|attributes)\./, '');
-      const parts = clean.split('.');
-      friendly = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' > ');
-    }
+    const clean = path.replace(/^(system|resources|attributes)\./, '');
+    const parts = clean.split('.');
+    friendly = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' > ');
   }
 
   if (val !== undefined && max !== undefined) {
@@ -149,7 +148,7 @@ export class TokenConfigWindow extends BaseWindow {
   constructor(private props: { castMember: CastMember; onUpdated: (castMember: CastMember) => void; isPrototype?: boolean }) {
     super({
       id: `token-config-${props.castMember.id}`,
-      title: `Configurar Token: ${props.castMember.name}`,
+      title: t('tokenConfig.title', { name: props.castMember.name }),
       icon: '<i class="fa-solid fa-gear"></i>',
       width: 'auto',
       height: 'auto',
@@ -807,9 +806,9 @@ export class TokenConfigWindow extends BaseWindow {
     return [
       {
         icon: 'fas fa-trash',
-        label: 'Excluir',
+        label: t('common.delete'),
         action: 'delete',
-        title: 'Excluir Token',
+        title: t('tokenConfig.deleteTooltip'),
       },
     ];
   }

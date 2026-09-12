@@ -161,6 +161,7 @@
         "settingsLogout": "Sair",
         "macrosTab": "Macros",
         "playlistsTab": "Playlists",
+        "placeablesTab": "Elementos",
         "emptyMacros": "Nenhuma macro neste mundo ainda.",
         "emptyPlaylists": "Nenhuma playlist neste mundo ainda.",
         "playlistCreate": "Criar Playlist",
@@ -321,6 +322,29 @@
         "worldDescription": "Descrição do Mundo",
         "worldNotFound": "Mundo não encontrado",
         "worldTitle": "Título do Mundo"
+    },
+    "noteConfig": {
+        "title": "Configurar Nota",
+        "tabGeneral": "Geral",
+        "tabAppearance": "Aparência",
+        "resetLabel": "Redefinir",
+        "resetTooltip": "Redefinir para padrões"
+    },
+    "drawingConfig": {
+        "title": "Configurar Desenho",
+        "tabPosition": "Posição",
+        "tabLines": "Linhas",
+        "tabFill": "Preencher",
+        "tabText": "Texto",
+        "deleteLabel": "Excluir",
+        "deleteTooltip": "Excluir Desenho"
+    },
+    "rollTableResult": {
+        "title": "Resultado da Tabela: {id}"
+    },
+    "compendiumPack": {
+        "packageDialogTitle": "Empacotar: {name}",
+        "addEntryTitle": "Nova Entrada"
     },
     "wallConfig": {
         "title": "Configurar Parede",
@@ -1102,7 +1126,11 @@
         "blueColor": "Azul Fixo",
         "noneOption": "Nenhum",
         "tokenUpdated": "Token atualizado!",
-        "tokenUpdateError": "Erro ao salvar configurações do token"
+        "tokenUpdateError": "Erro ao salvar configurações do token",
+        "title": "Configurar Token: {name}",
+        "deleteTooltip": "Excluir Token",
+        "resourceHealth": "HP / Vida",
+        "resourceMana": "Mana"
     },
     "fontSettings": {
         "saved": "Fontes salvas",
@@ -1138,7 +1166,8 @@
     "createWorld": {
         "step1": {
             "title": "Escolha um sistema",
-            "desc": "O sistema define fichas, rolagens e itens. Sem ele o mundo não tem regras."
+            "desc": "O sistema define fichas, rolagens e itens. Sem ele o mundo não tem regras.",
+            "by": "por"
         },
         "step2": {
             "title": "Dê um nome",

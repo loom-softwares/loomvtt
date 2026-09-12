@@ -69,6 +69,7 @@ export class GameHudScreen {
   private loadingProgress = new LoadingProgress();
   private canvasManager: CanvasManager | null = null;
   private tokenHud: TokenHud | null = null;
+  private playersListResizeObserver: ResizeObserver | null = null;
   private subcomponents: {
     stageNav?: StageNav;
     toolbox?: Toolbox;
@@ -1973,6 +1974,24 @@ export class GameHudScreen {
 
     const playersContainer = this.container.querySelector('#hud-players-list') as HTMLElement;
     this.subcomponents.playersList = new PlayersList(playersContainer, this.props.worldId);
+
+    // The hotbar reserves horizontal space on its left so its own centering
+    // box never reaches under the players-list card (same corner, same row).
+    // A fixed guess either overlaps (too small) or drags the hotbar visibly
+    // off-center whenever there's only one player online (too big) — so this
+    // measures the card's REAL rendered width live and feeds it to the CSS
+    // via --players-list-clearance, instead of guessing a constant.
+    const layerEl = this.container.querySelector('.hud-layer') as HTMLElement;
+    if (layerEl) {
+      const updateClearance = () => {
+        const w = playersContainer.offsetWidth;
+        layerEl.style.setProperty('--players-list-clearance', `${w + 20}px`);
+      };
+      updateClearance();
+      const playersResizeObserver = new ResizeObserver(updateClearance);
+      playersResizeObserver.observe(playersContainer);
+      this.playersListResizeObserver = playersResizeObserver;
+    }
   }
 
   private setupTokenStatusHandler(): void {
@@ -2692,6 +2711,7 @@ export class GameHudScreen {
   }
 
   destroy(): void {
+    this.playersListResizeObserver?.disconnect();
     this.canvasManager?.destroy();
     this.tourManager?.destroy();
     this.unsubscribeInit?.();

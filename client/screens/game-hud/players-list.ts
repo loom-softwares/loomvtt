@@ -265,7 +265,7 @@ export class PlayersList extends BaseComponent {
             ${this.escapeHtml(currentUser.name)}
             <span style="font-size: 0.75em; color: var(--color-text-muted); margin-left: 4px;">[${roleLabel(currentUser.role)}]</span>
           </div>
-          <button class="players-edit-btn" data-action="edit-self" data-id="${this.escapeHtml(currentUser.id)}" title="${t('playersList.configureUser')}" style="background: none; border: none; color: var(--color-text-secondary); cursor: pointer; padding: 2px 4px;">
+          <button class="players-edit-btn" data-action="edit-self" data-id="${this.escapeHtml(currentUser.id)}" title="${t('playersList.configureUser')}" style="background: none; border: none; color: var(--color-text-secondary); cursor: pointer; padding: 2px 4px; flex: 0 0 auto;">
             <i class="fa-solid fa-gear"></i>
           </button>
         </div>

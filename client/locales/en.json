@@ -161,6 +161,7 @@
         "settingsLogout": "Log Out",
         "macrosTab": "Macros",
         "playlistsTab": "Playlists",
+        "placeablesTab": "Elements",
         "emptyMacros": "No macros in this world yet.",
         "emptyPlaylists": "No playlists in this world yet.",
         "playlistCreate": "Create Playlist",
@@ -321,6 +322,29 @@
         "worldDescription": "World Description",
         "worldNotFound": "World not found",
         "worldTitle": "World Title"
+    },
+    "noteConfig": {
+        "title": "Configure Note",
+        "tabGeneral": "General",
+        "tabAppearance": "Appearance",
+        "resetLabel": "Reset",
+        "resetTooltip": "Reset to defaults"
+    },
+    "drawingConfig": {
+        "title": "Configure Drawing",
+        "tabPosition": "Position",
+        "tabLines": "Lines",
+        "tabFill": "Fill",
+        "tabText": "Text",
+        "deleteLabel": "Delete",
+        "deleteTooltip": "Delete Drawing"
+    },
+    "rollTableResult": {
+        "title": "Table Result: {id}"
+    },
+    "compendiumPack": {
+        "packageDialogTitle": "Package: {name}",
+        "addEntryTitle": "New Entry"
     },
     "wallConfig": {
         "title": "Configure Wall",
@@ -1045,7 +1069,11 @@
         "blueColor": "Solid Blue",
         "noneOption": "None",
         "tokenUpdated": "Token updated!",
-        "tokenUpdateError": "Error saving token configuration"
+        "tokenUpdateError": "Error saving token configuration",
+        "title": "Configure Token: {name}",
+        "deleteTooltip": "Delete Token",
+        "resourceHealth": "HP / Health",
+        "resourceMana": "Mana"
     },
     "fontSettings": {
         "saved": "Fonts saved",
@@ -1081,7 +1109,8 @@
     "createWorld": {
         "step1": {
             "title": "Choose a system",
-            "desc": "The system defines sheets, rolls and items. Without it, the world has no rules."
+            "desc": "The system defines sheets, rolls and items. Without it, the world has no rules.",
+            "by": "by"
         },
         "step2": {
             "title": "Give it a name",

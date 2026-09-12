@@ -57,10 +57,11 @@ export class DrawingConfigWindow extends BaseWindow {
   constructor(private props: { id: string; drawingId: string }) {
     super({
       id: props.id,
-      title: 'Configurar Desenho',
+      title: t('drawingConfig.title'),
       icon: '<i class="fa-solid fa-palette"></i>',
       width: 420,
       height: 'auto',
+      bannerImage: '/images/general-banners/map-banner.png',
     });
   }
 
@@ -103,10 +104,10 @@ export class DrawingConfigWindow extends BaseWindow {
     const d = this.drawing;
     const showText = d.type === 'text' || d.type === 'rectangle' || d.type === 'ellipse' || d.type === 'circle';
     const tabs: { id: string; icon: string; label: string }[] = [
-      { id: 'position', icon: '📍', label: 'Posição' },
-      { id: 'lines', icon: '🖊️', label: 'Linhas' },
-      { id: 'fill', icon: '🎨', label: 'Preencher' },
-      ...(showText ? [{ id: 'text', icon: '🅰️', label: 'Texto' }] : []),
+      { id: 'position', icon: '📍', label: t('drawingConfig.tabPosition') },
+      { id: 'lines', icon: '🖊️', label: t('drawingConfig.tabLines') },
+      { id: 'fill', icon: '🎨', label: t('drawingConfig.tabFill') },
+      ...(showText ? [{ id: 'text', icon: '🅰️', label: t('drawingConfig.tabText') }] : []),
     ];
     const sec = (id: string) => `data-config-section="${id}" style="display: ${this.activeTab === id ? 'block' : 'none'};"`;
     const fonts = availableFonts();
@@ -252,9 +253,9 @@ export class DrawingConfigWindow extends BaseWindow {
     return [
       {
         icon: 'fas fa-trash',
-        label: 'Excluir',
+        label: t('drawingConfig.deleteLabel'),
         action: 'delete',
-        title: 'Excluir Desenho',
+        title: t('drawingConfig.deleteTooltip'),
       },
     ];
   }

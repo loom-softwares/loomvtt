@@ -16,6 +16,7 @@ import { mountRichTextEditor, type RichTextEditorHandle } from '../lib/rich-text
 import { FilePickerWindow } from './file-picker-window.js';
 import { windowManager } from '../core/window-manager.js';
 import { gameContext } from '../core/game-context.js';
+import { t } from '../lib/i18n.js';
 
 export interface RollTableResultEntry {
   id: string;
@@ -50,7 +51,7 @@ export class RollTableResultWindow extends BaseWindow {
   constructor(private props: { tableId: string; entry: RollTableResultEntry; onSaved?: () => void }) {
     super({
       id: `roll-table-result-${props.entry.id}`,
-      title: `Resultado da Tabela: ${props.entry.id}`,
+      title: t('rollTableResult.title', { id: props.entry.id }),
       icon: '<i class="fa-solid fa-dice-d20"></i>',
       width: 420,
       height: 'auto',

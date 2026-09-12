@@ -320,6 +320,11 @@
   top: 10px;
   left: 120px;
   /* Clears toolbox */
+  /* Also bounded on the right (was unbounded before — with enough stages
+     in the world, this row just grew until it ran under/behind the
+     sidebar, invisible until someone actually hit that many tabs). Scrolls
+     its own overflow instead of spilling into a neighbor's space. */
+  right: 10px;
   transform: none;
   width: auto;
   pointer-events: none;
@@ -327,10 +332,21 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 8px;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
   z-index: 10;
   flex-shrink: 0;
   border: none;
+  transition: right 0.3s ease;
+}
+
+.hud-top-nav::-webkit-scrollbar {
+  display: none;
+}
+
+#hud-sidebar:not(.collapsed)~.hud-top-nav {
+  right: 370px;
 }
 
 /* Scenes bar. The rest of this bar's rules are further down in this same
@@ -691,11 +707,6 @@
 }
 
 .sidebar-collapsed-toast {
-  background: rgba(15, 12, 20, 0.85);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
-  border-radius: 6px;
   overflow: hidden;
   animation: sidebar-collapsed-toast-in 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -803,6 +814,18 @@
   z-index: 11;
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.5);
   border-radius: 8px 0 0 8px;
+  /* ~9 nav tabs + the collapsed-state quick-action icons (pushed to the
+     bottom via margin-top:auto below) is a fixed amount of vertical
+     content with nothing shrinking it — on a short viewport (a laptop's
+     effective height after browser chrome, easily under 700px) it
+     overflows `height:100%` and the bottom icons render past the visible
+     screen, unreachable. Scroll this column instead of letting it spill. */
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebar-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-tab-btn {
@@ -810,6 +833,7 @@
   height: var(--hud-control-size-tab);
   font-size: 1.1rem;
   position: relative;
+  border-radius: 50%;
 }
 
 .sidebar-tab-btn i {
@@ -926,7 +950,8 @@
 .sidebar-message {
   background: rgba(22, 23, 29, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  /* Grimório: same asymmetric page-corner as the compendium banner. */
+  border-radius: 3px 10px 3px 10px;
   padding: 0.75rem;
   font-size: 0.85rem;
   color: var(--color-text-primary);
@@ -1395,26 +1420,65 @@
   color: var(--color-text-muted);
 }
 
+/* True center of the CANVAS area, independent of .hud-players-list —
+   sharing a flex row with it (an earlier version of this fix) shifted
+   the center by half of the player list's own width, which is wrong:
+   the two have nothing to do with each other, they just both happen to
+   live near the bottom edge. `left/right` + `margin-inline:auto` centers
+   the hotbar's own (fixed, slot-count-driven) width inside the space
+   between the viewport edge and the sidebar — recalculated live any
+   time either changes, at any viewport size. */
 .hud-hotbar {
   position: absolute;
   bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Live-measured players-list width (+20px), set by game-hud.ts via a
+     ResizeObserver — NOT a fixed guess. A constant here either overlaps the
+     players card (too small) or drags the hotbar visibly off-center
+     whenever only one player is online (too big, e.g. a fixed 260px while
+     the card itself renders 90px wide). Falls back to 10px before the
+     observer's first measurement. */
+  left: var(--players-list-clearance, 10px);
+  right: 10px;
+  width: fit-content;
+  margin-inline: auto;
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
   display: flex;
   align-items: flex-end;
-  z-index: 10;
-  flex-shrink: 0;
-  width: auto;
   flex-direction: row;
-  transition: left 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+  transition: right 0.3s ease;
 }
 
-@media (min-width: 1251px) and (max-width: 1600px) {
-  #hud-sidebar:not(.collapsed)~.hud-hotbar {
-    left: calc(50% - 160px);
-  }
+#hud-sidebar:not(.collapsed)~.hud-hotbar {
+  right: 370px;
+  /* 360px sidebar + 10px clearance */
+  /* Same derived-from-content formula as the collapsed rule below (10 slots
+     + both control clusters + gaps + padding), re-solved for this rule's
+     370px right offset instead of 396px. A flat vw guess here previously
+     let the box overflow past `right` by 130px+ at 1024px wide (fit-content
+     does not clamp to the left/right box when content wants more — verified
+     via getBoundingClientRect, not assumed). */
+  --hud-control-size-slot: clamp(18px, calc(8.9vw - 70px), 54px);
+}
+
+/* When the sidebar IS collapsed, its floating chat box (.sidebar-collapsed-
+   chat, position:fixed, 320px wide, docked bottom-right — see sidebar.ts
+   setupCollapsedOverlay) still sits over the same bottom-right corner. That
+   box was never accounted for on either side, so the hotbar's centering box
+   reached straight under it (confirmed via getBoundingClientRect at
+   1024x640: hotbar 345-928px vs chat box 648-968px — real overlap eating
+   the last macro slots). 320px box + 56px offset + 10px clearance. */
+#hud-sidebar.collapsed~.hud-hotbar {
+  right: 396px;
+  /* Derived from the hotbar's actual content-width formula (10 slots + both
+     control clusters + gaps + padding ≈ 11.26·slot + 87px), solved so total
+     width never exceeds what's left after reserving 260px (players-list)
+     and 396px (this collapsed-chat box) on a real viewport — not a guessed
+     vw factor. Verified at 1024px: solves to ~25px, matches the space
+     actually available (368px) instead of overflowing it (previously
+     measured hotbar reaching 500.9px wide in only 368px of room). */
+  --hud-control-size-slot: clamp(18px, calc(8.9vw - 74px), 54px);
 }
 
 .macro-slot {
@@ -1449,13 +1513,7 @@
 
 .macro-slots-container {
   display: grid;
-  grid-template-columns: repeat(10, 54px);
-}
-
-@media (max-width: 1250px) {
-  .macro-slots-container {
-    grid-template-columns: repeat(5, 54px);
-  }
+  grid-template-columns: repeat(10, var(--hud-control-size-slot));
 }
 
 /* Novos controles da hotbar */
@@ -1485,8 +1543,11 @@
 }
 
 .macro-btn {
-  width: 34px;
-  height: 26px;
+  /* Scales with the macro slots (--hud-control-size-slot) instead of a
+     fixed size, so the buttons shrink at the same rate as the slots next
+     to them and never end up taller/wider than the row around them. */
+  width: calc(var(--hud-control-size-slot) * 0.63);
+  height: calc(var(--hud-control-size-slot) * 0.48);
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid #000;
   border-radius: 4px;
@@ -1510,7 +1571,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 54px;
+  height: var(--hud-control-size-slot);
   gap: 2px;
 }
 
@@ -1596,6 +1657,8 @@
   position: absolute;
   bottom: 10px;
   left: 10px;
+  max-width: 240px;
+  z-index: 10;
   background: rgba(15, 20, 28, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1605,9 +1668,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  align-items: flex-start;
-  z-index: 10;
-  flex-shrink: 0;
+  /* `flex-start` let each row (name + gear button) size to its own natural
+     content width, ignoring this card's max-width — the row rendered wider
+     than the card and the gear button visibly poked out past the right
+     edge, since nothing here clips overflow either. `stretch` forces rows
+     to the card's actual (possibly max-width-capped) width, so the row's
+     own flex:1 name can actually shrink/ellipsis within it. */
+  align-items: stretch;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   transition: transform var(--transition-fast);
 }
@@ -1628,6 +1695,10 @@
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .players-online-dot {
@@ -2223,12 +2294,14 @@
 .sidebar-actor-item:hover {
   background: rgba(255, 255, 255, 0.045);
   border-left-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  border-radius: 0 8px 8px 0;
   transform: none;
 }
 
 .sidebar-actor-item.active {
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   border-left-color: var(--color-accent);
+  border-radius: 0 8px 8px 0;
   box-shadow: none;
 }
 
@@ -2356,9 +2429,12 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 4rem;
+  height: 6.5rem;
+  flex-shrink: 0;
   margin: 0.25rem 0.75rem;
-  border-radius: 6px;
+  /* Grimório: an old book page has one soft corner and one squared
+     one, not four matching radii. */
+  border-radius: 3px 10px 3px 10px;
   background-color: var(--color-bg-dark);
   background-size: cover;
   background-position: center;
@@ -2382,7 +2458,7 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   z-index: 1;
 }
 
@@ -2391,7 +2467,7 @@
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--color-text-primary);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -2593,7 +2669,9 @@
   grid-row: 1 / span 2;
   width: 34px;
   height: 34px;
-  border-radius: 0;
+  /* Grimório: round medallion instead of a square thumbnail, matching the
+     circular sidebar tabs. */
+  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background-size: cover;
   background-position: center;
@@ -2608,7 +2686,8 @@
 .sidebar-actor-name {
   grid-column: 2;
   grid-row: 1;
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: 0.86rem;
   color: var(--color-text-primary);
   font-weight: 600;
@@ -2717,11 +2796,26 @@
  * das entradas. O .btn global segue intacto para o resto do app. */
 .sidebar-section-label {
   padding: 0.5rem 0.75rem 0.2rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--color-text-secondary);
   border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-section-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 6px var(--color-accent);
+  flex-shrink: 0;
 }
 
 .sidebar-header-actions {

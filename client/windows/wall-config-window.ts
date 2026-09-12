@@ -26,6 +26,7 @@ export class WallConfigWindow extends BaseWindow {
       icon: '<i class="fa-solid fa-bars"></i>',
       width: 380,
       height: 'auto',
+      bannerImage: '/images/general-banners/ruins-banner.png',
     } as BaseWindowOptions);
     this.wall = props.wall;
     this.wallId = props.wallId;

@@ -45,16 +45,17 @@ export class NoteConfigWindow extends BaseWindow {
   constructor(private props: { id: string; noteId: string }) {
     super({
       id: props.id,
-      title: 'Configurar Nota',
+      title: t('noteConfig.title'),
       icon: '<i class="fa-solid fa-note-sticky"></i>',
       width: 400,
       height: 450,
+      bannerImage: '/images/general-banners/map-banner.png',
     });
 
     this.tabs = new Tabs(
       [
-        { id: 'general', label: 'Geral' },
-        { id: 'appearance', label: 'Aparência' },
+        { id: 'general', label: t('noteConfig.tabGeneral') },
+        { id: 'appearance', label: t('noteConfig.tabAppearance') },
       ],
       this.activeTabId
     );
@@ -296,9 +297,9 @@ export class NoteConfigWindow extends BaseWindow {
     return [
       {
         icon: 'fas fa-undo',
-        label: 'Redefinir',
+        label: t('noteConfig.resetLabel'),
         action: 'reset',
-        title: 'Redefinir para padrões',
+        title: t('noteConfig.resetTooltip'),
       },
     ];
   }

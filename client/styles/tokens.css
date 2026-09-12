@@ -45,9 +45,13 @@
   --hud-bar-gap: 4px;
   --hud-bar-padding: 0.4rem;
 
-  --hud-control-size-tool: 34px;
-  --hud-control-size-tab: 32px;
-  --hud-control-size-slot: 54px;
+  /* Fluid instead of fixed: shrinks with viewport width so controls stay
+     in place at any resolution instead of wrapping/overlapping neighbors.
+     `.hud-hotbar` narrows this further still when the sidebar is open
+     (see screens.css) since vw alone doesn't know the sidebar ate 360px. */
+  --hud-control-size-tool: clamp(26px, 3vw, 34px);
+  --hud-control-size-tab: clamp(24px, 2.6vw, 32px);
+  --hud-control-size-slot: clamp(34px, 4.2vw, 54px);
 }
 
 /* ── DARK Theme (default) — Midnight Sapphire / Frosted Glass ─────────── */

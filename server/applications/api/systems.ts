@@ -22,6 +22,7 @@ systemsRouter.get('/', (_req, res) => {
         backgroundUrl: a.manifest.backgroundUrl || a.manifest.coverUrl,
         author: a.manifest.author,
         repository: a.manifest.repository,
+        description: (a.manifest as any).description,
       }));
     res.json(list);
   } catch (err: any) {

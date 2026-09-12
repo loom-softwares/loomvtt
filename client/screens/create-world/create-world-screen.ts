@@ -11,6 +11,8 @@ interface System {
   title: string;
   version: string;
   backgroundUrl?: string;
+  author?: string;
+  description?: string;
 }
 
 const ART_PADRAO = '/bgs/05_ancient_library.png';
@@ -116,9 +118,11 @@ export class CreateWorldScreen extends BaseComponent {
         (s) => `
         <button type="button" class="wf-sys" data-action="pick-system" data-id="${this.escapeHtml(s.id)}" aria-pressed="false">
           <span class="wf-sys-art" style="background-image: url('${this.escapeHtml(s.backgroundUrl || ART_PADRAO)}')"></span>
+          <span class="wf-sys-version">v${this.escapeHtml(s.version)}</span>
           <span class="wf-sys-body">
             <span class="wf-sys-name">${this.escapeHtml(s.title || s.id)}</span>
-            <span class="wf-sys-meta">v${this.escapeHtml(s.version)}</span>
+            ${s.author ? `<span class="wf-sys-author">${t('createWorld.step1.by')} ${this.escapeHtml(s.author)}</span>` : ''}
+            ${s.description ? `<p class="wf-sys-desc">${this.escapeHtml(s.description)}</p>` : ''}
           </span>
           <span class="wf-sys-thread"></span>
         </button>

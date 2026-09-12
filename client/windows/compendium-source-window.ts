@@ -43,21 +43,14 @@ function safeImgUrl(url: string): string {
   return '';
 }
 
+// Pack-level types only — LoomVTT's own core document types, not any one
+// ruleset's item/actor subtype vocabulary (see compendium-pack-window.ts for
+// why: a per-subtype icon list only ever matches D&D-5e-shaped systems).
 const TYPE_ICONS: Record<string, string> = {
   Actor: 'fa-solid fa-user-group',
   Item: 'fa-solid fa-briefcase',
   JournalEntry: 'fa-solid fa-book-open',
   Journal: 'fa-solid fa-book-open',
-  spell: 'fa-solid fa-wand-sparkles',
-  weapon: 'fa-solid fa-khanda',
-  armor: 'fa-solid fa-shield-halved',
-  feature: 'fa-solid fa-star',
-  race: 'fa-solid fa-dna',
-  class: 'fa-solid fa-chess-knight',
-  subclass: 'fa-solid fa-chess-bishop',
-  background: 'fa-solid fa-scroll',
-  feat: 'fa-solid fa-medal',
-  npc: 'fa-solid fa-dragon',
 };
 
 export class CompendiumSourceWindow extends BaseWindow {
@@ -80,6 +73,7 @@ export class CompendiumSourceWindow extends BaseWindow {
       width: 400,
       height: 580,
       showFooter: false,
+      bannerImage: '/images/general-banners/journal-banner.png',
     });
   }
 
@@ -208,7 +202,7 @@ export class CompendiumSourceWindow extends BaseWindow {
   }
 
   private entryTemplate(entry: SourceEntrySummary): string {
-    const typeIcon = TYPE_ICONS[entry.type] || TYPE_ICONS[this.packType] || 'fa-solid fa-file';
+    const typeIcon = TYPE_ICONS[this.packType] || 'fa-solid fa-file';
     const safeUrl = safeImgUrl(entry.imgUrl);
     const thumb = safeUrl
       ? `<img class="cp-entry-thumb" src="${safeUrl}" alt="" />`

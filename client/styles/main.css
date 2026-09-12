@@ -2,6 +2,17 @@
  * Import all modular CSS components and utilities
  */
 
+/* ProseMirror's own package CSS — MUST be the very first `@import`s in this
+ * file. `prosemirror-menu.css` used to hold these instead and get imported
+ * further down; that's a *nested* import, and once the bundler flattens
+ * everything into one stylesheet, a nested import is no longer physically
+ * first — the browser then ignores it ("@import ... wasn't defined at the
+ * top of the stylesheet"), silently dropping ProseMirror's menu styling.
+ * See prosemirror-menu.css for why these need to be global at all. */
+@import 'prosemirror-view/style/prosemirror.css';
+@import 'prosemirror-menu/style/menu.css';
+@import 'prosemirror-example-setup/style/style.css';
+
 /* Import CSS Tokens and Variables */
 @import './tokens.css';
 
@@ -21,10 +32,6 @@
 
 /* Import Window Components */
 @import './windows.css';
-
-/* ProseMirror menu-bar CSS — see prosemirror-menu.css for why this needs to
- * be global instead of living only inside `<prose-mirror>`'s Shadow DOM. */
-@import './prosemirror-menu.css';
 
 /* Import Screen Components */
 @import './screens.css';

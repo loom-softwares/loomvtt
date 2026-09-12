@@ -239,7 +239,7 @@ const SIDEBAR_TABS = [
   { id: 'playlists', label: t('sidebar.playlistsTab'), icon: 'fa-solid fa-music' },
   { id: 'compendium', label: t('sidebar.compendiumTab'), icon: 'fa-solid fa-book' },
   { id: 'combat', label: t('sidebar.combat'), icon: 'fa-solid fa-shield-halved' },
-  { id: 'placeables', label: 'Elementos', icon: 'fa-solid fa-icons' },
+  { id: 'placeables', label: t('sidebar.placeablesTab'), icon: 'fa-solid fa-icons' },
   { id: 'settings', label: t('sidebar.settings'), icon: 'fa-solid fa-gear' },
 ] as const;
 
@@ -2920,20 +2920,35 @@ export class Sidebar extends BaseComponent {
   /** Pack de addon/ruleset — banner simplificado (sem pasta/contagem, é read-only
    * na origem). Abre CompendiumSourceWindow, nunca CompendiumPackWindow. */
   private renderCompendiumSourceItem(s: CompendiumSourceSummary): string {
+    const bgMap: Record<string, string> = {
+      Actor: '/images/compendium-bg/actor.png',
+      Item: '/images/compendium-bg/item.png',
+      Scene: '/images/compendium-bg/scenes.png',
+      JournalEntry: '/images/compendium-bg/journal.png',
+      RollTable: '/images/compendium-bg/roll-tabels.png',
+      Cards: '/images/compendium-bg/cards.png',
+    };
     const iconMap: Record<string, string> = {
       Actor: 'fa-solid fa-user-group',
       Item: 'fa-solid fa-briefcase',
       Scene: 'fa-solid fa-map',
       JournalEntry: 'fa-solid fa-book-open',
     };
+    const bgUrl = bgMap[s.type] || '';
     const icon = iconMap[s.type] || 'fa-solid fa-book';
+    const bgStyle = bgUrl ? `background-image: url('${bgUrl}');` : '';
     return `
-      <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-id="${s.sourceId}">
+      <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-id="${s.sourceId}" style="${bgStyle}">
         <div class="sidebar-compendium-banner-overlay"></div>
         <div class="sidebar-compendium-banner-content">
-          <i class="${icon}"></i>
-          <span>${this.escapeHtml(s.name)}</span>
-          <small style="opacity:0.6;margin-left:auto;">${this.escapeHtml(s.ownerName)}</small>
+          <div class="sidebar-compendium-banner-title">
+            <i class="${icon}"></i>
+            <span>${this.escapeHtml(s.name)}</span>
+          </div>
+          <div class="sidebar-compendium-banner-badges">
+            <span class="compendium-badge sys-badge"><i class="fa-solid fa-cube"></i> ${this.escapeHtml(s.ownerName)}</span>
+            <i class="fa-solid fa-lock" style="font-size: 0.7rem; opacity: 0.5;" title="Bloqueado (somente leitura)"></i>
+          </div>
         </div>
       </div>
     `;

@@ -11,7 +11,10 @@
  * "Type...") showing as plain always-expanded text instead of collapsed
  * menus. Loading the same three stylesheets globally fixes every such
  * editor at once instead of patching each window's own markup.
+ *
+ * The actual `@import`s live at the very top of main.css now, not here —
+ * a nested `@import` (one file importing another that itself imports)
+ * stops being physically first once the bundler flattens everything into
+ * one stylesheet, and the browser silently drops it. This file is kept
+ * only for the explanation above; it has nothing left to import.
  */
-@import 'prosemirror-view/style/prosemirror.css';
-@import 'prosemirror-menu/style/menu.css';
-@import 'prosemirror-example-setup/style/style.css';
