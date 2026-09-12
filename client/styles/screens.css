@@ -178,7 +178,7 @@
   background: var(--color-accent) !important;
   color: var(--color-bg-deep) !important;
   border-color: var(--color-accent-hover) !important;
-  box-shadow: 0 4px 24px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .admin-login-footer {
@@ -354,13 +354,15 @@
    exist there. This block was once fully duplicated: the floor menu box
    was drawn twice, once in the parent and once in the child. */
 .stage-nav-toggle-btn {
-  background: rgba(15, 15, 20, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  color: #bbb;
-  width: 32px;
-  height: 32px;
-  font-size: 0.9rem;
+  background: rgba(16, 20, 28, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #94a3b8;
+  width: 30px;
+  height: 30px;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -391,12 +393,29 @@
 
 .hud-toolbox {
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 12px;
+  top: 12px;
   z-index: 10;
   display: flex;
   flex-direction: row;
-  gap: 0.5rem;
+  gap: 4px;
+}
+
+.toolbox-main-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  width: auto;
+  gap: 4px;
+}
+
+.toolbox-submenu {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  width: auto;
+  gap: 4px;
+  animation: submenuSlide var(--transition-fast) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* "Search X" box at the top of each sidebar directory tab (Actors,
@@ -488,20 +507,6 @@
   font-weight: 400;
 }
 
-.toolbox-main-menu {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  width: 50px;
-}
-
-.toolbox-submenu {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  width: 50px;
-  animation: submenuSlide var(--transition-fast) cubic-bezier(0.16, 1, 0.3, 1);
-}
 
 @keyframes submenuSlide {
   from {
@@ -527,35 +532,37 @@
   border-radius: var(--hud-control-radius);
   color: var(--hud-control-fg);
   transition: var(--hud-control-transition);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .toolbox-item:hover,
 .sidebar-tab-btn:hover,
 .macro-slot:hover {
   border-color: var(--hud-control-ring);
-  box-shadow: var(--hud-control-glow);
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--hud-control-fg-hover);
   transform: none;
 }
 
 .toolbox-item.active,
 .sidebar-tab-btn.active {
-  border-color: var(--hud-control-ring);
-  box-shadow: var(--hud-control-glow-active);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   color: var(--hud-control-fg-active);
-  background: var(--hud-control-bg);
+  background: rgba(255, 255, 255, 0.14);
   transform: none;
 }
 
 .toolbox-item {
   width: var(--hud-control-size-tool);
   height: var(--hud-control-size-tool);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .toolbox-main-menu,
 .toolbox-submenu,
-.sidebar-tabs,
 .macro-slots-container,
 .hud-hotbar {
   gap: var(--hud-bar-gap);
@@ -806,20 +813,20 @@
 .sidebar-tabs {
   display: flex;
   flex-direction: column;
-  width: 40px;
+  width: 36px;
   height: 100%;
-  padding: 0.75rem 0;
+  padding: 0.35rem 0;
+  gap: 2px;
   align-items: center;
   flex-shrink: 0;
   z-index: 11;
+  background: rgba(12, 16, 24, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.5);
   border-radius: 8px 0 0 8px;
-  /* ~9 nav tabs + the collapsed-state quick-action icons (pushed to the
-     bottom via margin-top:auto below) is a fixed amount of vertical
-     content with nothing shrinking it — on a short viewport (a laptop's
-     effective height after browser chrome, easily under 700px) it
-     overflows `height:100%` and the bottom icons render past the visible
-     screen, unreachable. Scroll this column instead of letting it spill. */
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -831,15 +838,23 @@
 .sidebar-tab-btn {
   width: var(--hud-control-size-tab);
   height: var(--hud-control-size-tab);
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   position: relative;
-  border-radius: 50%;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .sidebar-tab-btn i {
   color: var(--hud-control-fg);
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.sidebar-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
 }
 
 .sidebar-tab-btn:hover i {
@@ -847,29 +862,36 @@
   transform: none;
 }
 
+.sidebar-tab-btn.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
 .sidebar-tab-btn.active i {
   color: var(--hud-control-fg-active);
 }
 
 .sidebar-collapse-btn {
-  /* Right after the last tab button (DOM order), no longer isolated
-     in the footer -- visually grouped with the tab icons. */
+  /* Right after the last tab button (DOM order), grouped with the tab icons */
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  font-size: 0.85rem;
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 
 .sidebar-collapse-btn:hover {
-  color: var(--color-accent);
-  transform: scale(1.1);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: none;
 }
 
 /* Roll-mode/speak-as stacked in the actual tabs column — they only exist
@@ -1490,25 +1512,24 @@
 
 .slot-number {
   position: absolute;
-  top: 4px;
-  left: 6px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #f0f0e0;
-  text-shadow: 1px 1px 2px #000, 0 0 2px #000;
+  top: 2px;
+  left: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-shadow: none;
+  pointer-events: none;
 }
 
 .macro-icon-fallback {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: var(--color-accent);
-  text-shadow: 0 0 4px color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
 
-/* Drop target visual feedback — without this you can't tell which slot
-   the item will fall into when dragging (macro, actor, rollable sheet field). */
+/* Drop target visual feedback */
 .macro-slot.drag-over {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px var(--color-accent), 0 0 10px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .macro-slots-container {
@@ -1543,27 +1564,26 @@
 }
 
 .macro-btn {
-  /* Scales with the macro slots (--hud-control-size-slot) instead of a
-     fixed size, so the buttons shrink at the same rate as the slots next
-     to them and never end up taller/wider than the row around them. */
+  /* Scales with the macro slots (--hud-control-size-slot) */
   width: calc(var(--hud-control-size-slot) * 0.63);
   height: calc(var(--hud-control-size-slot) * 0.48);
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #000;
+  background: rgba(16, 20, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
-  color: #ccc;
+  color: #94a3b8;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
-  transition: all 0.1s;
+  font-size: 0.85rem;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .macro-btn:hover {
-  border-color: var(--color-accent);
-  color: #fff;
-  box-shadow: 0 0 5px var(--color-accent);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
+  box-shadow: none;
 }
 
 .page-controls {
@@ -1659,10 +1679,10 @@
   left: 10px;
   max-width: 240px;
   z-index: 10;
-  background: rgba(15, 20, 28, 0.75);
+  background: rgba(16, 20, 28, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
   display: flex;
@@ -3352,7 +3372,7 @@
   background: var(--color-accent) !important;
   color: var(--color-bg-deep) !important;
   border-color: var(--color-accent-hover) !important;
-  box-shadow: 0 4px 24px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .wus-card .btn.bright {
@@ -3392,9 +3412,9 @@
 
 
 .stage-nav-toggle-btn:hover {
-  background: rgba(30, 30, 40, 1);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .stage-nav-item {
@@ -3407,29 +3427,32 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(15, 15, 20, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  color: #bbb;
+  background: rgba(16, 20, 28, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #94a3b8;
   padding: 0 12px;
-  height: 32px;
-  font-size: 0.9rem;
+  height: 30px;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .stage-tab-btn:hover {
-  background: rgba(30, 30, 40, 1);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .stage-nav-item.active .stage-tab-btn {
-  border-color: var(--color-accent);
-  color: var(--color-text-primary);
-  background: rgba(20, 20, 30, 1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .stage-name {

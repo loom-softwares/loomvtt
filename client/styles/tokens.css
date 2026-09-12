@@ -23,35 +23,31 @@
 
   /* Parchment chat (scroll bubble — same in both themes on purpose,
      imitates physical paper regardless of the surrounding UI theme). */
-  --color-parchment: #f4ecd8;
-  --color-parchment-border: #6f6c66;
-  --color-parchment-text: #191410;
+  /* Parchment chat (neutralized — clean cool slate/ash, zero brown/yellow tone) */
+  --color-parchment: #1a1d26;
+  --color-parchment-border: rgba(255, 255, 255, 0.08);
+  --color-parchment-text: #e2e8f0;
 
-  /* ── HUD Controls ──────────────────────────────────────────────
-     Consumed by .toolbox-item, .sidebar-tab-btn and .macro-slot.
-     Each theme/palette overwrites THIS block and the three bars follow
-     together. Do not repeat any of these values inside screens.css. */
-  --hud-control-bg: rgba(0, 0, 0, 0.5);
-  --hud-control-border: #000;
-  --hud-control-radius: 5px;
-  --hud-control-fg: var(--color-text-secondary);
-  --hud-control-fg-hover: var(--color-text-primary);
-  --hud-control-fg-active: var(--color-accent);
-  --hud-control-ring: var(--color-accent);
-  --hud-control-glow: 0 0 5px var(--color-accent);
-  --hud-control-glow-active: 0 0 8px var(--color-accent);
-  --hud-control-transition: border-color 0.1s, box-shadow 0.1s, color 0.1s;
+  /* ── HUD Controls (Estilo Cinematográfico / Alchemy — Zero Neon, Zero Marrom) ──
+     Refined, muted, hairline borders. No glowing fluorescent rings. */
+  --hud-control-bg: rgba(16, 20, 28, 0.65);
+  --hud-control-border: rgba(255, 255, 255, 0.08);
+  --hud-control-radius: 6px;
+  --hud-control-fg: #94a3b8;
+  --hud-control-fg-hover: #f1f5f9;
+  --hud-control-fg-active: #ffffff;
+  --hud-control-ring: rgba(255, 255, 255, 0.22);
+  --hud-control-glow: none;
+  --hud-control-glow-active: 0 2px 10px rgba(0, 0, 0, 0.5);
+  --hud-control-transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 
   --hud-bar-gap: 4px;
-  --hud-bar-padding: 0.4rem;
+  --hud-bar-padding: 0.35rem;
 
-  /* Fluid instead of fixed: shrinks with viewport width so controls stay
-     in place at any resolution instead of wrapping/overlapping neighbors.
-     `.hud-hotbar` narrows this further still when the sidebar is open
-     (see screens.css) since vw alone doesn't know the sidebar ate 360px. */
-  --hud-control-size-tool: clamp(26px, 3vw, 34px);
-  --hud-control-size-tab: clamp(24px, 2.6vw, 32px);
-  --hud-control-size-slot: clamp(34px, 4.2vw, 54px);
+  /* Fluid sizing optimized to comfortably fit notebook viewports (633px height) */
+  --hud-control-size-tool: clamp(28px, 2.8vw, 32px);
+  --hud-control-size-tab: clamp(24px, 2.2vw, 28px);
+  --hud-control-size-slot: clamp(34px, 3.8vw, 44px);
 }
 
 /* ── DARK Theme (default) — Midnight Sapphire / Frosted Glass ─────────── */
@@ -63,43 +59,43 @@
   --color-bg-surface: #161d2a;
   --color-bg-surface-hover: #1e2638;
 
-  --color-accent: #0ea5e9;
-  --color-accent-rgb: 14, 165, 233;
-  --color-accent-hover: #38bdf8;
+  --color-accent: #cbd5e1;
+  --color-accent-rgb: 203, 213, 225;
+  --color-accent-hover: #f8fafc;
 
-  --color-border: #1e293b;
-  --color-border-glass: rgba(14, 165, 233, 0.2);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-glass: rgba(255, 255, 255, 0.12);
 
-  --window-bg: rgba(10, 13, 20, 0.7);
+  --window-bg: rgba(12, 16, 24, 0.82);
   --window-border: rgba(255, 255, 255, 0.08);
-  --window-backdrop-blur: blur(24px);
+  --window-backdrop-blur: blur(20px);
 
-  --color-text-primary: #ffffff;
+  --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
   --color-text-muted: #64748b;
 
   --color-danger: #ef4444;
   --color-success: #22c55e;
   --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  --color-info: #38bdf8;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 24px rgba(14, 165, 233, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* ── LIGHT Theme — same structure, light background / dark text ───────── */
 :root[data-theme='light'] {
   --color-bg-deep: #e9edf2;
-  --color-bg-dark: #eef1f5;
-  --color-bg-medium: #f4f6f9;
+  --color-bg-dark: #f1f4f8;
+  --color-bg-medium: #f8fafc;
   --color-bg-surface: #ffffff;
-  --color-bg-surface-hover: #eef2f7;
+  --color-bg-surface-hover: #f1f5f9;
 
-  --color-accent: #0284c7;
-  --color-accent-rgb: 2, 132, 199;
-  --color-accent-hover: #0ea5e9;
+  --color-accent: #475569;
+  --color-accent-rgb: 71, 85, 105;
+  --color-accent-hover: #334155;
 
   --color-border: #d5dbe3;
   --color-border-glass: rgba(2, 132, 199, 0.25);
