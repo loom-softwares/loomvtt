@@ -18,6 +18,7 @@ export class StageNav extends BaseComponent {
   private stages: any[] = [];
   private activeStageId: string | null = null;
   private isCollapsed: boolean = false;
+  private expandedStageId: string | null = null;
   private onlineUsers: OnlineUserPresence[] = [];
   private unsubOnline: (() => void) | null = null;
 
@@ -89,14 +90,14 @@ export class StageNav extends BaseComponent {
 
       // Scene Tab Button
       html += `
-        <div class="stage-nav-item ${isActive ? 'active' : ''}">
+        <div class="stage-nav-item ${isActive ? 'active' : ''} ${this.expandedStageId === s.id ? 'expanded' : ''}">
           <button class="stage-tab-btn"
                   data-action="preview-stage"
                   data-id="${s.id}" data-stage-id="${s.id}"
                   title="${t('stageNav.clickToView')}">
             ${isActive ? '<i class="fa-solid fa-map-pin"></i>' : '<i class="fa-solid fa-map"></i>'}
             <span class="stage-name">${this.escapeHtml(s.name)}</span>
-            ${hasLevels ? '<i class="fa-solid fa-caret-down level-caret"></i>' : ''}
+            ${hasLevels ? `<span class="level-caret-toggle" data-action="toggle-levels" data-id="${s.id}"><i class="fa-solid fa-caret-down level-caret"></i></span>` : ''}
           </button>
           ${viewers.length > 0 ? `
             <span class="stage-nav-viewers">
@@ -109,7 +110,7 @@ export class StageNav extends BaseComponent {
             </span>
           ` : ''}
 
-          <!-- Dropdown for Levels (appears on hover) -->
+          <!-- Dropdown for Levels (appears on hover or click) -->
           ${hasLevels ? `
             <div class="stage-levels-dropdown">
               ${s.levels.map((l: any) => `
@@ -132,7 +133,11 @@ export class StageNav extends BaseComponent {
     id: string | null,
     target: HTMLElement,
   ): void {
-    if (action === 'toggle-nav') {
+    if (action === 'toggle-levels' && id) {
+      this.expandedStageId = this.expandedStageId === id ? null : id;
+      this.render();
+      return;
+    } else if (action === 'toggle-nav') {
       this.isCollapsed = !this.isCollapsed;
       this.render();
     } else if (action === 'preview-stage' && id) {

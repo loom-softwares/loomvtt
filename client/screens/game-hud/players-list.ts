@@ -194,12 +194,13 @@ export class PlayersList extends BaseComponent {
     const currentUserId = gameContext.session?.userId;
     let currentUser = this.players.find(p => p.id === currentUserId);
     const otherPlayers = this.players.filter(p => p.id !== currentUserId);
+    const onlineOthers = otherPlayers.filter(p => p.isOnline);
 
     // If current user is not in the list yet (before fetch resolves), create a placeholder
     if (!currentUser && currentUserId) {
       currentUser = {
         id: currentUserId,
-        name: gameContext.session?.userName || '...',
+        name: gameContext.session?.userName || 'Gamemaster',
         role: gameContext.session?.userRole || 0,
         isOnline: true
       };
@@ -207,22 +208,27 @@ export class PlayersList extends BaseComponent {
 
     const isGM = (gameContext.session?.userRole ?? 0) >= 4;
 
+    const shortRoleBadge = (role: number): string => {
+      if (role >= 4) return 'GM';
+      if (role >= 2) return 'ASSIST';
+      return 'JOGADOR';
+    };
+
     const renderPlayerRow = (player: Player) => {
-      const dotColor = player.isOnline ? '#2ecc71' : '#555';
-      const shadow = player.isOnline ? '0 0 5px rgba(46, 204, 113, 0.5)' : 'none';
+      const dotColor = player.isOnline ? '#2ecc71' : '#64748b';
+      const shadow = player.isOnline ? '0 0 6px rgba(46, 204, 113, 0.5)' : 'none';
       return `
-        <div class="players-item" data-user-id="${this.escapeHtml(player.id)}" style="display: flex; align-items: center; padding: 0.3rem 0; cursor: pointer;">
-          <span class="players-avatar" style="position: relative; flex: 0 0 auto; width: 20px; height: 20px; margin-right: 8px;">
-            <img src="${this.escapeHtml(player.avatarUrl || DEFAULT_PORTRAIT_URL)}" alt=""
-              style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
-            <span class="players-online-dot" style="position: absolute; bottom: -1px; right: -1px; width: 7px; height: 7px; border-radius: 50%; background-color: ${dotColor}; box-shadow: ${shadow}; border: 1.5px solid var(--color-bg-deep, #0f1114);"></span>
+        <div class="players-popover-item ${player.isOnline ? '' : 'offline'}" data-user-id="${this.escapeHtml(player.id)}">
+          <span class="players-popover-avatar" style="position: relative; width: 24px; height: 24px; flex-shrink: 0;">
+            <img src="${this.escapeHtml(player.avatarUrl || DEFAULT_PORTRAIT_URL)}" alt="" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block;" />
+            <span class="players-popover-dot" style="position: absolute; bottom: -1px; right: -1px; width: 7px; height: 7px; border-radius: 50%; background-color: ${dotColor}; box-shadow: ${shadow}; border: 1.5px solid #0f1219;"></span>
           </span>
-          <div class="players-name" style="${player.color ? `color: ${player.color};` : ''} flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div class="players-popover-name" style="${player.color ? `color: ${player.color};` : ''} flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem;">
             ${this.escapeHtml(player.name)}
-            <span style="font-size: 0.75em; color: var(--color-text-muted); margin-left: 4px;">[${roleLabel(player.role)}]</span>
+            <span class="players-popover-role" style="font-size: 0.65rem; color: #94a3b8; margin-left: 4px;">[${shortRoleBadge(player.role)}]</span>
           </div>
           ${isGM ? `
-            <button type="button" class="btn-icon" data-action="player-menu" data-id="${this.escapeHtml(player.id)}" title="${t('playersList.configureUser')}" style="background: none; border: none; color: var(--color-text-secondary); opacity: 0.7; cursor: pointer; padding: 2px 6px; font-size: 0.75rem;">
+            <button type="button" class="players-popover-action-btn" data-action="player-menu" data-id="${this.escapeHtml(player.id)}" title="${t('playersList.configureUser')}" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 2px 4px;">
               <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
           ` : ''}
@@ -230,65 +236,59 @@ export class PlayersList extends BaseComponent {
       `;
     };
 
-    let popupHtml = '';
-    if (otherPlayers.length > 0) {
-      popupHtml = `
-        <div class="players-list-popup" style="
-          display: ${this.isExpanded ? 'block' : 'none'};
-          position: absolute;
-          bottom: calc(100% + 10px);
-          left: -1rem;
-          width: calc(100% + 2rem);
-          max-height: 300px;
-          overflow-y: auto;
-          background: rgba(15, 20, 28, 0.75);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(79, 172, 254, 0.2);
-          border-radius: 6px;
-          padding: 0.5rem;
-          box-shadow: 0 -4px 15px rgba(0,0,0,0.7);
-        ">
-          ${otherPlayers.map(renderPlayerRow).join('')}
+    const allOnline: Player[] = [];
+    if (currentUser) allOnline.push(currentUser);
+    allOnline.push(...onlineOthers);
+
+    const onlineAvatarsHtml = allOnline.map(player => {
+      const isSelf = player.id === currentUserId;
+      const borderColor = player.color || 'rgba(255, 255, 255, 0.25)';
+      return `
+        <div class="hud-player-avatar-item"
+             data-action="${isSelf ? 'toggle-list' : 'player-menu'}"
+             data-id="${this.escapeHtml(player.id)}"
+             title="${this.escapeHtml(player.name)} (${shortRoleBadge(player.role)})">
+          <div class="hud-player-avatar-circle" style="border-color: ${borderColor};">
+            <img src="${this.escapeHtml(player.avatarUrl || DEFAULT_PORTRAIT_URL)}" alt="" class="hud-player-avatar-img" />
+            <span class="hud-player-online-dot"></span>
+          </div>
         </div>
       `;
-    }
+    }).join('');
 
-    const currentUserHtml = currentUser ? `
-      <div class="players-current-user" data-user-id="${this.escapeHtml(currentUser.id)}" style="padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 0.5rem;">
-        <div style="display: flex; align-items: center;">
-          <span class="players-avatar" style="position: relative; flex: 0 0 auto; width: 24px; height: 24px; margin-right: 8px;">
-            <img src="${this.escapeHtml(currentUser.avatarUrl || DEFAULT_PORTRAIT_URL)}" alt=""
-              style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" />
-            <span class="players-online-dot" style="position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-radius: 50%; background-color: #2ecc71; box-shadow: 0 0 5px rgba(46, 204, 113, 0.5); border: 1.5px solid var(--color-bg-deep, #0f1114);"></span>
-          </span>
-          <div class="players-name" style="${currentUser.color ? `color: ${currentUser.color};` : ''} flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">
-            ${this.escapeHtml(currentUser.name)}
-            <span style="font-size: 0.75em; color: var(--color-text-muted); margin-left: 4px;">[${roleLabel(currentUser.role)}]</span>
-          </div>
-          <button class="players-edit-btn" data-action="edit-self" data-id="${this.escapeHtml(currentUser.id)}" title="${t('playersList.configureUser')}" style="background: none; border: none; color: var(--color-text-secondary); cursor: pointer; padding: 2px 4px; flex: 0 0 auto;">
-            <i class="fa-solid fa-gear"></i>
+    const popoverHtml = this.isExpanded ? `
+      <div class="players-popover-dropdown players-popover-upward">
+        <div class="players-popover-header">
+          <span>Participantes (${this.players.filter(p => p.isOnline).length} online)</span>
+          <button type="button" class="players-popover-close-btn" data-action="toggle-list">
+            <i class="fa-solid fa-xmark"></i>
           </button>
+        </div>
+        <div class="players-popover-list">
+          ${renderPlayerRow(currentUser || { id: '', name: '...', role: 0, isOnline: true })}
+          ${otherPlayers.map(renderPlayerRow).join('')}
+        </div>
+        <div class="players-popover-footer">
+          <button type="button" class="players-popover-self-btn" data-action="edit-self" data-id="${this.escapeHtml(currentUser?.id || '')}">
+            <i class="fa-solid fa-gear"></i> Configurar Perfil
+          </button>
+          <div class="players-popover-perf">
+            <span>Ping <strong class="players-status-latency" style="color: ${this.getPingColor(this.latency)};">${this.latency}ms</strong></span>
+            <span>•</span>
+            <span>FPS <strong class="players-status-fps" style="color: ${this.getFpsColor(this.fps)};">${this.fps}</strong></span>
+          </div>
         </div>
       </div>
     ` : '';
 
-    const statusHtml = `
-        <div style="flex: 1; display: flex; gap: 0.75rem; color: var(--color-text-muted);">
-          <div>Latency <span class="players-status-latency" style="color: ${this.getPingColor(this.latency)}; font-weight: bold;">${this.latency}ms</span></div>
-          <div>FPS <span class="players-status-fps" style="color: ${this.getFpsColor(this.fps)}; font-weight: bold;">${this.fps}</span></div>
-        </div>
-        <button class="btn btn-secondary" data-action="toggle-list" style="padding: 2px 8px; font-size: 0.85rem; border-radius: 4px; background: rgba(0,0,0,0.5); border: 1px solid var(--color-accent); color: var(--color-accent); transition: all 0.2s;">
-          <i class="fas fa-caret-${this.isExpanded ? 'down' : 'up'}"></i>
-        </button>
-      </div>
-    `;
-
     return `
-      <div class="players-list-wrapper" style="position: relative;">
-        ${popupHtml}
-        <div class="players-list-main">
-          ${currentUserHtml}
-          ${statusHtml}
+      <div class="hud-player-avatars-container">
+        ${popoverHtml}
+        <div class="hud-player-avatars-row">
+          ${onlineAvatarsHtml}
+          <button type="button" class="hud-player-toggle-btn" data-action="toggle-list" title="Participantes e Desempenho">
+            <i class="fa-solid fa-chevron-${this.isExpanded ? 'down' : 'up'}"></i>
+          </button>
         </div>
       </div>
     `;

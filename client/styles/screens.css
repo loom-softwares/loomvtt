@@ -332,10 +332,8 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 8px;
-  overflow-x: auto;
-  overflow-y: visible;
-  scrollbar-width: none;
-  z-index: 10;
+  overflow: visible;
+  z-index: 50;
   flex-shrink: 0;
   border: none;
   transition: right 0.3s ease;
@@ -683,15 +681,13 @@
    Aesthetics/polish left for the Gemini design pass. */
 .sidebar-collapsed-chat {
   position: fixed;
-  /* 40px = largura de .sidebar-tabs (flush com a borda direita quando a
-     sidebar colapsa) + folga extra pra não ficar colado na coluna de ícones. */
-  right: calc(40px + 1rem);
-  bottom: 20px;
-  width: 320px;
+  right: calc(36px + 0.75rem);
+  bottom: 16px;
+  width: clamp(230px, 18vw, 260px);
   max-width: calc(100vw - 64px);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.5rem;
   z-index: 15;
   pointer-events: none;
   opacity: 0;
@@ -708,8 +704,8 @@
 .sidebar-collapsed-toasts {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-height: 60vh;
+  gap: 4px;
+  max-height: 55vh;
   overflow: hidden;
 }
 
@@ -733,30 +729,30 @@
 .sidebar-collapsed-input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(11, 10, 19, 0.85);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: rgba(14, 18, 26, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-text-primary);
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
   font-family: inherit;
   resize: none;
   outline: none;
   height: 32px;
-  transition: height var(--transition-fast), background var(--transition-fast);
+  transition: height var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
 }
 
 /* Like ProseMirror : starts as a discrete one-line
    box, only "opens up" to actually write after click/focus. */
 .sidebar-collapsed-input.expanded {
   height: 72px;
-  background: rgba(11, 10, 19, 0.95);
+  background: rgba(14, 18, 26, 0.7);
 }
 
 .sidebar-collapsed-input:focus {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Formatting bar (same as expanded panel, sidebar-input-row-middle)
@@ -815,18 +811,16 @@
   flex-direction: column;
   width: 36px;
   height: 100%;
-  padding: 0.35rem 0;
-  gap: 2px;
+  padding: 0.5rem 0.25rem;
+  gap: 4px;
   align-items: center;
   flex-shrink: 0;
   z-index: 11;
-  background: rgba(12, 16, 24, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.5);
-  border-radius: 8px 0 0 8px;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+  border-radius: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -836,62 +830,72 @@
 }
 
 .sidebar-tab-btn {
-  width: var(--hud-control-size-tab);
-  height: var(--hud-control-size-tab);
+  width: var(--hud-control-size-tab, 30px);
+  height: var(--hud-control-size-tab, 30px);
   font-size: 0.95rem;
   position: relative;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid transparent;
-}
-
-.sidebar-tab-btn i {
-  color: var(--hud-control-fg);
-  font-size: 0.95rem;
-  transition: color var(--transition-fast), transform var(--transition-fast);
-}
-
-.sidebar-tab-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #f1f5f9;
-}
-
-.sidebar-tab-btn:hover i {
-  color: var(--hud-control-fg-hover);
-  transform: none;
-}
-
-.sidebar-tab-btn.active {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-radius: 7px;
+  background: rgba(15, 20, 28, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.sidebar-tab-btn.active i {
-  color: var(--hud-control-fg-active);
-}
-
-.sidebar-collapse-btn {
-  /* Right after the last tab button (DOM order), grouped with the tab icons */
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: color var(--transition-fast), background var(--transition-fast);
+  transition: all 0.2s ease;
+}
+
+.sidebar-tab-btn i {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.sidebar-tab-btn:hover {
+  background: rgba(26, 34, 48, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+}
+
+.sidebar-tab-btn:hover i {
+  color: #ffffff;
+}
+
+.sidebar-tab-btn.active {
+  background: rgba(30, 42, 60, 0.92);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.sidebar-tab-btn.active i {
+  color: #ffffff;
+}
+
+.sidebar-collapse-btn {
+  background: rgba(15, 20, 28, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  color: #cbd5e1;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+  margin: 2px 0;
 }
 
 .sidebar-collapse-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  transform: none;
+  color: #ffffff;
+  background: rgba(26, 34, 48, 0.75);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Roll-mode/speak-as stacked in the actual tabs column — they only exist
@@ -901,43 +905,70 @@
 .sidebar-tabs-collapsed-icons {
   display: none;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   margin-top: auto;
   padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
 }
 
 .hud-sidebar.collapsed .sidebar-tabs-collapsed-icons {
   display: flex;
 }
 
+.sidebar-tabs-collapsed-icons .roll-mode-btn {
+  width: var(--hud-control-size-tab, 30px);
+  height: var(--hud-control-size-tab, 30px);
+  border-radius: 7px;
+  background: rgba(15, 20, 28, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-tabs-collapsed-icons .roll-mode-btn i {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.sidebar-tabs-collapsed-icons .roll-mode-btn:hover {
+  background: rgba(26, 34, 48, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.sidebar-tabs-collapsed-icons .roll-mode-btn.active {
+  background: rgba(30, 42, 60, 0.92);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
 .sidebar-content {
   flex: 0 0 320px;
   width: 320px;
   height: 100%;
-  background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 60%),
-    linear-gradient(180deg, rgba(15, 20, 28, 0.9), var(--color-bg-dark));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-left: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  background: rgba(14, 18, 26, 0.68);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   display: none;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.65);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
   position: relative;
   opacity: 1;
   transition: opacity 0.3s;
 }
 
 .sidebar-content::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--color-accent) 4%, transparent) 0 1px, transparent 1px);
-  background-size: 18px 18px;
-  opacity: 0.45;
-  pointer-events: none;
-  z-index: -1;
+  display: none;
 }
 
 .sidebar-content.active {
@@ -966,18 +997,19 @@
   flex-direction: column;
   gap: 0.6rem;
   padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: transparent;
 }
 
 .sidebar-message {
-  background: rgba(22, 23, 29, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  /* Grimório: same asymmetric page-corner as the compendium banner. */
-  border-radius: 3px 10px 3px 10px;
+  background: rgba(20, 26, 38, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 0.75rem;
   font-size: 0.85rem;
   color: var(--color-text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   line-height: 1.45;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   display: flex;
@@ -1442,65 +1474,25 @@
   color: var(--color-text-muted);
 }
 
-/* True center of the CANVAS area, independent of .hud-players-list —
-   sharing a flex row with it (an earlier version of this fix) shifted
-   the center by half of the player list's own width, which is wrong:
-   the two have nothing to do with each other, they just both happen to
-   live near the bottom edge. `left/right` + `margin-inline:auto` centers
-   the hotbar's own (fixed, slot-count-driven) width inside the space
-   between the viewport edge and the sidebar — recalculated live any
-   time either changes, at any viewport size. */
-.hud-hotbar {
-  position: absolute;
-  bottom: 10px;
-  /* Live-measured players-list width (+20px), set by game-hud.ts via a
-     ResizeObserver — NOT a fixed guess. A constant here either overlaps the
-     players card (too small) or drags the hotbar visibly off-center
-     whenever only one player is online (too big, e.g. a fixed 260px while
-     the card itself renders 90px wide). Falls back to 10px before the
-     observer's first measurement. */
-  left: var(--players-list-clearance, 10px);
-  right: 10px;
+/* Fixed center hotbar */
+.hud-hotbar,
+#hud-sidebar:not(.collapsed)~.hud-hotbar,
+#hud-sidebar.collapsed~.hud-hotbar {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
   width: fit-content;
-  margin-inline: auto;
+  margin: 0;
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
   display: flex;
   align-items: flex-end;
   flex-direction: row;
-  z-index: 10;
-  transition: right 0.3s ease;
-}
-
-#hud-sidebar:not(.collapsed)~.hud-hotbar {
-  right: 370px;
-  /* 360px sidebar + 10px clearance */
-  /* Same derived-from-content formula as the collapsed rule below (10 slots
-     + both control clusters + gaps + padding), re-solved for this rule's
-     370px right offset instead of 396px. A flat vw guess here previously
-     let the box overflow past `right` by 130px+ at 1024px wide (fit-content
-     does not clamp to the left/right box when content wants more — verified
-     via getBoundingClientRect, not assumed). */
-  --hud-control-size-slot: clamp(18px, calc(8.9vw - 70px), 54px);
-}
-
-/* When the sidebar IS collapsed, its floating chat box (.sidebar-collapsed-
-   chat, position:fixed, 320px wide, docked bottom-right — see sidebar.ts
-   setupCollapsedOverlay) still sits over the same bottom-right corner. That
-   box was never accounted for on either side, so the hotbar's centering box
-   reached straight under it (confirmed via getBoundingClientRect at
-   1024x640: hotbar 345-928px vs chat box 648-968px — real overlap eating
-   the last macro slots). 320px box + 56px offset + 10px clearance. */
-#hud-sidebar.collapsed~.hud-hotbar {
-  right: 396px;
-  /* Derived from the hotbar's actual content-width formula (10 slots + both
-     control clusters + gaps + padding ≈ 11.26·slot + 87px), solved so total
-     width never exceeds what's left after reserving 260px (players-list)
-     and 396px (this collapsed-chat box) on a real viewport — not a guessed
-     vw factor. Verified at 1024px: solves to ~25px, matches the space
-     actually available (368px) instead of overflowing it (previously
-     measured hotbar reaching 500.9px wide in only 368px of room). */
-  --hud-control-size-slot: clamp(18px, calc(8.9vw - 74px), 54px);
+  z-index: 20;
+  transition: bottom 0.3s ease;
+  --hud-control-size-slot: 36px;
 }
 
 .macro-slot {
@@ -1675,86 +1667,292 @@
 
 .hud-players-list {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  max-width: 240px;
-  z-index: 10;
-  background: rgba(16, 20, 28, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
+  bottom: 12px;
+  left: 12px;
+  z-index: 50;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  /* `flex-start` let each row (name + gear button) size to its own natural
-     content width, ignoring this card's max-width — the row rendered wider
-     than the card and the gear button visibly poked out past the right
-     edge, since nothing here clips overflow either. `stretch` forces rows
-     to the card's actual (possibly max-width-capped) width, so the row's
-     own flex:1 name can actually shrink/ellipsis within it. */
-  align-items: stretch;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  transition: transform var(--transition-fast);
+  align-items: flex-start;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
 }
 
-.hud-players-list:hover {
+.hud-player-avatars-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hud-player-avatars-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hud-player-avatar-item {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease;
+}
+
+.hud-player-avatar-item:hover {
+  transform: translateY(-2px) scale(1.08);
+}
+
+.hud-player-avatar-circle {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  background: rgba(14, 18, 26, 0.6);
+  flex-shrink: 0;
+}
+
+.hud-player-avatar-circle .hud-player-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.hud-player-avatar-circle .hud-player-online-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  border: 1.5px solid #0f1219;
+  box-shadow: 0 0 5px rgba(16, 185, 129, 0.7);
+}
+
+.hud-player-toggle-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(14, 18, 26, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
+  margin-left: 2px;
+}
+
+.hud-player-toggle-btn:hover {
+  background: rgba(26, 34, 48, 0.75);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
 }
 
-.players-item {
+.players-popover-upward {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  min-width: 230px;
+  background: rgba(14, 18, 26, 0.55);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  flex-direction: column;
+  z-index: 60;
+  overflow: hidden;
+  animation: players-popover-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.players-name {
-  color: var(--color-text-primary);
+@keyframes players-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.players-popover-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.players-popover-close-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.players-popover-close-btn:hover {
+  color: #f1f5f9;
+}
+
+.players-popover-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.players-popover-item,
+.players-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.35rem 0.75rem;
+  transition: background 0.15s ease;
+}
+
+.players-popover-item:hover,
+.players-popover-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.players-popover-avatar,
+.players-popover-avatar-wrap {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.players-popover-avatar img,
+.players-popover-avatar-img {
+  width: 24px !important;
+  height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.players-popover-dot,
+.players-popover-online-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  border: 1.5px solid #0f1219;
+}
+
+.players-popover-item.offline .players-popover-avatar img,
+.players-popover-row.offline .players-popover-avatar-img {
+  filter: grayscale(0.8);
+  opacity: 0.55;
+}
+
+.players-popover-item.offline .players-popover-dot,
+.players-popover-row.offline .players-popover-online-dot {
+  background-color: #64748b;
+  box-shadow: none;
+}
+
+.players-popover-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
+  flex: 1;
+}
+
+.players-popover-name {
+  font-size: 0.8rem;
+  color: #e2e8f0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.players-online-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: #2ecc71;
-  border-radius: 50%;
-  margin-right: 6px;
-  box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+.players-popover-role {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
-.players-role {
-  padding: 0.125rem 0.375rem;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm, 2px);
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
+.players-popover-offline {
+  font-size: 0.65rem;
+  color: #64748b;
+  font-style: italic;
 }
 
-.players-item {
-  cursor: context-menu;
-}
-
-.players-status-bar {
+.players-popover-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.375rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.45rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: transparent;
+}
+
+.players-popover-self-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.players-popover-self-btn:hover {
+  color: #f1f5f9;
+}
+
+.players-popover-perf {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.7rem;
+  color: #64748b;
   font-family: var(--font-mono, monospace);
-  color: var(--color-text-muted);
 }
 
 /* Setup Sidebar — framed box just like the main panel */
@@ -3525,7 +3723,8 @@
   z-index: 100;
 }
 
-.stage-nav-item:hover .stage-levels-dropdown {
+.stage-nav-item:hover .stage-levels-dropdown,
+.stage-nav-item.expanded .stage-levels-dropdown {
   display: flex;
 }
 
