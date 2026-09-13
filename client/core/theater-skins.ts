@@ -21,7 +21,10 @@ export interface TheaterSkinAssets {
 
 export interface TheaterSkin {
   id: string;
+  /** Fallback name (used if `nameKey` has no translation — ex.: addon futuro). */
   name: string;
+  /** Chave i18n (namespace `theaterSkins.*`) exibida no seletor rápido. */
+  nameKey?: string;
   author?: string;
   /** CSS filter applied to the cinematic background image (not the whole screen). */
   filter?: string;
@@ -54,6 +57,7 @@ const BASE = '/theater-skins';
 theaterSkins.register({
   id: 'classic-black',
   name: 'Clássico (sem moldura)',
+  nameKey: 'theaterSkins.classicBlack',
   author: 'Loom',
   filter: '',
   styles: {
@@ -67,6 +71,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'vignette',
   name: 'Vinheta Suave',
+  nameKey: 'theaterSkins.vignette',
   author: 'Loom',
   filter: '',
   styles: {
@@ -80,6 +85,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'noir',
   name: 'Noir Detective',
+  nameKey: 'theaterSkins.noir',
   author: 'Loom',
   // Quem escolhe essa skin no seletor rápido espera P&B na hora — mesmo
   // valor do efeito "noir" separado (flags.theaterEffect, só na config da
@@ -96,6 +102,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'sepia',
   name: 'Fotografia Antiga',
+  nameKey: 'theaterSkins.sepia',
   author: 'Loom',
   filter: 'sepia(0.8) contrast(0.9)',
   styles: {
@@ -109,6 +116,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'dark-world',
   name: 'Dark World',
+  nameKey: 'theaterSkins.darkWorld',
   author: 'The Blacksmith',
   filter: 'grayscale(20%) sepia(10%) contrast(1.15)',
   styles: {
@@ -132,6 +140,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'medieval-parchment',
   name: 'Medieval Parchment',
+  nameKey: 'theaterSkins.medievalParchment',
   author: 'The Blacksmith',
   filter: '',
   styles: {
@@ -155,6 +164,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'metal-max',
   name: 'Metal Max',
+  nameKey: 'theaterSkins.metalMax',
   author: 'The Blacksmith',
   filter: '',
   styles: {
@@ -179,6 +189,7 @@ theaterSkins.register({
 theaterSkins.register({
   id: 'cyber-punk',
   name: 'Cyberpunk Neon',
+  nameKey: 'theaterSkins.cyberPunk',
   author: 'The Blacksmith',
   filter: 'hue-rotate(320deg) contrast(1.1)',
   styles: {

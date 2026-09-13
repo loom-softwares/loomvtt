@@ -193,16 +193,16 @@ export class GameHudScreen {
         <div class="theater-bar theater-bar-bottom"></div>
       </div>
       <div id="theater-controls" class="theater-controls">
-        <button id="theater-toggle-btn" class="theater-control-btn" style="display:none" title="Modo Teatro">
+        <button id="theater-toggle-btn" class="theater-control-btn" style="display:none" title="${t('gameHud.theaterToggle')}">
           <i class="fa-solid fa-masks-theater"></i>
         </button>
-        <select id="theater-skin-select" class="theater-control-select" style="display:none" title="Moldura do Modo Teatro">
-          ${theaterSkins.list().map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
+        <select id="theater-skin-select" class="theater-control-select" style="display:none" title="${t('gameHud.theaterSkinSelect')}">
+          ${theaterSkins.list().map((s) => `<option value="${s.id}">${s.nameKey ? t(s.nameKey) : s.name}</option>`).join('')}
         </select>
-        <button id="cast-tray-btn" class="theater-control-btn" style="display:none" title="Elenco em Cena">
+        <button id="cast-tray-btn" class="theater-control-btn" style="display:none" title="${t('gameHud.castTray')}">
           <i class="fa-solid fa-people-group"></i>
         </button>
-        <button id="stream-link-btn" class="theater-control-btn" style="display:none" title="Gerar Links de Stream (OBS)">
+        <button id="stream-link-btn" class="theater-control-btn" style="display:none" title="${t('gameHud.streamLinkBtn')}">
           <i class="fa-solid fa-satellite-dish"></i>
         </button>
       </div>

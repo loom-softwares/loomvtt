@@ -1299,6 +1299,20 @@
         "streamLinksChat": "Chat",
         "streamLinksCopy": "Copy link",
         "streamLinksClose": "Close",
-        "streamLinksError": "Error generating stream links"
+        "streamLinksError": "Error generating stream links",
+        "theaterToggle": "Theater Mode",
+        "theaterSkinSelect": "Theater Mode Skin",
+        "castTray": "Cast on Stage",
+        "streamLinkBtn": "Generate Stream Links (OBS)"
+    },
+    "theaterSkins": {
+        "classicBlack": "Classic (no frame)",
+        "vignette": "Soft Vignette",
+        "noir": "Noir Detective",
+        "sepia": "Old Photograph",
+        "darkWorld": "Dark World",
+        "medievalParchment": "Medieval Parchment",
+        "metalMax": "Metal Max",
+        "cyberPunk": "Cyberpunk Neon"
     }
 }
