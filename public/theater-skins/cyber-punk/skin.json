@@ -1,0 +1,27 @@
+{
+  "id": "cyber-punk",
+  "name": "Cyberpunk Neon",
+  "author": "The Blacksmith",
+  "version": "1.4.0",
+  "options": {
+    "theme": "dark",
+    "filter": "hue-rotate(320deg) contrast(1.1)",
+    "styles": {
+      "--cinematic-bar-bg": "#05050a",
+      "--cinematic-bar-border": "2px solid #00ffff",
+      "--cinematic-footer-bg": "rgba(5, 5, 10, 0.8)",
+      "--cinematic-portrait-name-bg": "rgba(255, 0, 127, 0.45)",
+      "--cinematic-portrait-aspect-ratio": "3 / 4",
+      "--cinematic-text-color": "#00ffff",
+      "--cinematic-portrait-name-border-top": "2px solid #00ffff"
+    },
+    "assets": {
+      "topBar": "assets/top-bar.webp",
+      "bottomBar": "assets/bottom-bar.webp",
+      "portraitBorder": "assets/portrait-border.webp",
+      "background": "assets/portrait-bg.webp",
+      "border": "assets/bar-border.webp",
+      "footer": "assets/footer.webp"
+    }
+  }
+}

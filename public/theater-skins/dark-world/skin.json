@@ -1,0 +1,26 @@
+{
+  "id": "dark-world",
+  "name": "Dark World",
+  "author": "The Blacksmith",
+  "version": "1.3.0",
+  "options": {
+    "theme": "dark",
+    "filter": "grayscale(20%) sepia(10%) contrast(1.15)",
+    "styles": {
+      "--cinematic-bar-bg": "#120202",
+      "--cinematic-footer-bg": "transparent",
+      "--cinematic-portrait-name-bg": "rgba(30, 0, 0, 0.6)",
+      "--cinematic-portrait-aspect-ratio": "3 / 4",
+      "--cinematic-text-color": "#dfc1c1",
+      "--cinematic-portrait-name-border-top": "1px solid #5a0000"
+    },
+    "assets": {
+      "topBar": "assets/top-bar.webp",
+      "bottomBar": "assets/bottom-bar.webp",
+      "portraitBorder": "assets/portrait-border.webp",
+      "background": "assets/portrait-bg.webp",
+      "border": "assets/bar-border.webp",
+      "footer": "assets/footer.webp"
+    }
+  }
+}

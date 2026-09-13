@@ -17,6 +17,7 @@ import { FilePickerWindow } from './file-picker-window.js';
 import { CanvasManager } from '../canvas/canvas-manager.js';
 import { transitionEffectRegistry } from '../canvas/transition-effect-registry.js';
 import { LevelConfigWindow, type LevelData } from './level-config-window.js';
+import { theaterSkins } from '../core/theater-skins.js';
 
 interface Stage {
   id: string;
@@ -301,6 +302,37 @@ export class StageConfigWindow extends BaseWindow {
                 ${t('stageConfig.theaterDefaultDesc') || 'A cena já abre em modo teatro (o GM desliga quando a ação começa).'}
               </label>
             </div>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.cinematicBg') || 'Fundo do Modo Teatro'}</label>
+            <div class="form-fields">
+              <input type="text" name="flags.cinematicBg" value="${(this.stage.flags as any)?.cinematicBg || ''}" placeholder="${t('stageConfig.cinematicBgPlaceholder') || 'Deixe vazio para usar o fundo tático'}" />
+              <button type="button" class="icon-button" id="pick-cinematic-bg-btn" title="${t('stageConfig.pickExistingFile')}"><i class="fa-solid fa-folder-open"></i></button>
+            </div>
+            <small>${t('stageConfig.cinematicBgDesc') || 'Imagem ou vídeo exclusivo do modo teatro. Sem isso, reaproveita o fundo tático da cena.'}</small>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.theaterSkin') || 'Moldura do Modo Teatro'}</label>
+            <div class="form-fields">
+              <select name="flags.theaterSkin">
+                ${theaterSkins.list().map((s) => `<option value="${s.id}" ${((this.stage.flags as any)?.theaterSkin || 'classic-black') === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.theaterEffect') || 'Efeito do Modo Teatro'}</label>
+            <div class="form-fields">
+              <select name="flags.theaterEffect">
+                <option value="none" ${((this.stage.flags as any)?.theaterEffect || 'none') === 'none' ? 'selected' : ''}>${t('stageConfig.theaterEffectNone') || 'Nenhum'}</option>
+                <option value="fog" ${(this.stage.flags as any)?.theaterEffect === 'fog' ? 'selected' : ''}>${t('stageConfig.theaterEffectFog') || 'Neblina'}</option>
+                <option value="noir" ${(this.stage.flags as any)?.theaterEffect === 'noir' ? 'selected' : ''}>${t('stageConfig.theaterEffectNoir') || 'Noir'}</option>
+                <option value="blood" ${(this.stage.flags as any)?.theaterEffect === 'blood' ? 'selected' : ''}>${t('stageConfig.theaterEffectBlood') || 'Sangue'}</option>
+              </select>
+            </div>
+            <small>${t('stageConfig.theaterEffectDesc') || 'Aplica só na imagem de fundo do modo teatro — nunca se mistura com o clima da cena tática.'}</small>
           </div>
 
           <div class="form-group-horizontal">
@@ -738,6 +770,17 @@ export class StageConfigWindow extends BaseWindow {
       });
     });
 
+    const pickCinematicBgBtn = this.element.querySelector('#pick-cinematic-bg-btn');
+    pickCinematicBgBtn?.addEventListener('click', () => {
+      this.renderChild(FilePickerWindow, 'file-picker-cinematic-bg', {
+        onSelect: (path: string) => {
+          const input = this.element.querySelector('[name="flags.cinematicBg"]') as HTMLInputElement;
+          if (input) input.value = path;
+        },
+        worldId: this.worldId,
+      });
+    });
+
     const pickFogBtn = this.element.querySelector('#pick-fog-image-btn');
     pickFogBtn?.addEventListener('click', () => {
       this.renderChild(FilePickerWindow, 'file-picker-fog', {
@@ -872,6 +915,9 @@ export class StageConfigWindow extends BaseWindow {
           initialZoom: parseFloat(data['flags.initialZoom'] || '1'),
           initialLevel: data['flags.initialLevel'] || this.stage.flags?.initialLevel,
           theaterDefault: !!data['flags.theaterDefault'],
+          cinematicBg: data['flags.cinematicBg'] || '',
+          theaterSkin: data['flags.theaterSkin'] || 'classic-black',
+          theaterEffect: data['flags.theaterEffect'] || 'none',
         }
       });
 

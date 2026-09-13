@@ -15,6 +15,8 @@ import { ActorSheetWindow } from '../../windows/actor-sheet-window.js';
 import { TokenConfigWindow } from '../../windows/token-config-window.js';
 import { showConfirm, showPrompt, showAlert } from '../../components/dialog.js';
 import { copyTextToClipboard } from '../../lib/clipboard.js';
+import { mediaHtml } from '../../core/media-helper.js';
+import { theaterSkins, DEFAULT_THEATER_SKIN } from '../../core/theater-skins.js';
 import { WallConfigWindow } from '../../windows/wall-config-window.js';
 import { DrawingConfigWindow } from '../../windows/drawing-config-window.js';
 import { NoiseConfigWindow } from '../../windows/noise-config-window.js';
@@ -65,6 +67,15 @@ export interface GameInitState {
 
 /** Ownership level (LoomDocument ownership levels): 0=None 1=Limited 2=Observer 3=Owner */
 const OWNERSHIP_OWNER = 3;
+
+/** CSS filters applied only to `#theater-bg` (the cinematic background) — a system
+ * entirely separate from CanvasManager's tactical weather, so the two can never mix. */
+const TheaterEffectFilters: Record<string, string> = {
+  none: '',
+  noir: 'grayscale(100%) contrast(1.2)',
+  blood: 'sepia(50%) hue-rotate(-50deg) saturate(3)',
+  fog: '',
+};
 
 export class GameHudScreen {
   private loadingProgress = new LoadingProgress();
@@ -173,11 +184,18 @@ export class GameHudScreen {
       <div id="hud-pause-overlay" class="hud-pause-overlay" style="display:none">
         <div class="hud-pause-icon">⏳</div>
       </div>
-      <div class="theater-bar theater-bar-top"></div>
-      <div class="theater-bar theater-bar-bottom"></div>
+      <div id="theater-layer" class="theater-layer">
+        <div id="theater-bg" class="theater-bg"></div>
+        <div id="theater-fog" class="theater-fog" hidden></div>
+        <div class="theater-bar theater-bar-top"></div>
+        <div class="theater-bar theater-bar-bottom"></div>
+      </div>
       <button id="theater-toggle-btn" class="theater-toggle-btn" style="display:none" title="Modo Teatro">
         <i class="fa-solid fa-masks-theater"></i>
       </button>
+      <select id="theater-skin-select" class="theater-skin-select" style="display:none" title="Moldura do Modo Teatro">
+        ${theaterSkins.list().map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
       <button id="stream-link-btn" class="theater-toggle-btn stream-link-btn" style="display:none" title="Gerar Links de Stream (OBS)">
         <i class="fa-solid fa-satellite-dish"></i>
       </button>
@@ -753,6 +771,23 @@ export class GameHudScreen {
       this.applyTheaterState(data.active);
     });
 
+    const skinSelect = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
+    if (skinSelect) {
+      skinSelect.addEventListener('change', () => {
+        const stageId = this.initState.activeStage?.id;
+        if (!stageId) return;
+        wsClient.send('stage.theaterSkin', { stageId, skinId: skinSelect.value, worldId: this.props.worldId });
+      });
+    }
+
+    wsClient.on('stage.theaterSkinChanged', (data: { stageId: string; skinId: string }) => {
+      const stage = this.initState.activeStage;
+      if (!stage || data.stageId !== stage.id) return;
+      // Grava na cópia em memória pra um toggle posterior já abrir com a skin nova.
+      stage.flags = { ...((stage.flags ?? {}) as Record<string, any>), theaterSkin: data.skinId };
+      if (this.theaterActive) this.paintTheaterSkin();
+    });
+
     const streamBtn = this.container.querySelector<HTMLButtonElement>('#stream-link-btn');
     if (streamBtn) {
       streamBtn.style.display = isGM ? '' : 'none';
@@ -781,12 +816,71 @@ export class GameHudScreen {
 
   /** Toggles the theater overlay for everyone — hides tactical canvas layers,
    * shows the letterbox bars, and auto-collapses the sidebar for immersion
-   * (the collapse button stays reachable, so a sheet/item is never out of reach). */
+   * (the collapse button stays reachable, so a sheet/item is never out of reach).
+   *
+   * Skin and effect are a completely separate system from the tactical
+   * weather (CanvasManager's particle layer) — they only ever touch
+   * `#theater-bg`/`#theater-fog`, never CanvasManager, so the two can never
+   * bleed into each other. */
   private applyTheaterState(active: boolean): void {
     this.theaterActive = active;
     this.container.classList.toggle('theater-mode', active);
     this.canvasManager?.setTheaterActive(active);
     this.subcomponents.sidebar?.setCollapsed(active);
+
+    const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
+    const isGM = (this.props.session.userRole ?? 1) >= 4;
+    if (select) select.style.display = active && isGM ? '' : 'none';
+
+    if (!active) return;
+    this.paintTheaterSkin();
+  }
+
+  /** Repinta a moldura/fundo do teatro a partir das flags da cena ativa.
+   * Separado de `applyTheaterState` porque a troca de skin ao vivo precisa
+   * repintar sem religar o modo. */
+  private paintTheaterSkin(): void {
+    const flags = (this.initState.activeStage?.flags ?? {}) as {
+      cinematicBg?: string;
+      theaterSkin?: string;
+      theaterEffect?: string;
+    };
+    const bgUrl = flags.cinematicBg || this.canvasManager?.getCurrentBackgroundUrl?.() || '';
+    const skinId = flags.theaterSkin || DEFAULT_THEATER_SKIN;
+    const skin = theaterSkins.get(skinId);
+
+    const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
+    if (select && select.value !== skinId) select.value = skinId;
+
+    const layer = this.container.querySelector<HTMLElement>('#theater-layer');
+    const bgEl = this.container.querySelector<HTMLElement>('#theater-bg');
+    const fogEl = this.container.querySelector<HTMLElement>('#theater-fog');
+    const topBar = this.container.querySelector<HTMLElement>('.theater-bar-top');
+    const bottomBar = this.container.querySelector<HTMLElement>('.theater-bar-bottom');
+
+    if (bgEl) {
+      bgEl.innerHTML = bgUrl ? mediaHtml(bgUrl, { className: 'theater-bg-media' }) : '';
+      const effectFilter = TheaterEffectFilters[flags.theaterEffect || 'none'] || '';
+      const skinFilter = skin?.filter || '';
+      bgEl.style.filter = [skinFilter, effectFilter].filter(Boolean).join(' ');
+    }
+
+    if (fogEl) fogEl.hidden = flags.theaterEffect !== 'fog';
+
+    if (layer) {
+      // Limpa as vars da skin anterior antes de aplicar as novas — senão uma skin
+      // sem `--cinematic-bar-border` herdaria a borda da skin anterior.
+      for (const s of theaterSkins.list()) {
+        for (const prop of Object.keys(s.styles)) layer.style.removeProperty(prop);
+      }
+      if (skin) {
+        for (const [prop, value] of Object.entries(skin.styles)) {
+          layer.style.setProperty(prop, value);
+        }
+      }
+    }
+    if (topBar) topBar.style.backgroundImage = skin?.assets.topBar ? `url('${skin.assets.topBar}')` : '';
+    if (bottomBar) bottomBar.style.backgroundImage = skin?.assets.bottomBar ? `url('${skin.assets.bottomBar}')` : '';
   }
 
   /** Creates an Actor/Item from a compendium entry dragged onto the canvas. */

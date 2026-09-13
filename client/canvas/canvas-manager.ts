@@ -3622,9 +3622,18 @@ export class CanvasManager {
     scheduleFlash();
   }
 
+  private currentBgUrl = '';
+
+  /** The tactical background currently on screen — used as the theater-mode
+   * fallback when a scene has no `flags.cinematicBg` of its own set. */
+  getCurrentBackgroundUrl(): string {
+    return this.currentBgUrl;
+  }
+
   private async setBgImage(url: string): Promise<void> {
     // Limpar textura anterior imediatamente para evitar artefatos da cena anterior
     this.bgSprite.texture = Texture.EMPTY;
+    this.currentBgUrl = url;
 
     if (!url) return;
     try {

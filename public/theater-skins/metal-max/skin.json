@@ -1,0 +1,27 @@
+{
+  "id": "metal-max",
+  "name": "Metal Max",
+  "author": "The Blacksmith",
+  "version": "1.4.0",
+  "options": {
+    "theme": "dark",
+    "filter": "",
+    "styles": {
+      "--cinematic-bar-bg": "#000000",
+      "--cinematic-bar-border": "2px solid #333333",
+      "--cinematic-footer-bg": "transparent",
+      "--cinematic-portrait-name-bg": "rgba(0, 0, 0, 0.5)",
+      "--cinematic-portrait-aspect-ratio": "3 / 4",
+      "--cinematic-text-color": "#ffffff",
+      "--cinematic-portrait-name-border-top": "none"
+    },
+    "assets": {
+      "topBar": "assets/top-bar.webp",
+      "bottomBar": "assets/bottom-bar.webp",
+      "portraitBorder": "assets/portrait-border.webp",
+      "background": "assets/portrait-bg.webp",
+      "border": "assets/bar-border.webp",
+      "footer": "assets/footer.webp"
+    }
+  }
+}

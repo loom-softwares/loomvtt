@@ -285,17 +285,60 @@
   opacity: 1;
 }
 
-/* Modo Teatro — barras letterbox acima do canvas, abaixo do hud-layer (10001) e da
-   transição de cena (10000), então nunca competem com eles. Ficam a 0 de altura
-   fora do modo teatro; a transição de altura é o que dá o efeito de "fechar cortina". */
+/* Modo Teatro — camada acima do canvas, abaixo do hud-layer (10001) e da
+   transição de cena (10000), então nunca competem com eles. Skin/efeito são um
+   sistema à parte do clima tático (CanvasManager) — só tocam nesta camada,
+   nunca em CanvasManager, então nunca vazam um no outro. */
+.theater-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  display: none;
+}
+
+.game-hud.theater-mode .theater-layer {
+  display: block;
+}
+
+.theater-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.theater-bg-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Efeito "neblina" — só entra quando flags.theaterEffect === 'fog', nunca junto
+   com o clima tático (partículas do CanvasManager ficam escondidas no modo teatro). */
+.theater-fog {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 120%, rgba(255, 255, 255, 0.28), transparent 60%);
+  mix-blend-mode: screen;
+  animation: theater-fog-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes theater-fog-drift {
+  from { transform: translateX(-5%) scale(1.1); opacity: 0.5; }
+  to { transform: translateX(5%) scale(1.25); opacity: 0.85; }
+}
+
 .theater-bar {
   position: absolute;
   left: 0;
   right: 0;
   height: 0;
-  background: #000;
-  z-index: 500;
-  pointer-events: none;
+  background-color: var(--cinematic-bar-bg, #000);
+  background-size: cover;
+  background-position: center;
+  border: var(--cinematic-bar-border, none);
   transition: height 0.6s ease;
 }
 
@@ -345,17 +388,35 @@
   left: calc(50% + 44px);
 }
 
+.theater-skin-select {
+  position: absolute;
+  top: 12px;
+  right: calc(50% + 28px);
+  z-index: 10001;
+  height: 36px;
+  max-width: 180px;
+  padding: 0 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 12, 22, 0.75);
+  color: #f0e6d3;
+  cursor: pointer;
+  font-size: 12px;
+}
+
 /* OBS Browser Source capture views (?capture=canvas / ?capture=chat) — same
    authenticated GameHudScreen, just chrome hidden down to one element via CSS
    instead of a parallel renderer. See game-hud.ts render(). */
 .game-hud.capture-canvas .hud-layer,
 .game-hud.capture-chat #game-canvas,
 .game-hud.capture-chat .stage-transition-overlay,
-.game-hud.capture-chat .theater-bar,
+.game-hud.capture-chat .theater-layer,
 .game-hud.capture-chat .theater-toggle-btn,
 .game-hud.capture-chat .stream-link-btn,
+.game-hud.capture-chat .theater-skin-select,
 .game-hud.capture-canvas .theater-toggle-btn,
-.game-hud.capture-canvas .stream-link-btn {
+.game-hud.capture-canvas .stream-link-btn,
+.game-hud.capture-canvas .theater-skin-select {
   display: none !important;
 }
 

@@ -1,0 +1,26 @@
+{
+  "id": "medieval-parchment",
+  "name": "Medieval Parchment",
+  "author": "The Blacksmith",
+  "version": "1.3.0",
+  "options": {
+    "theme": "dark",
+    "filter": "",
+    "styles": {
+      "--cinematic-bar-bg": "#23170f",
+      "--cinematic-footer-bg": "transparent",
+      "--cinematic-portrait-name-bg": "rgba(35, 23, 15, 0.85)",
+      "--cinematic-portrait-aspect-ratio": "3 / 4",
+      "--cinematic-text-color": "#e5d3b3",
+      "--cinematic-portrait-name-border-top": "none"
+    },
+    "assets": {
+      "topBar": "assets/top-bar.webp",
+      "bottomBar": "assets/bottom-bar.webp",
+      "portraitBorder": "assets/portrait-border.webp",
+      "background": "assets/portrait-bg.webp",
+      "border": "assets/bar-border.webp",
+      "footer": "assets/footer.webp"
+    }
+  }
+}

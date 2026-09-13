@@ -804,6 +804,9 @@ Signal.listen('stage.activated', (payload) => {
 Signal.listen('stage.theaterToggled', (payload) => {
   broadcastToAll('stage.theaterToggled', payload);
 });
+Signal.listen('stage.theaterSkinChanged', (payload) => {
+  broadcastToAll('stage.theaterSkinChanged', payload);
+});
 
 Signal.listen('stages.updated', (payload) => {
   broadcastToAll('stage.updated', payload.data ?? payload);
@@ -1225,8 +1228,15 @@ io.on('connection', (socket: any) => {
           const enrichedStages = currentStages.map((stage: any) => {
             const levels = currentLevels.filter((l: any) => l.stageId === stage.id).sort((a: any, b: any) => a.bottomElevation - b.bottomElevation);
             const thumbUrl = levels.length > 0 ? levels[0].backgroundUrl : '';
+            // `select('*')` cru não passa pelo LoomDocument, então `flags` vem como
+            // string JSON. Sem isso, `flags.theaterSkin` no client é sempre undefined.
+            let stageFlags: Record<string, any> = {};
+            try {
+              stageFlags = typeof stage.flags === 'string' ? JSON.parse(stage.flags || '{}') : (stage.flags ?? {});
+            } catch { /* flags corrompido, segue com objeto vazio */ }
             return {
               ...stage,
+              flags: stageFlags,
               levels,
               thumbUrl,
               bgUrl: thumbUrl
@@ -1532,6 +1542,22 @@ io.on('connection', (socket: any) => {
         stageFlags.theaterActive = !!active;
         await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
         Signal.broadcast('stage.theaterToggled', { stageId, active: !!active });
+      }
+
+      // ── Troca rápida de skin do modo teatro ─────────────────────────────────
+      // O seletor ao lado do botão de teatro; persiste em flags.theaterSkin e
+      // reenvia pra todos, pra a moldura mudar ao vivo em todas as telas.
+      if (type === 'stage.theaterSkin') {
+        if ((auth.userRole ?? 1) < 4) return;
+        const { stageId, skinId } = data;
+        if (!stageId || typeof skinId !== 'string') return;
+        const stage = await db('stages').where({ id: stageId }).first();
+        if (!stage) return;
+        let stageFlags: Record<string, any> = {};
+        try { stageFlags = stage.flags ? JSON.parse(stage.flags) : {}; } catch { /* flags corrompido, ignora */ }
+        stageFlags.theaterSkin = skinId;
+        await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
+        Signal.broadcast('stage.theaterSkinChanged', { stageId, skinId });
       }
 
       // ── Context update (room re-scoping) ────────────────────────────────────
