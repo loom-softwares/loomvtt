@@ -11,7 +11,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
 import { db, getDataRoot } from '../database/db.js';
-import { setActiveWorldDb, clearActiveWorldDb, saveWorldManifest, getWorldDb, closeWorldDb } from '../database/world-db.js';
+import { setActiveWorldDb, clearActiveWorldDb, saveWorldManifest, getWorldDb, closeWorldDb, activeWorldId } from '../database/world-db.js';
 import { WorldsDocument } from '../schemas/worlds.schema.js';
 import { UsersDocument } from '../schemas/users.schema.js';
 import logger from '../utils/logger.js';
@@ -21,6 +21,8 @@ import { signToken, verifyToken, extractToken, WORLD_COOKIE, ADMIN_COOKIE, requi
 import { requireGM, isGM } from '../middleware/permissions.js';
 import { connectedUsers } from '../../index.js';
 import { syncPackagesTable, getRulesetBackgroundUrl } from './marketplace.js';
+import { StagesDocument } from '../schemas/stages.schema.js';
+import { LevelsDocument } from '../schemas/levels.schema.js';
 
 export const worldsRouter = Router();
 
@@ -185,6 +187,38 @@ worldsRouter.post('/', requireAdminSession, async (req, res) => {
 
     // Auto-create a GM user for the world
     await UsersDocument.create({ worldId: world.id, name: 'Gamemaster', role: 4, color: '#e74c3c' });
+
+    // Auto-create a default scene, mirroring what Foundry does on world creation —
+    // without this, a fresh world drops the GM into an empty scene list with no
+    // starting point. `stages`/`levels` are per-world tables (resolved via
+    // `activeWorldDb`, see getKnexForTable) — this world isn't "launched" yet, so
+    // creating through it needs a temporary switch, restored right after, to avoid
+    // hijacking whatever world an already-running session has active.
+    const previousActiveWorldId = activeWorldId;
+    try {
+      await setActiveWorldDb(world.id);
+      const stageResult = await StagesDocument.create({
+        worldId: world.id,
+        name: 'Cena Inicial',
+        gridSize: 50,
+        gridColor: '#ffffff',
+      });
+      if (stageResult.data) {
+        await LevelsDocument.create({
+          stageId: stageResult.data.id,
+          name: 'Térreo',
+          bottomElevation: 0,
+          topElevation: 20,
+          backgroundUrl: '/bgs/dark-fantasy.png',
+          backgroundColor: '#0d0d0f',
+        });
+      }
+    } catch (sceneErr: any) {
+      logger.warn('Could not create default scene for new world', { worldId: world.id, error: sceneErr.message });
+    } finally {
+      if (previousActiveWorldId) await setActiveWorldDb(previousActiveWorldId);
+      else clearActiveWorldDb();
+    }
 
     // Limpa qualquer cookie de mundo anterior para que o novo mundo inicie limpo
     res.clearCookie(WORLD_COOKIE);
