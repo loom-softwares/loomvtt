@@ -979,7 +979,7 @@ export class GameHudScreen {
           <div style="display:flex;gap:0.4rem;">
             <input type="text" readonly value="${url}" data-stream-url="${key}"
               style="flex:1;min-width:0;box-sizing:border-box;background:var(--color-bg-surface);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:4px;padding:0.4rem 0.6rem;font-size:0.8rem;font-family:monospace;" />
-            <button type="button" data-copy="${key}" class="icon-button" title="Copiar link">
+            <button type="button" data-copy="${key}" class="icon-button" title="${t('gameHud.streamLinksCopy')}">
               <i class="fa-solid fa-copy"></i>
             </button>
           </div>
@@ -990,11 +990,10 @@ export class GameHudScreen {
       container.style.cssText = 'display:flex;flex-direction:column;gap:0.85rem;box-sizing:border-box;width:100%;';
       container.innerHTML = `
         <p style="margin:0;color:var(--color-text-secondary);font-size:0.85rem;line-height:1.4;">
-          Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez —
-          depois disso a sessão fica salva ali.
+          ${t('gameHud.streamLinksDesc')}
         </p>
-        ${row('Canvas (cena/mapa)', canvasUrl, 'canvas')}
-        ${row('Chat', chatUrl, 'chat')}
+        ${row(t('gameHud.streamLinksCanvas'), canvasUrl, 'canvas')}
+        ${row(t('gameHud.streamLinksChat'), chatUrl, 'chat')}
       `;
 
       container.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
@@ -1009,13 +1008,13 @@ export class GameHudScreen {
       });
 
       await LoomDialog.wait({
-        window: { title: 'Links de Stream (OBS)' },
+        window: { title: t('gameHud.streamLinksTitle') },
         content: container,
         width: 480,
-        buttons: [{ action: 'confirm', label: 'Fechar', variant: 'primary', callback: () => {} }],
+        buttons: [{ action: 'confirm', label: t('gameHud.streamLinksClose'), variant: 'primary', callback: () => {} }],
       });
     } catch (err: any) {
-      showToast(err?.message || 'Erro ao gerar links de stream', 'error');
+      showToast(err?.message || t('gameHud.streamLinksError'), 'error');
     }
   }
 

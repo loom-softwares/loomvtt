@@ -1422,6 +1422,13 @@
         "deleteLightingConfirm": "Deseja remover a iluminação selecionada do mapa?",
         "lightingRemoved": "Iluminação removida",
         "deleteLightCommand": "Excluir luz",
-        "lightingRemoveError": "Erro ao remover iluminação"
+        "lightingRemoveError": "Erro ao remover iluminação",
+        "streamLinksTitle": "Links de Stream (OBS)",
+        "streamLinksDesc": "Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez — depois disso a sessão fica salva ali.",
+        "streamLinksCanvas": "Canvas (cena/mapa)",
+        "streamLinksChat": "Chat",
+        "streamLinksCopy": "Copiar link",
+        "streamLinksClose": "Fechar",
+        "streamLinksError": "Erro ao gerar links de stream"
     }
 }
