@@ -762,13 +762,17 @@ export abstract class BaseWindow {
     // nativas) OU uma classe de fonte de ícone (Font Awesome — 'fa-solid fa-dice' — ou a
     // rpg-awesome própria do Loom — 'rpg-d10' — convenção Foundry que sistemas convertidos
     // declaram em `window.icon`) — sem essa distinção, a classe aparecia como TEXTO cru
-    // no título ("FA-SOLID FA-DICE") em vez de renderizar o ícone.
-    const iconIsIconClass = /(^|\s)(fa[srlbd]?-|rpg-)/.test(this.options.icon || '');
-    const iconHtml = this.options.icon
-      ? (iconIsIconClass
-        ? `<i class="loom-window-title-icon ${this.options.icon}"></i>`
-        : `<span class="loom-window-title-icon">${this.options.icon}</span>`)
-      : '';
+    const rawIcon = (this.options.icon || '').trim();
+    let iconHtml = '';
+    if (rawIcon) {
+      if (rawIcon.startsWith('<')) {
+        iconHtml = rawIcon;
+      } else if (/(^|\s)(fa[srlbd]?-|rpg-|ra\s|ra-)/.test(rawIcon)) {
+        iconHtml = `<i class="loom-window-title-icon ${rawIcon}"></i>`;
+      } else {
+        iconHtml = `<span class="loom-window-title-icon">${rawIcon}</span>`;
+      }
+    }
     const html = `
       <header class="loom-window-header window-header">
         <h1 class="loom-window-title window-title">

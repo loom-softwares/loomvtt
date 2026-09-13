@@ -1,589 +1,2174 @@
+@charset "UTF-8";
+/*!
+ * RPG Awesome 0.0.2 by Daniela Howe, Ivan Montiel
+ * License - https://github.com/nagoshiashumari/Rpg-Awesome/blob/master/LICENSE.md
+ * (Font: SIL OFL 1.1, CSS: MIT License)
+ */
+/* FONT PATH
+ * -------------------------- */
 @font-face {
-  font-family: 'rpg-awesome';
-  src: url('../font/rpg-awesome.eot?49171748');
-  src: url('../font/rpg-awesome.eot?49171748#iefix') format('embedded-opentype'),
-       url('../font/rpg-awesome.woff2?49171748') format('woff2'),
-       url('../font/rpg-awesome.woff?49171748') format('woff'),
-       url('../font/rpg-awesome.ttf?49171748') format('truetype'),
-       url('../font/rpg-awesome.svg?49171748#rpg-awesome') format('svg');
+  font-family: 'RPGAwesome';
+  src: url("../fonts/rpgawesome-webfont.eot?v=0.1.0");
+  src: url("../fonts/rpgawesome-webfont.eot?#iefix&v=0.1.0") format("embedded-opentype"), url("../fonts/rpgawesome-webfont.woff?v=0.1.0") format("woff"), url("../fonts/rpgawesome-webfont.ttf?v=0.1.0") format("truetype"), url("../fonts/rpgawesome-webfont.svg?v=0.1.0#rpg-awesome") format("svg");
   font-weight: normal;
   font-style: normal;
 }
-/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
-/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
-/*
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  @font-face {
-    font-family: 'rpg-awesome';
-    src: url('../font/rpg-awesome.svg?49171748#rpg-awesome') format('svg');
+.ra {
+  font-family: RPGAwesome;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  speak: none;
+  text-transform: none;
+}
+
+/* makes the font 33% larger relative to the icon container */
+.ra-lg {
+  font-size: 1.3333333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+
+.ra-2x {
+  font-size: 2em;
+}
+
+.ra-3x {
+  font-size: 3em;
+}
+
+.ra-4x {
+  font-size: 4em;
+}
+
+.ra-5x {
+  font-size: 5em;
+}
+
+.ra-fw {
+  text-align: center;
+  width: 1.2857142857em;
+}
+
+.ra-ul {
+  list-style-type: none;
+  margin-left: 2.1428571429em;
+  padding-left: 0;
+}
+.ra-ul > li {
+  position: relative;
+}
+
+.ra-li {
+  left: -2.1428571429em;
+  position: absolute;
+  text-align: center;
+  top: 0.1428571429em;
+  width: 2.1428571429em;
+}
+.ra-li.ra-lg {
+  left: -1.8571428571em;
+}
+
+.ra-border {
+  border: solid 0.08em #eee;
+  border-radius: .1em;
+  padding: .2em .25em .15em;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
+
+.ra.pull-left {
+  margin-right: .3em;
+}
+.ra.pull-right {
+  margin-left: .3em;
+}
+
+.ra-spin {
+  -webkit-animation: ra-spin 2s infinite linear;
+  animation: ra-spin 2s infinite linear;
+}
+
+@-webkit-keyframes ra-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
   }
 }
-*/
-[class^="rpg-"]:before, [class*=" rpg-"]:before {
-  font-family: "rpg-awesome";
-  font-style: normal;
-  font-weight: normal;
-  speak: never;
-
-  display: inline-block;
-  text-decoration: inherit;
-  width: 1em;
-  margin-right: .2em;
-  text-align: center;
-  /* opacity: .8; */
-
-  /* For safety - reset parent styles, that can break glyph codes*/
-  font-variant: normal;
-  text-transform: none;
-
-  /* fix buttons height, for twitter bootstrap */
-  line-height: 1em;
-
-  /* Animation center compensation - margins should be symmetric */
-  /* remove if not needed */
-  margin-left: .2em;
-
-  /* you can be more comfortable with increased icons size */
-  /* font-size: 120%; */
-
-  /* Font smoothing. That was taken from TWBS */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* Uncomment for 3D effect */
-  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+@keyframes ra-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+.ra-rotate-90 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
-.rpg-d4:before { content: '\e800'; } /* '' */
-.rpg-d6:before { content: '\e801'; } /* '' */
-.rpg-d8:before { content: '\e802'; } /* '' */
-.rpg-d10:before { content: '\e803'; } /* '' */
-.rpg-d12:before { content: '\e804'; } /* '' */
-.rpg-d20:before { content: '\e805'; } /* '' */
-.rpg-note:before { content: '\e806'; } /* '' */
-.rpg-note-beamed:before { content: '\e807'; } /* '' */
-.rpg-search:before { content: '\e808'; } /* '' */
-.rpg-stop:before { content: '\e809'; } /* '' */
-.rpg-play:before { content: '\e80a'; } /* '' */
-.rpg-stop-outline:before { content: '\e80b'; } /* '' */
-.rpg-play-outline:before { content: '\e80c'; } /* '' */
-.rpg-pause-outline:before { content: '\e80d'; } /* '' */
-.rpg-pause:before { content: '\e80e'; } /* '' */
-.rpg-fast-fw-outline:before { content: '\e80f'; } /* '' */
-.rpg-fast-fw:before { content: '\e810'; } /* '' */
-.rpg-rewind-outline:before { content: '\e811'; } /* '' */
-.rpg-rewind:before { content: '\e812'; } /* '' */
-.rpg-record-outline:before { content: '\e813'; } /* '' */
-.rpg-record:before { content: '\e814'; } /* '' */
-.rpg-sort-alphabet-outline:before { content: '\e815'; } /* '' */
-.rpg-sort-alphabet:before { content: '\e816'; } /* '' */
-.rpg-sort-numeric-outline:before { content: '\e817'; } /* '' */
-.rpg-sort-numeric:before { content: '\e818'; } /* '' */
-.rpg-looped-square-outline:before { content: '\e819'; } /* '' */
-.rpg-looped-square-interest:before { content: '\e81a'; } /* '' */
-.rpg-flash-outline:before { content: '\e81b'; } /* '' */
-.rpg-flash:before { content: '\e81c'; } /* '' */
-.rpg-wifi:before { content: '\e81d'; } /* '' */
-.rpg-windy-rain-inv:before { content: '\e81e'; } /* '' */
-.rpg-snow-inv:before { content: '\e81f'; } /* '' */
-.rpg-snow-heavy-inv:before { content: '\e820'; } /* '' */
-.rpg-hail-inv:before { content: '\e821'; } /* '' */
-.rpg-clouds-inv:before { content: '\e822'; } /* '' */
-.rpg-clouds-flash-inv:before { content: '\e823'; } /* '' */
-.rpg-rain:before { content: '\e824'; } /* '' */
-.rpg-windy:before { content: '\e825'; } /* '' */
-.rpg-down-bold:before { content: '\e826'; } /* '' */
-.rpg-left-bold:before { content: '\e827'; } /* '' */
-.rpg-right-bold:before { content: '\e828'; } /* '' */
-.rpg-up-bold:before { content: '\e829'; } /* '' */
-.rpg-down-fat:before { content: '\e82a'; } /* '' */
-.rpg-left-fat:before { content: '\e82b'; } /* '' */
-.rpg-right-fat:before { content: '\e82c'; } /* '' */
-.rpg-up-fat:before { content: '\e82d'; } /* '' */
-.rpg-thumbs-up:before { content: '\e82e'; } /* '' */
-.rpg-thumbs-down:before { content: '\e82f'; } /* '' */
-.rpg-spin1:before { content: '\e830'; } /* '' */
-.rpg-spin2:before { content: '\e831'; } /* '' */
-.rpg-spin3:before { content: '\e832'; } /* '' */
-.rpg-zoom-in:before { content: '\e833'; } /* '' */
-.rpg-spin4:before { content: '\e834'; } /* '' */
-.rpg-zoom-out:before { content: '\e835'; } /* '' */
-.rpg-resize-small:before { content: '\e836'; } /* '' */
-.rpg-resize-full:before { content: '\e837'; } /* '' */
-.rpg-spin5:before { content: '\e838'; } /* '' */
-.rpg-spin6:before { content: '\e839'; } /* '' */
-.rpg-volume-off:before { content: '\e83a'; } /* '' */
-.rpg-volume-down:before { content: '\e83b'; } /* '' */
-.rpg-volume-up:before { content: '\e83c'; } /* '' */
-.rpg-clouds-flash-alt:before { content: '\e83d'; } /* '' */
-.rpg-sun-inv:before { content: '\e83e'; } /* '' */
-.rpg-moon-inv:before { content: '\e83f'; } /* '' */
-.rpg-firefox:before { content: '\e840'; } /* '' */
-.rpg-chrome:before { content: '\e841'; } /* '' */
-.rpg-opera:before { content: '\e842'; } /* '' */
-.rpg-ie:before { content: '\e843'; } /* '' */
-.rpg-crown:before { content: '\e844'; } /* '' */
-.rpg-crown-plus:before { content: '\e845'; } /* '' */
-.rpg-cloud-sun-inv:before { content: '\e846'; } /* '' */
-.rpg-cloud-inv:before { content: '\e847'; } /* '' */
-.rpg-cloud-moon-inv:before { content: '\e848'; } /* '' */
-.rpg-cloud-flash-inv:before { content: '\e849'; } /* '' */
-.rpg-rain-inv:before { content: '\e84a'; } /* '' */
-.rpg-drizzle-inv:before { content: '\e84b'; } /* '' */
-.rpg-windy-inv:before { content: '\e84c'; } /* '' */
-.rpg-mail:before { content: '\e84d'; } /* '' */
-.rpg-heart:before { content: '\e84e'; } /* '' */
-.rpg-heart-empty:before { content: '\e84f'; } /* '' */
-.rpg-down-big:before { content: '\e850'; } /* '' */
-.rpg-left-big:before { content: '\e851'; } /* '' */
-.rpg-right-big:before { content: '\e852'; } /* '' */
-.rpg-up-big:before { content: '\e853'; } /* '' */
-.rpg-resize-vertical:before { content: '\e854'; } /* '' */
-.rpg-resize-horizontal:before { content: '\e855'; } /* '' */
-.rpg-resize-small-1:before { content: '\e856'; } /* '' */
-.rpg-resize-full-1:before { content: '\e857'; } /* '' */
-.rpg-zoom-in-1:before { content: '\e858'; } /* '' */
-.rpg-zoom-out-1:before { content: '\e859'; } /* '' */
-.rpg-volume-off-1:before { content: '\e85a'; } /* '' */
-.rpg-volume-down-1:before { content: '\e85b'; } /* '' */
-.rpg-volume-up-1:before { content: '\e85c'; } /* '' */
-.rpg-logout:before { content: '\e85d'; } /* '' */
-.rpg-login:before { content: '\e85e'; } /* '' */
-.rpg-calendar:before { content: '\e85f'; } /* '' */
-.rpg-music:before { content: '\e860'; } /* '' */
-.rpg-search-1:before { content: '\e861'; } /* '' */
-.rpg-mail-1:before { content: '\e862'; } /* '' */
-.rpg-heart-empty-1:before { content: '\e863'; } /* '' */
-.rpg-heart-1:before { content: '\e864'; } /* '' */
-.rpg-star:before { content: '\e865'; } /* '' */
-.rpg-star-empty:before { content: '\e866'; } /* '' */
-.rpg-video:before { content: '\e867'; } /* '' */
-.rpg-eye:before { content: '\e868'; } /* '' */
-.rpg-eye-off:before { content: '\e869'; } /* '' */
-.rpg-tag:before { content: '\e86a'; } /* '' */
-.rpg-tags:before { content: '\e86b'; } /* '' */
-.rpg-bookmark:before { content: '\e86c'; } /* '' */
-.rpg-ok-circled2:before { content: '\e86d'; } /* '' */
-.rpg-ok-circled:before { content: '\e86e'; } /* '' */
-.rpg-ok:before { content: '\e86f'; } /* '' */
-.rpg-th-list:before { content: '\e870'; } /* '' */
-.rpg-th:before { content: '\e871'; } /* '' */
-.rpg-th-large:before { content: '\e872'; } /* '' */
-.rpg-edit:before { content: '\e873'; } /* '' */
-.rpg-pencil:before { content: '\e874'; } /* '' */
-.rpg-export:before { content: '\e875'; } /* '' */
-.rpg-forward:before { content: '\e876'; } /* '' */
-.rpg-upload:before { content: '\e877'; } /* '' */
-.rpg-download:before { content: '\e878'; } /* '' */
-.rpg-trash-empty:before { content: '\e879'; } /* '' */
-.rpg-doc:before { content: '\e87a'; } /* '' */
-.rpg-down-circled2:before { content: '\e87b'; } /* '' */
-.rpg-up-circled2:before { content: '\e87c'; } /* '' */
-.rpg-down-dir:before { content: '\e87d'; } /* '' */
-.rpg-up-dir:before { content: '\e87e'; } /* '' */
-.rpg-left-dir:before { content: '\e87f'; } /* '' */
-.rpg-right-dir:before { content: '\e880'; } /* '' */
-.rpg-down-open:before { content: '\e881'; } /* '' */
-.rpg-left-open:before { content: '\e882'; } /* '' */
-.rpg-right-open:before { content: '\e883'; } /* '' */
-.rpg-up-open:before { content: '\e884'; } /* '' */
-.rpg-align-justify:before { content: '\e885'; } /* '' */
-.rpg-list:before { content: '\e886'; } /* '' */
-.rpg-indent-left:before { content: '\e887'; } /* '' */
-.rpg-indent-right:before { content: '\e888'; } /* '' */
-.rpg-bold:before { content: '\e889'; } /* '' */
-.rpg-check:before { content: '\e88a'; } /* '' */
-.rpg-tint:before { content: '\e88b'; } /* '' */
-.rpg-adjust:before { content: '\e88c'; } /* '' */
-.rpg-barcode:before { content: '\e88d'; } /* '' */
-.rpg-italic:before { content: '\e88e'; } /* '' */
-.rpg-text-height:before { content: '\e88f'; } /* '' */
-.rpg-text-width:before { content: '\e890'; } /* '' */
-.rpg-align-left:before { content: '\e891'; } /* '' */
-.rpg-align-center:before { content: '\e892'; } /* '' */
-.rpg-align-right:before { content: '\e893'; } /* '' */
-.rpg-stop-1:before { content: '\e894'; } /* '' */
-.rpg-play-1:before { content: '\e895'; } /* '' */
-.rpg-play-circled2:before { content: '\e896'; } /* '' */
-.rpg-pause-1:before { content: '\e897'; } /* '' */
-.rpg-to-end:before { content: '\e898'; } /* '' */
-.rpg-to-end-alt:before { content: '\e899'; } /* '' */
-.rpg-to-start:before { content: '\e89a'; } /* '' */
-.rpg-to-start-alt:before { content: '\e89b'; } /* '' */
-.rpg-fast-fw-1:before { content: '\e89c'; } /* '' */
-.rpg-fast-bw:before { content: '\e89d'; } /* '' */
-.rpg-eject:before { content: '\e89e'; } /* '' */
-.rpg-target:before { content: '\e89f'; } /* '' */
-.rpg-plus-circled:before { content: '\e8a0'; } /* '' */
-.rpg-plus:before { content: '\e8a1'; } /* '' */
-.rpg-cancel-circled:before { content: '\e8a2'; } /* '' */
-.rpg-cancel-circled2:before { content: '\e8a3'; } /* '' */
-.rpg-cancel:before { content: '\e8a4'; } /* '' */
-.rpg-minus:before { content: '\e8a5'; } /* '' */
-.rpg-minus-circled:before { content: '\e8a6'; } /* '' */
-.rpg-help-circled:before { content: '\e8a7'; } /* '' */
-.rpg-info-circled:before { content: '\e8a8'; } /* '' */
-.rpg-home:before { content: '\e8a9'; } /* '' */
-.rpg-link:before { content: '\e8aa'; } /* '' */
-.rpg-attach:before { content: '\e8ab'; } /* '' */
-.rpg-lock:before { content: '\e8ac'; } /* '' */
-.rpg-lock-open:before { content: '\e8ad'; } /* '' */
-.rpg-pin:before { content: '\e8ae'; } /* '' */
-.rpg-retweet:before { content: '\e8af'; } /* '' */
-.rpg-print:before { content: '\e8b0'; } /* '' */
-.rpg-comment:before { content: '\e8b1'; } /* '' */
-.rpg-chat:before { content: '\e8b2'; } /* '' */
-.rpg-bell:before { content: '\e8b3'; } /* '' */
-.rpg-attention:before { content: '\e8b4'; } /* '' */
-.rpg-attention-circled:before { content: '\e8b5'; } /* '' */
-.rpg-location:before { content: '\e8b6'; } /* '' */
-.rpg-folder-open:before { content: '\e8b7'; } /* '' */
-.rpg-folder:before { content: '\e8b8'; } /* '' */
-.rpg-phone:before { content: '\e8b9'; } /* '' */
-.rpg-cog:before { content: '\e8ba'; } /* '' */
-.rpg-cog-alt:before { content: '\e8bb'; } /* '' */
-.rpg-wrench:before { content: '\e8bc'; } /* '' */
-.rpg-basket:before { content: '\e8bd'; } /* '' */
-.rpg-headphones:before { content: '\e8be'; } /* '' */
-.rpg-clock:before { content: '\e8bf'; } /* '' */
-.rpg-block:before { content: '\e8c0'; } /* '' */
-.rpg-shuffle:before { content: '\e8c1'; } /* '' */
-.rpg-cw:before { content: '\e8c2'; } /* '' */
-.rpg-ccw:before { content: '\e8c3'; } /* '' */
-.rpg-arrows-cw:before { content: '\e8c4'; } /* '' */
-.rpg-right-hand:before { content: '\e8c5'; } /* '' */
-.rpg-left-hand:before { content: '\e8c6'; } /* '' */
-.rpg-up-hand:before { content: '\e8c7'; } /* '' */
-.rpg-down-hand:before { content: '\e8c8'; } /* '' */
-.rpg-signal:before { content: '\e8c9'; } /* '' */
-.rpg-award:before { content: '\e8ca'; } /* '' */
-.rpg-inbox:before { content: '\e8cb'; } /* '' */
-.rpg-globe:before { content: '\e8cc'; } /* '' */
-.rpg-cloud:before { content: '\e8cd'; } /* '' */
-.rpg-flash-1:before { content: '\e8ce'; } /* '' */
-.rpg-umbrella:before { content: '\e8cf'; } /* '' */
-.rpg-flight:before { content: '\e8d0'; } /* '' */
-.rpg-leaf:before { content: '\e8d1'; } /* '' */
-.rpg-font:before { content: '\e8d2'; } /* '' */
-.rpg-off:before { content: '\e8d3'; } /* '' */
-.rpg-road:before { content: '\e8d4'; } /* '' */
-.rpg-list-alt:before { content: '\e8d5'; } /* '' */
-.rpg-qrcode:before { content: '\e8d6'; } /* '' */
-.rpg-briefcase:before { content: '\e8d7'; } /* '' */
-.rpg-scissors:before { content: '\e8d8'; } /* '' */
-.rpg-chart-bar:before { content: '\e8d9'; } /* '' */
-.rpg-floppy:before { content: '\e8da'; } /* '' */
-.rpg-credit-card:before { content: '\e8db'; } /* '' */
-.rpg-megaphone:before { content: '\e8dc'; } /* '' */
-.rpg-key:before { content: '\e8dd'; } /* '' */
-.rpg-asterisk:before { content: '\e8de'; } /* '' */
-.rpg-gift:before { content: '\e8df'; } /* '' */
-.rpg-fire:before { content: '\e8e0'; } /* '' */
-.rpg-magnet:before { content: '\e8e1'; } /* '' */
-.rpg-github-1:before { content: '\e8e2'; } /* '' */
-.rpg-th-1:before { content: '\e8e3'; } /* '' */
-.rpg-th-list-1:before { content: '\e8e4'; } /* '' */
-.rpg-ok-1:before { content: '\e8e5'; } /* '' */
-.rpg-cancel-1:before { content: '\e8e6'; } /* '' */
-.rpg-cancel-circle:before { content: '\e8e7'; } /* '' */
-.rpg-plus-1:before { content: '\e8e8'; } /* '' */
-.rpg-lock-1:before { content: '\e8e9'; } /* '' */
-.rpg-lock-open-1:before { content: '\e8ea'; } /* '' */
-.rpg-eye-1:before { content: '\e8eb'; } /* '' */
-.rpg-export-1:before { content: '\e8ec'; } /* '' */
-.rpg-pencil-1:before { content: '\e8ed'; } /* '' */
-.rpg-edit-1:before { content: '\e8ee'; } /* '' */
-.rpg-pencil-alt:before { content: '\e8ef'; } /* '' */
-.rpg-user:before { content: '\e8f0'; } /* '' */
-.rpg-attention-1:before { content: '\e8f1'; } /* '' */
-.rpg-info-1:before { content: '\e8f2'; } /* '' */
-.rpg-question:before { content: '\e8f3'; } /* '' */
-.rpg-location-1:before { content: '\e8f4'; } /* '' */
-.rpg-trash-1:before { content: '\e8f5'; } /* '' */
-.rpg-doc-1:before { content: '\e8f6'; } /* '' */
-.rpg-article:before { content: '\e8f7'; } /* '' */
-.rpg-article-alt:before { content: '\e8f8'; } /* '' */
-.rpg-rss-1:before { content: '\e8f9'; } /* '' */
-.rpg-wrench-1:before { content: '\e8fa'; } /* '' */
-.rpg-camera-alt:before { content: '\e8fb'; } /* '' */
-.rpg-camera:before { content: '\e8fc'; } /* '' */
-.rpg-picture:before { content: '\e8fd'; } /* '' */
-.rpg-videocam:before { content: '\e8fe'; } /* '' */
-.rpg-users:before { content: '\e8ff'; } /* '' */
-.rpg-user-1:before { content: '\e900'; } /* '' */
-.rpg-thumbs-up-1:before { content: '\e901'; } /* '' */
-.rpg-thumbs-down-1:before { content: '\e902'; } /* '' */
-.rpg-flag:before { content: '\e903'; } /* '' */
-.rpg-lemon:before { content: '\e904'; } /* '' */
-.rpg-hand:before { content: '\e905'; } /* '' */
-.rpg-hat:before { content: '\e906'; } /* '' */
-.rpg-neck:before { content: '\e907'; } /* '' */
-.rpg-boot:before { content: '\e908'; } /* '' */
-.rpg-ring:before { content: '\e909'; } /* '' */
-.rpg-wiz-hat:before { content: '\e90a'; } /* '' */
-.rpg-trinket:before { content: '\e90b'; } /* '' */
-.rpg-neck-2:before { content: '\e90c'; } /* '' */
-.rpg-cloack:before { content: '\e90d'; } /* '' */
-.rpg-armor:before { content: '\e90e'; } /* '' */
-.rpg-shoulver:before { content: '\e90f'; } /* '' */
-.rpg-armor-modern:before { content: '\e910'; } /* '' */
-.rpg-move:before { content: '\f047'; } /* '' */
-.rpg-link-ext:before { content: '\f08e'; } /* '' */
-.rpg-check-empty:before { content: '\f096'; } /* '' */
-.rpg-bookmark-empty:before { content: '\f097'; } /* '' */
-.rpg-phone-squared:before { content: '\f098'; } /* '' */
-.rpg-github-circled:before { content: '\f09b'; } /* '' */
-.rpg-rss:before { content: '\f09e'; } /* '' */
-.rpg-hdd:before { content: '\f0a0'; } /* '' */
-.rpg-certificate:before { content: '\f0a3'; } /* '' */
-.rpg-left-circled:before { content: '\f0a8'; } /* '' */
-.rpg-right-circled:before { content: '\f0a9'; } /* '' */
-.rpg-up-circled:before { content: '\f0aa'; } /* '' */
-.rpg-down-circled:before { content: '\f0ab'; } /* '' */
-.rpg-tasks:before { content: '\f0ae'; } /* '' */
-.rpg-filter:before { content: '\f0b0'; } /* '' */
-.rpg-resize-full-alt:before { content: '\f0b2'; } /* '' */
-.rpg-beaker:before { content: '\f0c3'; } /* '' */
-.rpg-docs:before { content: '\f0c5'; } /* '' */
-.rpg-menu:before { content: '\f0c9'; } /* '' */
-.rpg-list-bullet:before { content: '\f0ca'; } /* '' */
-.rpg-list-numbered:before { content: '\f0cb'; } /* '' */
-.rpg-strike:before { content: '\f0cc'; } /* '' */
-.rpg-underline:before { content: '\f0cd'; } /* '' */
-.rpg-table:before { content: '\f0ce'; } /* '' */
-.rpg-magic:before { content: '\f0d0'; } /* '' */
-.rpg-money:before { content: '\f0d6'; } /* '' */
-.rpg-columns:before { content: '\f0db'; } /* '' */
-.rpg-sort:before { content: '\f0dc'; } /* '' */
-.rpg-sort-down:before { content: '\f0dd'; } /* '' */
-.rpg-sort-up:before { content: '\f0de'; } /* '' */
-.rpg-mail-alt:before { content: '\f0e0'; } /* '' */
-.rpg-gauge:before { content: '\f0e4'; } /* '' */
-.rpg-comment-empty:before { content: '\f0e5'; } /* '' */
-.rpg-chat-empty:before { content: '\f0e6'; } /* '' */
-.rpg-sitemap:before { content: '\f0e8'; } /* '' */
-.rpg-paste:before { content: '\f0ea'; } /* '' */
-.rpg-lightbulb:before { content: '\f0eb'; } /* '' */
-.rpg-exchange:before { content: '\f0ec'; } /* '' */
-.rpg-download-cloud:before { content: '\f0ed'; } /* '' */
-.rpg-upload-cloud:before { content: '\f0ee'; } /* '' */
-.rpg-stethoscope:before { content: '\f0f1'; } /* '' */
-.rpg-suitcase:before { content: '\f0f2'; } /* '' */
-.rpg-bell-alt:before { content: '\f0f3'; } /* '' */
-.rpg-doc-text:before { content: '\f0f6'; } /* '' */
-.rpg-building:before { content: '\f0f7'; } /* '' */
-.rpg-hospital:before { content: '\f0f8'; } /* '' */
-.rpg-ambulance:before { content: '\f0f9'; } /* '' */
-.rpg-medkit:before { content: '\f0fa'; } /* '' */
-.rpg-fighter-jet:before { content: '\f0fb'; } /* '' */
-.rpg-h-sigh:before { content: '\f0fd'; } /* '' */
-.rpg-plus-squared:before { content: '\f0fe'; } /* '' */
-.rpg-angle-double-left:before { content: '\f100'; } /* '' */
-.rpg-angle-double-right:before { content: '\f101'; } /* '' */
-.rpg-angle-double-up:before { content: '\f102'; } /* '' */
-.rpg-angle-double-down:before { content: '\f103'; } /* '' */
-.rpg-angle-left:before { content: '\f104'; } /* '' */
-.rpg-angle-right:before { content: '\f105'; } /* '' */
-.rpg-angle-up:before { content: '\f106'; } /* '' */
-.rpg-angle-down:before { content: '\f107'; } /* '' */
-.rpg-desktop:before { content: '\f108'; } /* '' */
-.rpg-laptop:before { content: '\f109'; } /* '' */
-.rpg-tablet:before { content: '\f10a'; } /* '' */
-.rpg-mobile:before { content: '\f10b'; } /* '' */
-.rpg-circle-empty:before { content: '\f10c'; } /* '' */
-.rpg-quote-left:before { content: '\f10d'; } /* '' */
-.rpg-quote-right:before { content: '\f10e'; } /* '' */
-.rpg-circle:before { content: '\f111'; } /* '' */
-.rpg-reply:before { content: '\f112'; } /* '' */
-.rpg-github:before { content: '\f113'; } /* '' */
-.rpg-folder-empty:before { content: '\f114'; } /* '' */
-.rpg-folder-open-empty:before { content: '\f115'; } /* '' */
-.rpg-smile:before { content: '\f118'; } /* '' */
-.rpg-frown:before { content: '\f119'; } /* '' */
-.rpg-meh:before { content: '\f11a'; } /* '' */
-.rpg-keyboard:before { content: '\f11c'; } /* '' */
-.rpg-flag-empty:before { content: '\f11d'; } /* '' */
-.rpg-flag-checkered:before { content: '\f11e'; } /* '' */
-.rpg-terminal:before { content: '\f120'; } /* '' */
-.rpg-code:before { content: '\f121'; } /* '' */
-.rpg-reply-all:before { content: '\f122'; } /* '' */
-.rpg-direction:before { content: '\f124'; } /* '' */
-.rpg-crop:before { content: '\f125'; } /* '' */
-.rpg-fork:before { content: '\f126'; } /* '' */
-.rpg-unlink:before { content: '\f127'; } /* '' */
-.rpg-help:before { content: '\f128'; } /* '' */
-.rpg-info:before { content: '\f129'; } /* '' */
-.rpg-attention-alt:before { content: '\f12a'; } /* '' */
-.rpg-superscript:before { content: '\f12b'; } /* '' */
-.rpg-subscript:before { content: '\f12c'; } /* '' */
-.rpg-puzzle:before { content: '\f12e'; } /* '' */
-.rpg-mic:before { content: '\f130'; } /* '' */
-.rpg-mute:before { content: '\f131'; } /* '' */
-.rpg-shield:before { content: '\f132'; } /* '' */
-.rpg-calendar-empty:before { content: '\f133'; } /* '' */
-.rpg-rocket:before { content: '\f135'; } /* '' */
-.rpg-angle-circled-left:before { content: '\f137'; } /* '' */
-.rpg-angle-circled-right:before { content: '\f138'; } /* '' */
-.rpg-angle-circled-up:before { content: '\f139'; } /* '' */
-.rpg-angle-circled-down:before { content: '\f13a'; } /* '' */
-.rpg-anchor:before { content: '\f13d'; } /* '' */
-.rpg-lock-open-alt:before { content: '\f13e'; } /* '' */
-.rpg-ellipsis:before { content: '\f141'; } /* '' */
-.rpg-ellipsis-vert:before { content: '\f142'; } /* '' */
-.rpg-rss-squared:before { content: '\f143'; } /* '' */
-.rpg-play-circled:before { content: '\f144'; } /* '' */
-.rpg-ticket:before { content: '\f145'; } /* '' */
-.rpg-minus-squared:before { content: '\f146'; } /* '' */
-.rpg-minus-squared-alt:before { content: '\f147'; } /* '' */
-.rpg-level-up:before { content: '\f148'; } /* '' */
-.rpg-level-down:before { content: '\f149'; } /* '' */
-.rpg-ok-squared:before { content: '\f14a'; } /* '' */
-.rpg-pencil-squared:before { content: '\f14b'; } /* '' */
-.rpg-link-ext-alt:before { content: '\f14c'; } /* '' */
-.rpg-export-alt:before { content: '\f14d'; } /* '' */
-.rpg-compass:before { content: '\f14e'; } /* '' */
-.rpg-expand:before { content: '\f150'; } /* '' */
-.rpg-collapse:before { content: '\f151'; } /* '' */
-.rpg-expand-right:before { content: '\f152'; } /* '' */
-.rpg-euro:before { content: '\f153'; } /* '' */
-.rpg-pound:before { content: '\f154'; } /* '' */
-.rpg-dollar:before { content: '\f155'; } /* '' */
-.rpg-rupee:before { content: '\f156'; } /* '' */
-.rpg-yen:before { content: '\f157'; } /* '' */
-.rpg-rouble:before { content: '\f158'; } /* '' */
-.rpg-won:before { content: '\f159'; } /* '' */
-.rpg-bitcoin:before { content: '\f15a'; } /* '' */
-.rpg-doc-inv:before { content: '\f15b'; } /* '' */
-.rpg-doc-text-inv:before { content: '\f15c'; } /* '' */
-.rpg-sort-name-up:before { content: '\f15d'; } /* '' */
-.rpg-sort-name-down:before { content: '\f15e'; } /* '' */
-.rpg-sort-alt-up:before { content: '\f160'; } /* '' */
-.rpg-sort-alt-down:before { content: '\f161'; } /* '' */
-.rpg-sort-number-up:before { content: '\f162'; } /* '' */
-.rpg-sort-number-down:before { content: '\f163'; } /* '' */
-.rpg-thumbs-up-alt:before { content: '\f164'; } /* '' */
-.rpg-thumbs-down-alt:before { content: '\f165'; } /* '' */
-.rpg-youtube-squared:before { content: '\f166'; } /* '' */
-.rpg-youtube:before { content: '\f167'; } /* '' */
-.rpg-youtube-play:before { content: '\f16a'; } /* '' */
-.rpg-instagram-1:before { content: '\f16d'; } /* '' */
-.rpg-bitbucket-squared:before { content: '\f172'; } /* '' */
-.rpg-down:before { content: '\f175'; } /* '' */
-.rpg-up:before { content: '\f176'; } /* '' */
-.rpg-left:before { content: '\f177'; } /* '' */
-.rpg-right:before { content: '\f178'; } /* '' */
-.rpg-windows:before { content: '\f17a'; } /* '' */
-.rpg-linux:before { content: '\f17c'; } /* '' */
-.rpg-male:before { content: '\f183'; } /* '' */
-.rpg-gittip:before { content: '\f184'; } /* '' */
-.rpg-sun:before { content: '\f185'; } /* '' */
-.rpg-moon:before { content: '\f186'; } /* '' */
-.rpg-box:before { content: '\f187'; } /* '' */
-.rpg-bug:before { content: '\f188'; } /* '' */
-.rpg-right-circled2:before { content: '\f18e'; } /* '' */
-.rpg-left-circled2:before { content: '\f190'; } /* '' */
-.rpg-collapse-left:before { content: '\f191'; } /* '' */
-.rpg-dot-circled:before { content: '\f192'; } /* '' */
-.rpg-try:before { content: '\f195'; } /* '' */
-.rpg-plus-squared-alt:before { content: '\f196'; } /* '' */
-.rpg-space-shuttle:before { content: '\f197'; } /* '' */
-.rpg-mail-squared:before { content: '\f199'; } /* '' */
-.rpg-bank:before { content: '\f19c'; } /* '' */
-.rpg-graduation-cap:before { content: '\f19d'; } /* '' */
-.rpg-fax:before { content: '\f1ac'; } /* '' */
-.rpg-building-filled:before { content: '\f1ad'; } /* '' */
-.rpg-paw:before { content: '\f1b0'; } /* '' */
-.rpg-cube:before { content: '\f1b2'; } /* '' */
-.rpg-cubes:before { content: '\f1b3'; } /* '' */
-.rpg-recycle:before { content: '\f1b8'; } /* '' */
-.rpg-database:before { content: '\f1c0'; } /* '' */
-.rpg-lifebuoy:before { content: '\f1cd'; } /* '' */
-.rpg-circle-notch:before { content: '\f1ce'; } /* '' */
-.rpg-rebel:before { content: '\f1d0'; } /* '' */
-.rpg-empire:before { content: '\f1d1'; } /* '' */
-.rpg-git-squared:before { content: '\f1d2'; } /* '' */
-.rpg-git:before { content: '\f1d3'; } /* '' */
-.rpg-paper-plane:before { content: '\f1d8'; } /* '' */
-.rpg-paper-plane-empty:before { content: '\f1d9'; } /* '' */
-.rpg-history:before { content: '\f1da'; } /* '' */
-.rpg-circle-thin:before { content: '\f1db'; } /* '' */
-.rpg-header:before { content: '\f1dc'; } /* '' */
-.rpg-paragraph:before { content: '\f1dd'; } /* '' */
-.rpg-sliders:before { content: '\f1de'; } /* '' */
-.rpg-share:before { content: '\f1e0'; } /* '' */
-.rpg-share-squared:before { content: '\f1e1'; } /* '' */
-.rpg-tty:before { content: '\f1e4'; } /* '' */
-.rpg-binoculars:before { content: '\f1e5'; } /* '' */
-.rpg-plug:before { content: '\f1e6'; } /* '' */
-.rpg-twitch:before { content: '\f1e8'; } /* '' */
-.rpg-wifi-1:before { content: '\f1eb'; } /* '' */
-.rpg-calc:before { content: '\f1ec'; } /* '' */
-.rpg-bell-off:before { content: '\f1f6'; } /* '' */
-.rpg-bell-off-empty:before { content: '\f1f7'; } /* '' */
-.rpg-trash:before { content: '\f1f8'; } /* '' */
-.rpg-copyright:before { content: '\f1f9'; } /* '' */
-.rpg-at:before { content: '\f1fa'; } /* '' */
-.rpg-chart-area:before { content: '\f1fe'; } /* '' */
-.rpg-chart-pie:before { content: '\f200'; } /* '' */
-.rpg-chart-line:before { content: '\f201'; } /* '' */
-.rpg-toggle-off:before { content: '\f204'; } /* '' */
-.rpg-toggle-on:before { content: '\f205'; } /* '' */
-.rpg-cc:before { content: '\f20a'; } /* '' */
-.rpg-shekel:before { content: '\f20b'; } /* '' */
-.rpg-buysellads:before { content: '\f20d'; } /* '' */
-.rpg-sellsy:before { content: '\f213'; } /* '' */
-.rpg-cart-plus:before { content: '\f217'; } /* '' */
-.rpg-cart-arrow-down:before { content: '\f218'; } /* '' */
-.rpg-user-secret:before { content: '\f21b'; } /* '' */
-.rpg-heartbeat:before { content: '\f21e'; } /* '' */
-.rpg-whatsapp:before { content: '\f232'; } /* '' */
-.rpg-server:before { content: '\f233'; } /* '' */
-.rpg-user-plus:before { content: '\f234'; } /* '' */
-.rpg-user-times:before { content: '\f235'; } /* '' */
-.rpg-bed:before { content: '\f236'; } /* '' */
-.rpg-viacoin:before { content: '\f237'; } /* '' */
-.rpg-i-cursor:before { content: '\f246'; } /* '' */
-.rpg-clone:before { content: '\f24d'; } /* '' */
-.rpg-balance-scale:before { content: '\f24e'; } /* '' */
-.rpg-hourglass-o:before { content: '\f250'; } /* '' */
-.rpg-hourglass-1:before { content: '\f251'; } /* '' */
-.rpg-hourglass-2:before { content: '\f252'; } /* '' */
-.rpg-hourglass-3:before { content: '\f253'; } /* '' */
-.rpg-hourglass:before { content: '\f254'; } /* '' */
-.rpg-trademark:before { content: '\f25c'; } /* '' */
-.rpg-registered:before { content: '\f25d'; } /* '' */
-.rpg-creative-commons:before { content: '\f25e'; } /* '' */
-.rpg-map-signs:before { content: '\f277'; } /* '' */
-.rpg-map-o:before { content: '\f278'; } /* '' */
-.rpg-map:before { content: '\f279'; } /* '' */
-.rpg-commenting:before { content: '\f27a'; } /* '' */
-.rpg-commenting-o:before { content: '\f27b'; } /* '' */
-.rpg-hashtag:before { content: '\f292'; } /* '' */
-.rpg-bluetooth:before { content: '\f293'; } /* '' */
-.rpg-bluetooth-b:before { content: '\f294'; } /* '' */
-.rpg-percent:before { content: '\f295'; } /* '' */
-.rpg-envelope-open:before { content: '\f2b6'; } /* '' */
-.rpg-envelope-open-o:before { content: '\f2b7'; } /* '' */
-.rpg-address-book:before { content: '\f2b9'; } /* '' */
-.rpg-address-book-o:before { content: '\f2ba'; } /* '' */
-.rpg-user-circle:before { content: '\f2bd'; } /* '' */
-.rpg-user-circle-o:before { content: '\f2be'; } /* '' */
-.rpg-user-o:before { content: '\f2c0'; } /* '' */
-.rpg-thermometer:before { content: '\f2c7'; } /* '' */
-.rpg-thermometer-3:before { content: '\f2c8'; } /* '' */
-.rpg-thermometer-2:before { content: '\f2c9'; } /* '' */
-.rpg-thermometer-quarter:before { content: '\f2ca'; } /* '' */
-.rpg-thermometer-0:before { content: '\f2cb'; } /* '' */
-.rpg-window-maximize:before { content: '\f2d0'; } /* '' */
-.rpg-window-minimize:before { content: '\f2d1'; } /* '' */
-.rpg-window-restore:before { content: '\f2d2'; } /* '' */
-.rpg-window-close:before { content: '\f2d3'; } /* '' */
-.rpg-window-close-o:before { content: '\f2d4'; } /* '' */
-.rpg-snowflake-o:before { content: '\f2dc'; } /* '' */
-.rpg-github-squared:before { content: '\f300'; } /* '' */
-.rpg-github-circled-1:before { content: '\f301'; } /* '' */
-.rpg-facebook-circled:before { content: '\f30d'; } /* '' */
-.rpg-facebook-squared:before { content: '\f30e'; } /* '' */
-.rpg-instagram:before { content: '\f31e'; } /* '' */
-.rpg-spotify:before { content: '\f327'; } /* '' */
-.rpg-spotify-circled:before { content: '\f328'; } /* '' */
+.ra-rotate-180 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.ra-rotate-270 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+.ra-flip-horizontal {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0);
+  -webkit-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+}
+
+.ra-flip-vertical {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+  -webkit-transform: scale(1, -1);
+  -ms-transform: scale(1, -1);
+  transform: scale(1, -1);
+}
+
+:root .ra-rotate-90,
+:root .ra-rotate-180,
+:root .ra-rotate-270,
+:root .ra-flip-horizontal,
+:root .ra-flip-vertical {
+  filter: none;
+}
+
+.ra-stack {
+  display: inline-block;
+  height: 2em;
+  line-height: 2em;
+  position: relative;
+  vertical-align: middle;
+  width: 2em;
+}
+
+.ra-stack-1x, .ra-stack-2x {
+  left: 0;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+.ra-stack-1x {
+  line-height: inherit;
+}
+
+.ra-stack-2x {
+  font-size: 2em;
+}
+
+.ra-inverse {
+  color: #fff;
+}
+
+.ra-acid:before {
+  content: "";
+}
+
+.ra-zigzag-leaf:before {
+  content: "";
+}
+
+.ra-archer:before {
+  content: "";
+}
+
+.ra-archery-target:before {
+  content: "";
+}
+
+.ra-arena:before {
+  content: "";
+}
+
+.ra-aries:before {
+  content: "";
+}
+
+.ra-arrow-cluster:before {
+  content: "";
+}
+
+.ra-arrow-flights:before {
+  content: "";
+}
+
+.ra-arson:before {
+  content: "";
+}
+
+.ra-aura:before {
+  content: "";
+}
+
+.ra-aware:before {
+  content: "";
+}
+
+.ra-axe:before {
+  content: "";
+}
+
+.ra-axe-swing:before {
+  content: "";
+}
+
+.ra-ball:before {
+  content: "";
+}
+
+.ra-barbed-arrow:before {
+  content: "";
+}
+
+.ra-barrier:before {
+  content: "";
+}
+
+.ra-bat-sword:before {
+  content: "";
+}
+
+.ra-battered-axe:before {
+  content: "";
+}
+
+.ra-batteries:before {
+  content: "";
+}
+
+.ra-battery-0:before {
+  content: "";
+}
+
+.ra-battery-25:before {
+  content: "";
+}
+
+.ra-battery-50:before {
+  content: "";
+}
+
+.ra-battery-75:before {
+  content: "";
+}
+
+.ra-battery-100:before {
+  content: "";
+}
+
+.ra-battery-black:before {
+  content: "";
+}
+
+.ra-battery-negative:before {
+  content: "";
+}
+
+.ra-battery-positive:before {
+  content: "";
+}
+
+.ra-battery-white:before {
+  content: "";
+}
+
+.ra-batwings:before {
+  content: "";
+}
+
+.ra-beam-wake:before {
+  content: "";
+}
+
+.ra-bear-trap:before {
+  content: "";
+}
+
+.ra-beer:before {
+  content: "";
+}
+
+.ra-beetle:before {
+  content: "";
+}
+
+.ra-bell:before {
+  content: "";
+}
+
+.ra-biohazard:before {
+  content: "";
+}
+
+.ra-bird-claw:before {
+  content: "";
+}
+
+.ra-bird-mask:before {
+  content: "";
+}
+
+.ra-blade-bite:before {
+  content: "";
+}
+
+.ra-blast:before {
+  content: "";
+}
+
+.ra-blaster:before {
+  content: "";
+}
+
+.ra-bleeding-eye:before {
+  content: "";
+}
+
+.ra-bleeding-hearts:before {
+  content: "";
+}
+
+.ra-bolt-shield:before {
+  content: "";
+}
+
+.ra-bomb-explosion:before {
+  content: "";
+}
+
+.ra-bombs:before {
+  content: "";
+}
+
+.ra-bone-bite:before {
+  content: "";
+}
+
+.ra-bone-knife:before {
+  content: "";
+}
+
+.ra-book:before {
+  content: "";
+}
+
+.ra-boomerang:before {
+  content: "";
+}
+
+.ra-boot-stomp:before {
+  content: "";
+}
+
+.ra-bottle-vapors:before {
+  content: "";
+}
+
+.ra-bottled-bolt:before {
+  content: "";
+}
+
+.ra-bottom-right:before {
+  content: "";
+}
+
+.ra-bowie-knife:before {
+  content: "";
+}
+
+.ra-bowling-pin:before {
+  content: "";
+}
+
+.ra-brain-freeze:before {
+  content: "";
+}
+
+.ra-brandy-bottle:before {
+  content: "";
+}
+
+.ra-bridge:before {
+  content: "";
+}
+
+.ra-broadhead-arrow:before {
+  content: "";
+}
+
+.ra-sword:before,
+.ra-broadsword:before {
+  content: "";
+}
+
+.ra-broken-bone:before {
+  content: "";
+}
+
+.ra-broken-bottle:before {
+  content: "";
+}
+
+.ra-broken-heart:before {
+  content: "";
+}
+
+.ra-broken-shield:before {
+  content: "";
+}
+
+.ra-broken-skull:before {
+  content: "";
+}
+
+.ra-bubbling-potion:before {
+  content: "";
+}
+
+.ra-bullets:before {
+  content: "";
+}
+
+.ra-burning-book:before {
+  content: "";
+}
+
+.ra-burning-embers:before {
+  content: "";
+}
+
+.ra-burning-eye:before {
+  content: "";
+}
+
+.ra-burning-meteor:before {
+  content: "";
+}
+
+.ra-burst-blob:before {
+  content: "";
+}
+
+.ra-butterfly:before {
+  content: "";
+}
+
+.ra-campfire:before {
+  content: "";
+}
+
+.ra-cancel:before {
+  content: "";
+}
+
+.ra-cancer:before {
+  content: "";
+}
+
+.ra-candle:before {
+  content: "";
+}
+
+.ra-candle-fire:before {
+  content: "";
+}
+
+.ra-cannon-shot:before {
+  content: "";
+}
+
+.ra-capitol:before {
+  content: "";
+}
+
+.ra-capricorn:before {
+  content: "";
+}
+
+.ra-carrot:before {
+  content: "";
+}
+
+.ra-castle-emblem:before {
+  content: "";
+}
+
+.ra-castle-flag:before {
+  content: "";
+}
+
+.ra-cat:before {
+  content: "";
+}
+
+.ra-chain:before {
+  content: "";
+}
+
+.ra-cheese:before {
+  content: "";
+}
+
+.ra-chemical-arrow:before {
+  content: "";
+}
+
+.ra-chessboard:before {
+  content: "";
+}
+
+.ra-chicken-leg:before {
+  content: "";
+}
+
+.ra-circle-of-circles:before {
+  content: "";
+}
+
+.ra-circular-saw:before {
+  content: "";
+}
+
+.ra-circular-shield:before {
+  content: "";
+}
+
+.ra-cloak-and-dagger:before {
+  content: "";
+}
+
+.ra-clockwork:before {
+  content: "";
+}
+
+.ra-clover:before {
+  content: "";
+}
+
+.ra-clovers:before {
+  content: "";
+}
+
+.ra-clovers-card:before {
+  content: "";
+}
+
+.ra-cluster-bomb:before {
+  content: "";
+}
+
+.ra-coffee-mug:before {
+  content: "";
+}
+
+.ra-cog:before {
+  content: "";
+}
+
+.ra-cog-wheel:before {
+  content: "";
+}
+
+.ra-cold-heart:before {
+  content: "";
+}
+
+.ra-compass:before {
+  content: "";
+}
+
+.ra-corked-tube:before {
+  content: "";
+}
+
+.ra-crab-claw:before {
+  content: "";
+}
+
+.ra-cracked-helm:before {
+  content: "";
+}
+
+.ra-cracked-shield:before {
+  content: "";
+}
+
+.ra-croc-sword:before {
+  content: "";
+}
+
+.ra-crossbow:before {
+  content: "";
+}
+
+.ra-crossed-axes:before {
+  content: "";
+}
+
+.ra-crossed-bones:before {
+  content: "";
+}
+
+.ra-crossed-pistols:before {
+  content: "";
+}
+
+.ra-crossed-sabres:before {
+  content: "";
+}
+
+.ra-crossed-swords:before {
+  content: "";
+}
+
+.ra-crown:before {
+  content: "";
+}
+
+.ra-crown-of-thorns:before {
+  content: "";
+}
+
+.ra-crowned-heart:before {
+  content: "";
+}
+
+.ra-crush:before {
+  content: "";
+}
+
+.ra-crystal-ball:before {
+  content: "";
+}
+
+.ra-crystal-cluster:before {
+  content: "";
+}
+
+.ra-crystal-wand:before {
+  content: "";
+}
+
+.ra-crystals:before {
+  content: "";
+}
+
+.ra-cubes:before {
+  content: "";
+}
+
+.ra-cut-palm:before {
+  content: "";
+}
+
+.ra-cycle:before {
+  content: "";
+}
+
+.ra-daggers:before {
+  content: "";
+}
+
+.ra-daisy:before {
+  content: "";
+}
+
+.ra-dead-tree:before {
+  content: "";
+}
+
+.ra-death-skull:before {
+  content: "";
+}
+
+.ra-decapitation:before {
+  content: "";
+}
+
+.ra-defibrillate:before {
+  content: "";
+}
+
+.ra-demolish:before {
+  content: "";
+}
+
+.ra-dervish-swords:before {
+  content: "";
+}
+
+.ra-desert-skull:before {
+  content: "";
+}
+
+.ra-diamond:before {
+  content: "";
+}
+
+.ra-diamonds:before {
+  content: "";
+}
+
+.ra-diamonds-card:before {
+  content: "";
+}
+
+.ra-dice-five:before {
+  content: "";
+}
+
+.ra-dice-four:before {
+  content: "";
+}
+
+.ra-dice-one:before {
+  content: "";
+}
+
+.ra-dice-six:before {
+  content: "";
+}
+
+.ra-dice-three:before {
+  content: "";
+}
+
+.ra-dice-two:before {
+  content: "";
+}
+
+.ra-dinosaur:before {
+  content: "";
+}
+
+.ra-divert:before {
+  content: "";
+}
+
+.ra-diving-dagger:before {
+  content: "";
+}
+
+.ra-double-team:before {
+  content: "";
+}
+
+.ra-doubled:before {
+  content: "";
+}
+
+.ra-dragon:before {
+  content: "";
+}
+
+.ra-dragon-breath:before {
+  content: "";
+}
+
+.ra-dragon-wing:before {
+  content: "";
+}
+
+.ra-dragonfly:before {
+  content: "";
+}
+
+.ra-drill:before {
+  content: "";
+}
+
+.ra-dripping-blade:before {
+  content: "";
+}
+
+.ra-dripping-knife:before {
+  content: "";
+}
+
+.ra-dripping-sword:before {
+  content: "";
+}
+
+.ra-droplet:before {
+  content: "";
+}
+
+.ra-droplet-splash:before {
+  content: "";
+}
+
+.ra-droplets:before {
+  content: "";
+}
+
+.ra-duel:before {
+  content: "";
+}
+
+.ra-egg:before {
+  content: "";
+}
+
+.ra-egg-pod:before {
+  content: "";
+}
+
+.ra-eggplant:before {
+  content: "";
+}
+
+.ra-emerald:before {
+  content: "";
+}
+
+.ra-energise:before {
+  content: "";
+}
+
+.ra-explosion:before {
+  content: "";
+}
+
+.ra-explosive-materials:before {
+  content: "";
+}
+
+.ra-eye-monster:before {
+  content: "";
+}
+
+.ra-eye-shield:before {
+  content: "";
+}
+
+.ra-eyeball:before {
+  content: "";
+}
+
+.ra-fairy:before {
+  content: "";
+}
+
+.ra-fairy-wand:before {
+  content: "";
+}
+
+.ra-fall-down:before {
+  content: "";
+}
+
+.ra-falling:before {
+  content: "";
+}
+
+.ra-fast-ship:before {
+  content: "";
+}
+
+.ra-feather-wing:before {
+  content: "";
+}
+
+.ra-feathered-wing:before {
+  content: "";
+}
+
+.ra-fedora:before {
+  content: "";
+}
+
+.ra-fire:before {
+  content: "";
+}
+
+.ra-fire-bomb:before {
+  content: "";
+}
+
+.ra-fire-breath:before {
+  content: "";
+}
+
+.ra-fire-ring:before {
+  content: "";
+}
+
+.ra-fire-shield:before {
+  content: "";
+}
+
+.ra-fire-symbol:before {
+  content: "";
+}
+
+.ra-fireball-sword:before {
+  content: "";
+}
+
+.ra-fish:before {
+  content: "";
+}
+
+.ra-fizzing-flask:before {
+  content: "";
+}
+
+.ra-flame-symbol:before {
+  content: "";
+}
+
+.ra-flaming-arrow:before {
+  content: "";
+}
+
+.ra-flaming-claw:before {
+  content: "";
+}
+
+.ra-flaming-trident:before {
+  content: "";
+}
+
+.ra-flask:before {
+  content: "";
+}
+
+.ra-flat-hammer:before {
+  content: "";
+}
+
+.ra-flower:before {
+  content: "";
+}
+
+.ra-flowers:before {
+  content: "";
+}
+
+.ra-fluffy-swirl:before {
+  content: "";
+}
+
+.ra-focused-lightning:before {
+  content: "";
+}
+
+.ra-food-chain:before {
+  content: "";
+}
+
+.ra-footprint:before {
+  content: "";
+}
+
+.ra-forging:before {
+  content: "";
+}
+
+.ra-forward:before {
+  content: "";
+}
+
+.ra-fox:before {
+  content: "";
+}
+
+.ra-frost-emblem:before {
+  content: "";
+}
+
+.ra-frostfire:before {
+  content: "";
+}
+
+.ra-frozen-arrow:before {
+  content: "";
+}
+
+.ra-gamepad-cross:before {
+  content: "";
+}
+
+.ra-gavel:before {
+  content: "";
+}
+
+.ra-gear-hammer:before {
+  content: "";
+}
+
+.ra-gear-heart:before {
+  content: "";
+}
+
+.ra-gears:before {
+  content: "";
+}
+
+.ra-gecko:before {
+  content: "";
+}
+
+.ra-gem:before {
+  content: "";
+}
+
+.ra-gem-pendant:before {
+  content: "";
+}
+
+.ra-gemini:before {
+  content: "";
+}
+
+.ra-glass-heart:before {
+  content: "";
+}
+
+.ra-gloop:before {
+  content: "";
+}
+
+.ra-gold-bar:before {
+  content: "";
+}
+
+.ra-grappling-hook:before {
+  content: "";
+}
+
+.ra-grass:before {
+  content: "";
+}
+
+.ra-grass-patch:before {
+  content: "";
+}
+
+.ra-grenade:before {
+  content: "";
+}
+
+.ra-groundbreaker:before {
+  content: "";
+}
+
+.ra-guarded-tower:before {
+  content: "";
+}
+
+.ra-guillotine:before {
+  content: "";
+}
+
+.ra-halberd:before {
+  content: "";
+}
+
+.ra-hammer:before {
+  content: "";
+}
+
+.ra-hammer-drop:before {
+  content: "";
+}
+
+.ra-hand:before {
+  content: "";
+}
+
+.ra-hand-emblem:before {
+  content: "";
+}
+
+.ra-hand-saw:before {
+  content: "";
+}
+
+.ra-harpoon-trident:before {
+  content: "";
+}
+
+.ra-health:before {
+  content: "";
+}
+
+.ra-health-decrease:before {
+  content: "";
+}
+
+.ra-health-increase:before {
+  content: "";
+}
+
+.ra-heart-bottle:before {
+  content: "";
+}
+
+.ra-heart-tower:before {
+  content: "";
+}
+
+.ra-heartburn:before {
+  content: "";
+}
+
+.ra-hearts:before {
+  content: "";
+}
+
+.ra-hearts-card:before {
+  content: "";
+}
+
+.ra-heat-haze:before {
+  content: "";
+}
+
+.ra-heavy-fall:before {
+  content: "";
+}
+
+.ra-heavy-shield:before {
+  content: "";
+}
+
+.ra-helmet:before {
+  content: "";
+}
+
+.ra-help:before {
+  content: "";
+}
+
+.ra-hive-emblem:before {
+  content: "";
+}
+
+.ra-hole-ladder:before {
+  content: "";
+}
+
+.ra-honeycomb:before {
+  content: "";
+}
+
+.ra-hood:before {
+  content: "";
+}
+
+.ra-horn-call:before {
+  content: "";
+}
+
+.ra-horns:before {
+  content: "";
+}
+
+.ra-horseshoe:before {
+  content: "";
+}
+
+.ra-hospital-cross:before {
+  content: "";
+}
+
+.ra-hot-surface:before {
+  content: "";
+}
+
+.ra-hourglass:before {
+  content: "";
+}
+
+.ra-hydra:before {
+  content: "";
+}
+
+.ra-hydra-shot:before {
+  content: "";
+}
+
+.ra-ice-cube:before {
+  content: "";
+}
+
+.ra-implosion:before {
+  content: "";
+}
+
+.ra-incense:before {
+  content: "";
+}
+
+.ra-insect-jaws:before {
+  content: "";
+}
+
+.ra-interdiction:before {
+  content: "";
+}
+
+.ra-jetpack:before {
+  content: "";
+}
+
+.ra-jigsaw-piece:before {
+  content: "";
+}
+
+.ra-kaleidoscope:before {
+  content: "";
+}
+
+.ra-kettlebell:before {
+  content: "";
+}
+
+.ra-key:before {
+  content: "";
+}
+
+.ra-key-basic:before {
+  content: "";
+}
+
+.ra-kitchen-knives:before {
+  content: "";
+}
+
+.ra-knife:before {
+  content: "";
+}
+
+.ra-knife-fork:before {
+  content: "";
+}
+
+.ra-knight-helmet:before {
+  content: "";
+}
+
+.ra-kunai:before {
+  content: "";
+}
+
+.ra-lantern-flame:before {
+  content: "";
+}
+
+.ra-large-hammer:before {
+  content: "";
+}
+
+.ra-laser-blast:before {
+  content: "";
+}
+
+.ra-laser-site:before {
+  content: "";
+}
+
+.ra-lava:before {
+  content: "";
+}
+
+.ra-leaf:before {
+  content: "";
+}
+
+.ra-leo:before {
+  content: "";
+}
+
+.ra-level-four:before {
+  content: "";
+}
+
+.ra-level-four-advanced:before {
+  content: "";
+}
+
+.ra-level-three:before {
+  content: "";
+}
+
+.ra-level-three-advanced:before {
+  content: "";
+}
+
+.ra-level-two:before {
+  content: "";
+}
+
+.ra-level-two-advanced:before {
+  content: "";
+}
+
+.ra-lever:before {
+  content: "";
+}
+
+.ra-libra:before {
+  content: "";
+}
+
+.ra-light-bulb:before {
+  content: "";
+}
+
+.ra-lighthouse:before {
+  content: "";
+}
+
+.ra-lightning:before {
+  content: "";
+}
+
+.ra-lightning-bolt:before {
+  content: "";
+}
+
+.ra-lightning-storm:before {
+  content: "";
+}
+
+.ra-lightning-sword:before {
+  content: "";
+}
+
+.ra-lightning-trio:before {
+  content: "";
+}
+
+.ra-lion:before {
+  content: "";
+}
+
+.ra-lit-candelabra:before {
+  content: "";
+}
+
+.ra-load:before {
+  content: "";
+}
+
+.ra-locked-fortress:before {
+  content: "";
+}
+
+.ra-love-howl:before {
+  content: "";
+}
+
+.ra-maggot:before {
+  content: "";
+}
+
+.ra-magnet:before {
+  content: "";
+}
+
+.ra-mass-driver:before {
+  content: "";
+}
+
+.ra-match:before {
+  content: "";
+}
+
+.ra-meat:before {
+  content: "";
+}
+
+.ra-meat-hook:before {
+  content: "";
+}
+
+.ra-medical-pack:before {
+  content: "";
+}
+
+.ra-metal-gate:before {
+  content: "";
+}
+
+.ra-microphone:before {
+  content: "";
+}
+
+.ra-mine-wagon:before {
+  content: "";
+}
+
+.ra-mining-diamonds:before {
+  content: "";
+}
+
+.ra-mirror:before {
+  content: "";
+}
+
+.ra-monster-skull:before {
+  content: "";
+}
+
+.ra-mountains:before {
+  content: "";
+}
+
+.ra-moon-sun:before {
+  content: "";
+}
+
+.ra-mp5:before {
+  content: "";
+}
+
+.ra-muscle-fat:before {
+  content: "";
+}
+
+.ra-muscle-up:before {
+  content: "";
+}
+
+.ra-musket:before {
+  content: "";
+}
+
+.ra-nails:before {
+  content: "";
+}
+
+.ra-nodular:before {
+  content: "";
+}
+
+.ra-noose:before {
+  content: "";
+}
+
+.ra-nuclear:before {
+  content: "";
+}
+
+.ra-ocarina:before {
+  content: "";
+}
+
+.ra-ocean-emblem:before {
+  content: "";
+}
+
+.ra-octopus:before {
+  content: "";
+}
+
+.ra-omega:before {
+  content: "";
+}
+
+.ra-on-target:before {
+  content: "";
+}
+
+.ra-ophiuchus:before {
+  content: "";
+}
+
+.ra-overhead:before {
+  content: "";
+}
+
+.ra-overmind:before {
+  content: "";
+}
+
+.ra-palm-tree:before {
+  content: "";
+}
+
+.ra-pawn:before {
+  content: "";
+}
+
+.ra-pawprint:before {
+  content: "";
+}
+
+.ra-perspective-dice-five:before {
+  content: "";
+}
+
+.ra-perspective-dice-four:before {
+  content: "";
+}
+
+.ra-perspective-dice-one:before {
+  content: "";
+}
+
+.ra-perspective-dice-random:before {
+  content: "";
+}
+
+.ra-perspective-dice-six:before {
+  content: "";
+}
+
+.ra-perspective-dice-two:before {
+  content: "";
+}
+
+.ra-perspective-dice-three:before {
+  content: "";
+}
+
+.ra-pill:before {
+  content: "";
+}
+
+.ra-pills:before {
+  content: "";
+}
+
+.ra-pine-tree:before {
+  content: "";
+}
+
+.ra-ping-pong:before {
+  content: "";
+}
+
+.ra-pisces:before {
+  content: "";
+}
+
+.ra-plain-dagger:before {
+  content: "";
+}
+
+.ra-player:before {
+  content: "";
+}
+
+.ra-player-despair:before {
+  content: "";
+}
+
+.ra-player-dodge:before {
+  content: "";
+}
+
+.ra-player-king:before {
+  content: "";
+}
+
+.ra-player-lift:before {
+  content: "";
+}
+
+.ra-player-pain:before {
+  content: "";
+}
+
+.ra-player-pyromaniac:before {
+  content: "";
+}
+
+.ra-player-shot:before {
+  content: "";
+}
+
+.ra-player-teleport:before {
+  content: "";
+}
+
+.ra-player-thunder-struck:before {
+  content: "";
+}
+
+.ra-podium:before {
+  content: "";
+}
+
+.ra-poison-cloud:before {
+  content: "";
+}
+
+.ra-potion:before {
+  content: "";
+}
+
+.ra-pyramids:before {
+  content: "";
+}
+
+.ra-queen-crown:before {
+  content: "";
+}
+
+.ra-quill-ink:before {
+  content: "";
+}
+
+.ra-rabbit:before {
+  content: "";
+}
+
+.ra-radar-dish:before {
+  content: "";
+}
+
+.ra-radial-balance:before {
+  content: "";
+}
+
+.ra-radioactive:before {
+  content: "";
+}
+
+.ra-raven:before {
+  content: "";
+}
+
+.ra-reactor:before {
+  content: "";
+}
+
+.ra-recycle:before {
+  content: "";
+}
+
+.ra-regeneration:before {
+  content: "";
+}
+
+.ra-relic-blade:before {
+  content: "";
+}
+
+.ra-repair:before {
+  content: "";
+}
+
+.ra-reverse:before {
+  content: "";
+}
+
+.ra-revolver:before {
+  content: "";
+}
+
+.ra-rifle:before {
+  content: "";
+}
+
+.ra-ringing-bell:before {
+  content: "";
+}
+
+.ra-roast-chicken:before {
+  content: "";
+}
+
+.ra-robot-arm:before {
+  content: "";
+}
+
+.ra-round-bottom-flask:before {
+  content: "";
+}
+
+.ra-round-shield:before {
+  content: "";
+}
+
+.ra-rss:before {
+  content: "";
+}
+
+.ra-rune-stone:before {
+  content: "";
+}
+
+.ra-sagittarius:before {
+  content: "";
+}
+
+.ra-sapphire:before {
+  content: "";
+}
+
+.ra-satellite:before {
+  content: "";
+}
+
+.ra-save:before {
+  content: "";
+}
+
+.ra-scorpio:before {
+  content: "";
+}
+
+.ra-scroll-unfurled:before {
+  content: "";
+}
+
+.ra-scythe:before {
+  content: "";
+}
+
+.ra-sea-serpent:before {
+  content: "";
+}
+
+.ra-seagull:before {
+  content: "";
+}
+
+.ra-shark:before {
+  content: "";
+}
+
+.ra-sheep:before {
+  content: "";
+}
+
+.ra-sheriff:before {
+  content: "";
+}
+
+.ra-shield:before {
+  content: "";
+}
+
+.ra-ship-emblem:before {
+  content: "";
+}
+
+.ra-shoe-prints:before {
+  content: "";
+}
+
+.ra-shot-through-the-heart:before {
+  content: "";
+}
+
+.ra-shotgun-shell:before {
+  content: "";
+}
+
+.ra-shovel:before {
+  content: "";
+}
+
+.ra-shuriken:before {
+  content: "";
+}
+
+.ra-sickle:before {
+  content: "";
+}
+
+.ra-sideswipe:before {
+  content: "";
+}
+
+.ra-site:before {
+  content: "";
+}
+
+.ra-skull:before {
+  content: "";
+}
+
+.ra-skull-trophy:before {
+  content: "";
+}
+
+.ra-slash-ring:before {
+  content: "";
+}
+
+.ra-small-fire:before {
+  content: "";
+}
+
+.ra-snail:before {
+  content: "";
+}
+
+.ra-snake:before {
+  content: "";
+}
+
+.ra-snorkel:before {
+  content: "";
+}
+
+.ra-snowflake:before {
+  content: "";
+}
+
+.ra-soccer-ball:before {
+  content: "";
+}
+
+.ra-spades:before {
+  content: "";
+}
+
+.ra-spades-card:before {
+  content: "";
+}
+
+.ra-spawn-node:before {
+  content: "";
+}
+
+.ra-spear-head:before {
+  content: "";
+}
+
+.ra-speech-bubble:before {
+  content: "";
+}
+
+.ra-speech-bubbles:before {
+  content: "";
+}
+
+.ra-spider-face:before {
+  content: "";
+}
+
+.ra-spikeball:before {
+  content: "";
+}
+
+.ra-spiked-mace:before {
+  content: "";
+}
+
+.ra-spiked-tentacle:before {
+  content: "";
+}
+
+.ra-spinning-sword:before {
+  content: "";
+}
+
+.ra-spiral-shell:before {
+  content: "";
+}
+
+.ra-splash:before {
+  content: "";
+}
+
+.ra-spray-can:before {
+  content: "";
+}
+
+.ra-sprout:before {
+  content: "";
+}
+
+.ra-sprout-emblem:before {
+  content: "";
+}
+
+.ra-stopwatch:before {
+  content: "";
+}
+
+.ra-suckered-tentacle:before {
+  content: "";
+}
+
+.ra-suits:before {
+  content: "";
+}
+
+.ra-sun:before {
+  content: "";
+}
+
+.ra-sun-symbol:before {
+  content: "";
+}
+
+.ra-sunbeams:before {
+  content: "";
+}
+
+.ra-super-mushroom:before {
+  content: "";
+}
+
+.ra-supersonic-arrow:before {
+  content: "";
+}
+
+.ra-surveillance-camera:before {
+  content: "";
+}
+
+.ra-syringe:before {
+  content: "";
+}
+
+.ra-target-arrows:before {
+  content: "";
+}
+
+.ra-target-laser:before {
+  content: "";
+}
+
+.ra-targeted:before {
+  content: "";
+}
+
+.ra-taurus:before {
+  content: "";
+}
+
+.ra-telescope:before {
+  content: "";
+}
+
+.ra-tentacle:before {
+  content: "";
+}
+
+.ra-tesla:before {
+  content: "";
+}
+
+.ra-thorn-arrow:before {
+  content: "";
+}
+
+.ra-thorny-vine:before {
+  content: "";
+}
+
+.ra-three-keys:before {
+  content: "";
+}
+
+.ra-tic-tac-toe:before {
+  content: "";
+}
+
+.ra-toast:before {
+  content: "";
+}
+
+.ra-tombstone:before {
+  content: "";
+}
+
+.ra-tooth:before {
+  content: "";
+}
+
+.ra-torch:before {
+  content: "";
+}
+
+.ra-tower:before {
+  content: "";
+}
+
+.ra-trail:before {
+  content: "";
+}
+
+.ra-trefoil-lily:before {
+  content: "";
+}
+
+.ra-trident:before {
+  content: "";
+}
+
+.ra-triforce:before {
+  content: "";
+}
+
+.ra-trophy:before {
+  content: "";
+}
+
+.ra-turd:before {
+  content: "";
+}
+
+.ra-two-dragons:before {
+  content: "";
+}
+
+.ra-two-hearts:before {
+  content: "";
+}
+
+.ra-uncertainty:before {
+  content: "";
+}
+
+.ra-underhand:before {
+  content: "";
+}
+
+.ra-unplugged:before {
+  content: "";
+}
+
+.ra-vase:before {
+  content: "";
+}
+
+.ra-venomous-snake:before {
+  content: "";
+}
+
+.ra-vest:before {
+  content: "";
+}
+
+.ra-vial:before {
+  content: "";
+}
+
+.ra-vine-whip:before {
+  content: "";
+}
+
+.ra-virgo:before {
+  content: "";
+}
+
+.ra-water-drop:before {
+  content: "";
+}
+
+.ra-wifi:before {
+  content: "";
+}
+
+.ra-wireless-signal:before {
+  content: "";
+}
+
+.ra-wolf-head:before {
+  content: "";
+}
+
+.ra-wolf-howl:before {
+  content: "";
+}
+
+.ra-wooden-sign:before {
+  content: "";
+}
+
+.ra-wrench:before {
+  content: "";
+}
+
+.ra-wyvern:before {
+  content: "";
+}
+
+.ra-x-mark:before {
+  content: "";
+}
+
+.ra-zebra-shield:before {
+  content: "";
+}
+
+.ra-arcane-mask:before {
+  content: "";
+}
+
+.ra-aquarius:before {
+  content: "";
+}
+
+.ra-apple:before {
+  content: "";
+}
+
+.ra-anvil:before {
+  content: "";
+}
+
+.ra-ankh:before {
+  content: "";
+}
+
+.ra-angel-wings:before {
+  content: "";
+}
+
+.ra-anchor:before {
+  content: "";
+}
+
+.ra-ammo-bag:before {
+  content: "";
+}
+
+.ra-alligator-clip:before {
+  content: "";
+}
+
+.ra-all-for-one:before {
+  content: "";
+}
+
+.ra-alien-fire:before {
+  content: "";
+}
+
+.ra-acorn:before {
+  content: "";
+}
+
+/*# sourceMappingURL=rpg-awesome.css.map */

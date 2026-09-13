@@ -729,18 +729,19 @@
 .sidebar-collapsed-input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(14, 18, 26, 0.5);
+  background: rgba(10, 14, 22, 0.4);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-text-primary);
-  padding: 0.45rem 0.65rem;
-  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 20px;
   font-size: 0.8rem;
   font-family: inherit;
   resize: none;
   outline: none;
-  height: 32px;
+  height: 34px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: height var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -748,11 +749,12 @@
    box, only "opens up" to actually write after click/focus. */
 .sidebar-collapsed-input.expanded {
   height: 72px;
-  background: rgba(14, 18, 26, 0.7);
+  border-radius: 12px;
+  background: rgba(10, 14, 22, 0.65);
 }
 
 .sidebar-collapsed-input:focus {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* Formatting bar (same as expanded panel, sidebar-input-row-middle)
@@ -874,6 +876,27 @@
   color: #ffffff;
 }
 
+.sidebar-tab-btn[data-combat-active="true"] {
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+  animation: combat-pulse 2s infinite ease-in-out;
+}
+
+.sidebar-tab-btn[data-combat-active="true"] i {
+  color: #f87171;
+}
+
+@keyframes combat-pulse {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.6);
+    border-color: rgba(239, 68, 68, 0.65);
+  }
+}
+
 .sidebar-collapse-btn {
   background: rgba(15, 20, 28, 0.55);
   backdrop-filter: blur(12px);
@@ -954,14 +977,13 @@
   flex: 0 0 320px;
   width: 320px;
   height: 100%;
-  background: rgba(14, 18, 26, 0.68);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 12, 18, 0.45);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   display: none;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
   position: relative;
   opacity: 1;
   transition: opacity 0.3s;
@@ -982,6 +1004,106 @@
 .sidebar-content[data-tab="settings"] {
   overflow-y: auto;
   min-height: 0;
+}
+
+.sidebar-content[data-tab="codex"] {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-content.active[data-tab="codex"] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Codex Subtabs & Container ──────────────────────────────────────── */
+.codex-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.codex-subtabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  padding: 6px 8px;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.codex-subtab-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.codex-subtab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.codex-subtab-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.codex-subtab-btn i {
+  font-size: 0.82rem;
+}
+
+.codex-active-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 6px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.codex-active-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.codex-active-title i {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.codex-panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .sidebar-content.active[data-tab="chat"] {
@@ -1474,43 +1596,66 @@
   color: var(--color-text-muted);
 }
 
-/* Fixed center hotbar */
+/* Fixed center hotbar - Pure floating / Zero-enclosing box (Alchemy style) */
 .hud-hotbar,
 #hud-sidebar:not(.collapsed)~.hud-hotbar,
 #hud-sidebar.collapsed~.hud-hotbar {
   position: fixed;
   bottom: 12px;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
   width: fit-content;
   margin: 0;
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
+  border-radius: 0;
+  padding: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   flex-direction: row;
   z-index: 20;
   transition: bottom 0.3s ease;
   --hud-control-size-slot: 36px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .macro-slot {
   width: var(--hud-control-size-slot);
   height: var(--hud-control-size-slot);
   position: relative;
-  font-weight: bold;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.macro-slot:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 .slot-number {
   position: absolute;
-  top: 2px;
-  left: 4px;
-  font-size: 0.72rem;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: #94a3b8;
-  text-shadow: none;
+  color: rgba(255, 255, 255, 0.45);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.macro-slot:hover .slot-number {
+  color: #ffffff;
 }
 
 .macro-icon-fallback {
@@ -1520,61 +1665,69 @@
 
 /* Drop target visual feedback */
 .macro-slot.drag-over {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .macro-slots-container {
   display: grid;
   grid-template-columns: repeat(10, var(--hud-control-size-slot));
+  gap: 4px;
+  background: transparent !important;
+  border: none !important;
 }
 
-/* Novos controles da hotbar */
+/* Controles da hotbar flutuantes sem caixas */
 .hotbar-controls {
   display: flex;
   align-items: center;
   gap: 4px;
+  padding: 0 4px;
+  background: transparent !important;
+  border: none !important;
 }
 
 .hotbar-left-controls {
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .hotbar-right-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .hotbar-action-controls {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .macro-btn {
-  /* Scales with the macro slots (--hud-control-size-slot) */
-  width: calc(var(--hud-control-size-slot) * 0.63);
-  height: calc(var(--hud-control-size-slot) * 0.48);
-  background: rgba(16, 20, 28, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 22px;
+  height: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   border-radius: 4px;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.45);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  font-size: 0.82rem;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .macro-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #f1f5f9;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff;
+  transform: scale(1.15);
   box-shadow: none;
 }
 
@@ -1590,26 +1743,29 @@
 .macro-page-btn {
   background: transparent;
   border: none;
-  color: #999;
+  color: rgba(255, 255, 255, 0.45);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   padding: 0;
   margin: 0;
   line-height: 0.8;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .macro-page-btn:hover {
   color: #fff;
+  transform: scale(1.2);
 }
 
 .macro-page-indicator {
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #eee;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   line-height: 1;
 }
 
@@ -3663,16 +3819,17 @@
 }
 
 /* Badges of "who's viewing this scene right now" — same user color/initial
-   (see players-list.ts): hanging from the bottom edge of the item,
-   outside the button text (otherwise with 6 players it bursts the box width). */
+   (see players-list.ts): positioned on top edge of the item,
+   so it never collides with the levels dropdown below. */
 .stage-nav-viewers {
   position: absolute;
-  bottom: -6px;
+  top: -6px;
   left: 10px;
   display: flex;
   align-items: center;
-  z-index: 2;
+  z-index: 10;
   max-width: calc(100% - 16px);
+  pointer-events: auto;
 }
 
 .stage-nav-viewer-badge {

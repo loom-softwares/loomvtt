@@ -421,7 +421,7 @@
 
 /* ── Keybind Config ───────────────────────── */
 .keybind-list {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-xs) 0 var(--spacing-md);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -572,18 +572,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Opaque on purpose — the window body scrolls underneath a `position:
-     sticky`/fixed-height header; a translucent header (previously
-     rgba(0,0,0,0.25)) let scrolled text bleed through and become legible
-     behind the title bar, confusing which layer was which. */
   background: var(--color-bg-deep);
-  /* Distinct dark titlebar like an IDE */
-  height: 30px;
-  /* Compact */
+  height: 36px;
   padding: 0 1rem;
   cursor: move;
-  border-bottom: 1px solid transparent;
-  /* Invisível, mas mantém a estrutura */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   user-select: none;
   flex-shrink: 0;
 }
@@ -679,20 +672,16 @@
 .loom-window-body {
   flex: 1;
   overflow-y: auto;
-  /* Scroll ativo apenas se o conteúdo passar de 85vh */
   min-height: 0;
-  /* CRÍTICO para o flexbox gerenciar a altura interna */
-  /* Padding-bottom maior que os outros lados: sem isso o último elemento
-     (ex.: "Criado em: ..." nas janelas com aba) ficava colado/cortado na
-     borda inferior da janela, sem respiro nenhum antes do rodapé. */
-  padding: 0 1.5rem 2rem;
+  padding: 1rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  /* 1.25rem -> 1.75rem: gap curto demais deixava elemento colado/quase
-     sobrepondo o vizinho (reportado como "comendo elemento" — ex.: a barra
-     de abas grudada em cima do primeiro campo do formulário). */
-  gap: 3rem;
+  gap: 1.5rem;
   background: transparent;
+}
+
+.loom-window:has(.settings-shell) .loom-window-body {
+  padding: 0 !important;
 }
 
 /* ── Sistema de navegação de abas (Tabs) ──

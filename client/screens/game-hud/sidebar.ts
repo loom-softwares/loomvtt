@@ -228,20 +228,26 @@ interface PlaylistSoundSummary {
 type EntityType = 'actor' | 'item' | 'journal' | 'stage' | 'deck' | 'macro' | 'playlist' | 'compendium';
 
 const SIDEBAR_TABS = [
-  { id: 'chat', label: t('sidebar.chat'), icon: 'fa-solid fa-comment' },
-  { id: 'actors', label: t('sidebar.actors'), icon: 'fa-solid fa-user-group' },
-  { id: 'items', label: t('sidebar.items'), icon: 'fa-solid fa-briefcase' },
-  { id: 'stages', label: t('sidebar.stages'), icon: 'fa-solid fa-map' },
-  { id: 'journals', label: t('sidebar.journals'), icon: 'fa-solid fa-book-open' },
-  { id: 'decks', label: t('sidebar.decksTab'), icon: 'fa-solid fa-layer-group' },
-  { id: 'tables', label: 'Tabelas', icon: 'fa-solid fa-dice' },
-  { id: 'macros', label: t('sidebar.macrosTab'), icon: 'fa-solid fa-terminal' },
+  { id: 'chat', label: t('sidebar.chat'), icon: 'ra ra-speech-bubble' },
+  { id: 'combat', label: t('sidebar.combat'), icon: 'ra ra-crossed-swords' },
+  { id: 'codex', label: 'Grimório', icon: 'ra ra-burning-book' },
   { id: 'playlists', label: t('sidebar.playlistsTab'), icon: 'fa-solid fa-music' },
-  { id: 'compendium', label: t('sidebar.compendiumTab'), icon: 'fa-solid fa-book' },
-  { id: 'combat', label: t('sidebar.combat'), icon: 'fa-solid fa-shield-halved' },
-  { id: 'placeables', label: t('sidebar.placeablesTab'), icon: 'fa-solid fa-icons' },
-  { id: 'settings', label: t('sidebar.settings'), icon: 'fa-solid fa-gear' },
+  { id: 'settings', label: t('sidebar.settings'), icon: 'ra ra-gears' },
 ] as const;
+
+export const CODEX_SUBTABS = [
+  { id: 'actors', label: 'Personagens', icon: 'ra ra-player' },
+  { id: 'items', label: 'Itens', icon: 'ra ra-relic-blade' },
+  { id: 'journals', label: 'Diários', icon: 'ra ra-quill-ink' },
+  { id: 'compendium', label: 'Compêndio', icon: 'ra ra-book' },
+  { id: 'stages', label: 'Cenas', icon: 'fa-solid fa-map' },
+  { id: 'placeables', label: 'Objetos', icon: 'ra ra-rune-stone' },
+  { id: 'tables', label: 'Tabelas', icon: 'rpg-d20' },
+  { id: 'decks', label: 'Baralhos', icon: 'ra ra-spades-card' },
+  { id: 'macros', label: 'Macros', icon: 'ra ra-fairy-wand' },
+] as const;
+
+export type CodexSubtab = (typeof CODEX_SUBTABS)[number]['id'];
 
 const ROLL_MODES: { id: RollMode; label: string; icon: string }[] = [
   { id: 'public', label: t('sidebar.rollModePublic'), icon: '<i class="fa-solid fa-globe"></i>' },
@@ -258,6 +264,7 @@ export class Sidebar extends BaseComponent {
       content: 'sidebar-content',
     },
   });
+  private activeCodexTab: CodexSubtab = 'actors';
   private collapsed = true;
   private chatResizeObserver: ResizeObserver | null = null;
   private collapsedOverlayEl!: HTMLDivElement;
@@ -340,8 +347,7 @@ export class Sidebar extends BaseComponent {
   }
 
   private rebuildTabs(): void {
-    const hideStages = !this.hasPermission('viewStages');
-    this.tabs = new Tabs(SIDEBAR_TABS.filter((t) => t.id !== 'stages' || !hideStages), this.tabs?.active ?? 'chat', {
+    this.tabs = new Tabs(SIDEBAR_TABS, this.tabs?.active ?? 'chat', {
       classes: {
         nav: 'sidebar-tabs',
         button: 'sidebar-tab-btn',
@@ -1325,7 +1331,7 @@ export class Sidebar extends BaseComponent {
         <div class="sidebar-input-row-middle" style="display: flex; gap: 0.35rem; align-items: center; background: rgba(0,0,0,0.25); padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: var(--color-text-secondary); border: 1px solid rgba(255,255,255,0.02); margin-bottom: 0.25rem;">
           <span style="font-weight: 600; color: var(--color-accent); font-family: var(--font-display);">Formatação</span>
           <span style="margin: 0 0.15rem; opacity: 0.35;">|</span>
-          <button type="button" class="roll-mode-btn" data-action="chat-quick-dice" title="Rolar Dados Rápidos (/r)" style="width: 20px; height: 20px; font-size: 0.75rem;"><i class="fa-solid fa-dice-d20"></i></button>
+          <button type="button" class="roll-mode-btn" data-action="chat-quick-dice" title="Rolar Dados Rápidos (/r)" style="width: 20px; height: 20px; font-size: 0.75rem;"><i class="rpg-d20"></i></button>
           <button type="button" class="roll-mode-btn" data-action="chat-fmt-image" title="Inserir Imagem" style="width: 20px; height: 20px; font-size: 0.75rem;"><i class="fa-solid fa-image"></i></button>
           <button type="button" class="roll-mode-btn" data-action="chat-fmt-link" title="Link" style="width: 20px; height: 20px; font-size: 0.75rem;"><i class="fa-solid fa-link"></i></button>
           <button type="button" class="roll-mode-btn" data-action="chat-fmt-bold" title="Negrito" style="width: 20px; height: 20px; font-size: 0.75rem;"><i class="fa-solid fa-bold"></i></button>
@@ -1579,32 +1585,64 @@ export class Sidebar extends BaseComponent {
     `;
 
     let navHtml = this.tabs.navTemplate({ iconOnly: true });
+    // Highlight combat button when a combat encounter is active
+    if (this.combat) {
+      navHtml = navHtml.replace('data-tab="combat"', 'data-tab="combat" data-combat-active="true"');
+    }
+
     const collapseIcon = this.collapsed ? '◀' : '▶';
     const collapseButton = `
       <button class="sidebar-collapse-btn" data-action="sidebar-toggle" title="Expandir/Recolher">
         ${collapseIcon}
       </button>
     `;
-    // roll-mode/speak-as icons stay INSIDE the actual tabs column (not in a
-    // separate floating box) — this way they inherit the right position for free, without
-    // coordinate guessing. They only visually appear when the sidebar is collapsed
     const collapsedIconsBlock = `<div class="sidebar-tabs-collapsed-icons">${this.collapsedIconsTemplate()}</div>`;
     navHtml = navHtml.replace('</div>', `${collapseButton}${collapsedIconsBlock}</div>`);
+
+    const hideStages = !this.hasPermission('viewStages');
+    const availableCodexTabs = CODEX_SUBTABS.filter((t) => (t.id as string) !== 'stages' || !hideStages);
+
+    const activeSubtab = CODEX_SUBTABS.find(st => st.id === this.activeCodexTab) || CODEX_SUBTABS[0];
+
+    const codexNavHtml = `
+      <div class="codex-subtabs-bar">
+        ${availableCodexTabs.map(st => `
+          <button type="button" class="codex-subtab-btn ${this.activeCodexTab === st.id ? 'active' : ''}"
+                  data-action="codex-subtab" data-id="${st.id}" title="${st.label}">
+            <i class="${st.icon}"></i>
+          </button>
+        `).join('')}
+      </div>
+      <div class="codex-active-header">
+        <span class="codex-active-title"><i class="${activeSubtab.icon}"></i> ${activeSubtab.label}</span>
+      </div>
+    `;
+
+    let activeCodexContent = actorsTab;
+    if (this.activeCodexTab === 'items') activeCodexContent = itemsTab;
+    else if (this.activeCodexTab === 'journals') activeCodexContent = journalsTab;
+    else if (this.activeCodexTab === 'compendium') activeCodexContent = compendiumTab;
+    else if (this.activeCodexTab === 'stages') activeCodexContent = stagesTab;
+    else if (this.activeCodexTab === 'placeables') activeCodexContent = placeablesTab;
+    else if (this.activeCodexTab === 'tables') activeCodexContent = tablesTab;
+    else if (this.activeCodexTab === 'decks') activeCodexContent = decksTab;
+    else if (this.activeCodexTab === 'macros') activeCodexContent = macrosTab;
+
+    const codexTab = `
+      <div class="codex-panel-container">
+        ${codexNavHtml}
+        <div class="codex-panel-body">
+          ${activeCodexContent}
+        </div>
+      </div>
+    `;
 
     return `
       ${navHtml}
       ${this.tabs.contentWrapper('chat', chatTab)}
-      ${this.tabs.contentWrapper('actors', actorsTab)}
-      ${this.tabs.contentWrapper('items', itemsTab)}
-      ${this.tabs.contentWrapper('stages', stagesTab)}
-      ${this.tabs.contentWrapper('journals', journalsTab)}
-      ${this.tabs.contentWrapper('decks', decksTab)}
-      ${this.tabs.contentWrapper('tables', tablesTab)}
-      ${this.tabs.contentWrapper('macros', macrosTab)}
-      ${this.tabs.contentWrapper('playlists', playlistsTab)}
-      ${this.tabs.contentWrapper('compendium', compendiumTab)}
       ${this.tabs.contentWrapper('combat', combatTab)}
-      ${this.tabs.contentWrapper('placeables', placeablesTab)}
+      ${this.tabs.contentWrapper('codex', codexTab)}
+      ${this.tabs.contentWrapper('playlists', playlistsTab)}
       ${this.tabs.contentWrapper('settings', settingsTab)}
     `;
   }
@@ -2050,6 +2088,11 @@ export class Sidebar extends BaseComponent {
       this.render();
       if (this.tabs.active === 'chat') this.updateChatDisplay();
       void this.onTabSwitched(this.tabs.active);
+    } else if (action === 'codex-subtab' && id) {
+      this.activeCodexTab = id as CodexSubtab;
+      this.render();
+      void this.onTabSwitched(id);
+      return;
     } else if (action.startsWith('roll-mode-')) {
       const mode = action.replace('roll-mode-', '') as RollMode;
       if (ROLL_MODES.some(m => m.id === mode)) {
@@ -2102,13 +2145,22 @@ export class Sidebar extends BaseComponent {
       const textarea = target.closest<HTMLElement>('.sidebar-input, .sidebar-collapsed-editor')
         ?.querySelector<HTMLTextAreaElement>('textarea[name^="chat-input"]');
       const rect = target.getBoundingClientRect();
-      const diceOptions = ['1d20', '2d6', '1d100', '1d12', '1d10', '1d8', '1d6', '1d4'];
-      const items: ContextMenuItem[] = diceOptions.map((formula) => ({
-        icon: '<i class="fa-solid fa-dice"></i>',
-        label: `/r ${formula}`,
+      const diceOptions: { formula: string; icon: string }[] = [
+        { formula: '1d20', icon: '<i class="rpg-d20"></i>' },
+        { formula: '2d6',  icon: '<i class="rpg-d6"></i>' },
+        { formula: '1d100', icon: '<i class="rpg-d10"></i>' },
+        { formula: '1d12', icon: '<i class="rpg-d12"></i>' },
+        { formula: '1d10', icon: '<i class="rpg-d10"></i>' },
+        { formula: '1d8',  icon: '<i class="rpg-d8"></i>' },
+        { formula: '1d6',  icon: '<i class="rpg-d6"></i>' },
+        { formula: '1d4',  icon: '<i class="rpg-d4"></i>' },
+      ];
+      const items: ContextMenuItem[] = diceOptions.map((opt) => ({
+        icon: opt.icon,
+        label: `/r ${opt.formula}`,
         action: () => {
           if (textarea) {
-            textarea.value = `/r ${formula}`;
+            textarea.value = `/r ${opt.formula}`;
             this.sendChatMessage(textarea);
           } else {
             wsClient.send('chat.roll', {
@@ -2116,7 +2168,7 @@ export class Sidebar extends BaseComponent {
               userId: this.userId,
               userName: this.session?.userName || 'Anonymous',
               userColor: this.session?.userColor || '#888',
-              formula,
+              formula: opt.formula,
               mode: this.activeRollMode,
             });
           }
@@ -2380,7 +2432,28 @@ export class Sidebar extends BaseComponent {
     }
   }
 
+  public openTab(tabName: string): void {
+    if (CODEX_SUBTABS.some(st => st.id === tabName)) {
+      this.activeCodexTab = tabName as CodexSubtab;
+      this.tabs.set('codex');
+    } else {
+      this.tabs.set(tabName as any);
+    }
+    if (this.collapsed) {
+      this.collapsed = false;
+      this.element.classList.remove('collapsed');
+      this.updateCollapsedOverlayVisibility();
+    }
+    this.render();
+    if (tabName === 'chat') this.updateChatDisplay();
+    void this.onTabSwitched(tabName);
+  }
+
   private async onTabSwitched(tabName: string): Promise<void> {
+    if (tabName === 'codex') {
+      await this.onTabSwitched(this.activeCodexTab);
+      return;
+    }
     if (tabName === 'actors') {
       await this.loadActors();
     } else if (tabName === 'stages') {
@@ -3878,7 +3951,7 @@ export class Sidebar extends BaseComponent {
         <div class="sidebar-collapsed-format-bar">
           <span class="sidebar-collapsed-format-label">Formatação</span>
           <span class="sidebar-collapsed-format-divider">|</span>
-          <button type="button" data-action="chat-quick-dice" title="Rolar Dados Rápidos (/r)"><i class="fa-solid fa-dice-d20"></i></button>
+          <button type="button" data-action="chat-quick-dice" title="Rolar Dados Rápidos (/r)"><i class="rpg-d20"></i></button>
           <button type="button" data-action="chat-fmt-image" title="Inserir Imagem"><i class="fa-solid fa-image"></i></button>
           <button type="button" data-action="chat-fmt-link" title="Link"><i class="fa-solid fa-link"></i></button>
           <button type="button" data-action="chat-fmt-bold" title="Negrito"><i class="fa-solid fa-bold"></i></button>

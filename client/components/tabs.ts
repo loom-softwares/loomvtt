@@ -145,9 +145,9 @@ export class Tabs {
         ${this.tabs
         .map((t) => {
           const iconHtml = t.icon
-            ? (t.icon.startsWith('fa-') || t.icon.includes('fa-'))
-              ? `<i class="${t.icon}" aria-hidden="true"></i>`
-              : `<span aria-hidden="true">${t.icon}</span>`
+            ? t.icon.trim().startsWith('<')
+              ? t.icon
+              : `<i class="${t.icon}" aria-hidden="true"></i>`
             : '';
           const body = options.iconOnly
             ? iconHtml
