@@ -807,6 +807,9 @@ Signal.listen('stage.theaterToggled', (payload) => {
 Signal.listen('stage.theaterSkinChanged', (payload) => {
   broadcastToAll('stage.theaterSkinChanged', payload);
 });
+Signal.listen('stage.castChanged', (payload) => {
+  broadcastToAll('stage.castChanged', payload);
+});
 
 Signal.listen('stages.updated', (payload) => {
   broadcastToAll('stage.updated', payload.data ?? payload);
@@ -1558,6 +1561,22 @@ io.on('connection', (socket: any) => {
         stageFlags.theaterSkin = skinId;
         await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
         Signal.broadcast('stage.theaterSkinChanged', { stageId, skinId });
+      }
+
+      // ── Cinema Tray: quais atores aparecem como card no modo teatro ─────────
+      // O GM manda a lista inteira a cada clique (liga/desliga um ator); persiste
+      // em flags.activeCast pra quem entra depois já ver o palco como está.
+      if (type === 'stage.cast') {
+        if ((auth.userRole ?? 1) < 4) return;
+        const { stageId, activeCast } = data;
+        if (!stageId || !Array.isArray(activeCast)) return;
+        const stage = await db('stages').where({ id: stageId }).first();
+        if (!stage) return;
+        let stageFlags: Record<string, any> = {};
+        try { stageFlags = stage.flags ? JSON.parse(stage.flags) : {}; } catch { /* flags corrompido, ignora */ }
+        stageFlags.activeCast = activeCast.filter((id: unknown) => typeof id === 'string');
+        await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
+        Signal.broadcast('stage.castChanged', { stageId, activeCast: stageFlags.activeCast });
       }
 
       // ── Context update (room re-scoping) ────────────────────────────────────

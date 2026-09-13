@@ -404,6 +404,130 @@
   font-size: 12px;
 }
 
+.cast-tray-btn {
+  left: calc(50% + 88px);
+}
+
+/* Elenco em Cena — painel do GM listando os atores do mundo; clicar liga/desliga
+   o card daquele ator pra todo mundo (ver #theater-portraits). */
+.cast-tray {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  width: 260px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 12, 22, 0.92);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cast-tray-empty {
+  padding: 8px;
+  color: #a89880;
+  font-size: 12px;
+  text-align: center;
+}
+
+.cast-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #f0e6d3;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+
+.cast-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cast-chip.active {
+  border-color: var(--color-accent, #d8a24a);
+  background: rgba(216, 162, 74, 0.12);
+}
+
+.cast-chip-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.cast-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cards de portrait exibidos pra todo mundo no modo teatro — quem entra em
+   #theater-portraits vem de flags.activeCast (ver stage.cast/castChanged). */
+.theater-portraits {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 0 24px 16px;
+  pointer-events: none;
+}
+
+.theater-portrait-card {
+  position: relative;
+  width: 140px;
+  aspect-ratio: 3 / 4;
+  flex-shrink: 0;
+}
+
+.theater-portrait-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a1a;
+  border-radius: 4px;
+}
+
+.theater-portrait-border {
+  position: absolute;
+  inset: -6px;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+.theater-portrait-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px 6px;
+  background: var(--cinematic-portrait-name-bg, rgba(0, 0, 0, 0.6));
+  border-top: var(--cinematic-portrait-name-border-top, none);
+  color: var(--cinematic-text-color, #fff);
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* OBS Browser Source capture views (?capture=canvas / ?capture=chat) — same
    authenticated GameHudScreen, just chrome hidden down to one element via CSS
    instead of a parallel renderer. See game-hud.ts render(). */
@@ -414,9 +538,13 @@
 .game-hud.capture-chat .theater-toggle-btn,
 .game-hud.capture-chat .stream-link-btn,
 .game-hud.capture-chat .theater-skin-select,
+.game-hud.capture-chat .cast-tray-btn,
+.game-hud.capture-chat .cast-tray,
 .game-hud.capture-canvas .theater-toggle-btn,
 .game-hud.capture-canvas .stream-link-btn,
-.game-hud.capture-canvas .theater-skin-select {
+.game-hud.capture-canvas .theater-skin-select,
+.game-hud.capture-canvas .cast-tray-btn,
+.game-hud.capture-canvas .cast-tray {
   display: none !important;
 }
 

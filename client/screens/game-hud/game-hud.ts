@@ -187,6 +187,7 @@ export class GameHudScreen {
       <div id="theater-layer" class="theater-layer">
         <div id="theater-bg" class="theater-bg"></div>
         <div id="theater-fog" class="theater-fog" hidden></div>
+        <div id="theater-portraits" class="theater-portraits"></div>
         <div class="theater-bar theater-bar-top"></div>
         <div class="theater-bar theater-bar-bottom"></div>
       </div>
@@ -196,6 +197,10 @@ export class GameHudScreen {
       <select id="theater-skin-select" class="theater-skin-select" style="display:none" title="Moldura do Modo Teatro">
         ${theaterSkins.list().map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
       </select>
+      <button id="cast-tray-btn" class="theater-toggle-btn cast-tray-btn" style="display:none" title="Elenco em Cena">
+        <i class="fa-solid fa-people-group"></i>
+      </button>
+      <div id="cast-tray" class="cast-tray" hidden></div>
       <button id="stream-link-btn" class="theater-toggle-btn stream-link-btn" style="display:none" title="Gerar Links de Stream (OBS)">
         <i class="fa-solid fa-satellite-dish"></i>
       </button>
@@ -793,6 +798,91 @@ export class GameHudScreen {
       streamBtn.style.display = isGM ? '' : 'none';
       streamBtn.addEventListener('click', () => void this.generateStreamLinks());
     }
+
+    this.setupCinemaTray();
+  }
+
+  /** GM-only floating tray to pick which actors show as portrait cards in
+   * theater mode (the "cast" of the current scene). Toggling an actor here
+   * updates `flags.activeCast` for everyone — see stage.cast/stage.castChanged
+   * in server/index.ts. Everyone (GM and players) sees the resulting cards
+   * via `paintCastPortraits()`; only the GM sees/uses the tray itself. */
+  private setupCinemaTray(): void {
+    const trayBtn = this.container.querySelector<HTMLButtonElement>('#cast-tray-btn');
+    const tray = this.container.querySelector<HTMLElement>('#cast-tray');
+    if (trayBtn) {
+      trayBtn.addEventListener('click', () => {
+        if (!tray) return;
+        tray.hidden = !tray.hidden;
+        if (!tray.hidden) this.renderCastTray();
+      });
+    }
+    if (tray) {
+      tray.addEventListener('click', (ev) => {
+        const chip = (ev.target as HTMLElement).closest<HTMLElement>('[data-actor-id]');
+        if (!chip) return;
+        const actorId = chip.dataset.actorId!;
+        const stageId = this.initState.activeStage?.id;
+        if (!stageId) return;
+        const flags = (this.initState.activeStage?.flags ?? {}) as { activeCast?: string[] };
+        const current = flags.activeCast ?? [];
+        const next = current.includes(actorId) ? current.filter((id) => id !== actorId) : [...current, actorId];
+        wsClient.send('stage.cast', { stageId, activeCast: next, worldId: this.props.worldId });
+      });
+    }
+
+    wsClient.on('stage.castChanged', (data: { stageId: string; activeCast: string[] }) => {
+      const stage = this.initState.activeStage;
+      if (!stage || data.stageId !== stage.id) return;
+      stage.flags = { ...((stage.flags ?? {}) as Record<string, any>), activeCast: data.activeCast };
+      this.paintCastPortraits();
+      if (tray && !tray.hidden) this.renderCastTray();
+    });
+  }
+
+  /** Rebuilds the GM tray's actor list, marking who is currently on stage. */
+  private renderCastTray(): void {
+    const tray = this.container.querySelector<HTMLElement>('#cast-tray');
+    if (!tray) return;
+    const flags = (this.initState.activeStage?.flags ?? {}) as { activeCast?: string[] };
+    const active = new Set(flags.activeCast ?? []);
+    const actors = actorsCollection.contents.slice().sort((a, b) => a.name.localeCompare(b.name));
+    if (actors.length === 0) {
+      tray.innerHTML = `<div class="cast-tray-empty">Nenhum ator neste mundo ainda.</div>`;
+      return;
+    }
+    tray.innerHTML = actors.map((a) => `
+      <button type="button" class="cast-chip ${active.has(a.id) ? 'active' : ''}" data-actor-id="${a.id}" title="${a.name}">
+        <span class="cast-chip-avatar" style="background-image:url('${(a as any).avatarUrl || ''}')"></span>
+        <span class="cast-chip-name">${a.name}</span>
+      </button>
+    `).join('');
+  }
+
+  /** Renders the portrait cards visible to everyone in the theater overlay —
+   * one per actor id in `flags.activeCast`, framed with the active skin's
+   * portrait border asset when it has one. Called whenever the skin repaints
+   * (border may change) and whenever the cast list itself changes. */
+  private paintCastPortraits(): void {
+    const container = this.container.querySelector<HTMLElement>('#theater-portraits');
+    if (!container) return;
+    const flags = (this.initState.activeStage?.flags ?? {}) as { activeCast?: string[]; theaterSkin?: string };
+    const activeCast = flags.activeCast ?? [];
+    const skin = theaterSkins.get(flags.theaterSkin || DEFAULT_THEATER_SKIN);
+    const borderUrl = skin?.assets.portraitBorder || '';
+
+    container.innerHTML = activeCast.map((actorId) => {
+      const actor = actorsCollection.get(actorId);
+      if (!actor) return '';
+      const img = (actor as any).avatarUrl || '';
+      return `
+        <div class="theater-portrait-card">
+          <div class="theater-portrait-image" style="background-image:url('${img}')"></div>
+          ${borderUrl ? `<div class="theater-portrait-border" style="background-image:url('${borderUrl}')"></div>` : ''}
+          <div class="theater-portrait-name">${actor.name}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   /** GM-only: mints two one-time codes and builds the OBS Browser Source URLs
@@ -831,6 +921,13 @@ export class GameHudScreen {
     const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
     const isGM = (this.props.session.userRole ?? 1) >= 4;
     if (select) select.style.display = active && isGM ? '' : 'none';
+
+    const trayBtn = this.container.querySelector<HTMLButtonElement>('#cast-tray-btn');
+    if (trayBtn) trayBtn.style.display = active && isGM ? '' : 'none';
+    if (!active) {
+      const tray = this.container.querySelector<HTMLElement>('#cast-tray');
+      if (tray) tray.hidden = true;
+    }
 
     if (!active) return;
     this.paintTheaterSkin();
@@ -881,6 +978,8 @@ export class GameHudScreen {
     }
     if (topBar) topBar.style.backgroundImage = skin?.assets.topBar ? `url('${skin.assets.topBar}')` : '';
     if (bottomBar) bottomBar.style.backgroundImage = skin?.assets.bottomBar ? `url('${skin.assets.bottomBar}')` : '';
+
+    this.paintCastPortraits();
   }
 
   /** Creates an Actor/Item from a compendium entry dragged onto the canvas. */
