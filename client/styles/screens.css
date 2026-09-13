@@ -341,6 +341,32 @@
   border-color: var(--color-accent, #d8a24a);
 }
 
+.stream-link-btn {
+  left: calc(50% + 44px);
+}
+
+/* OBS Browser Source capture views (?capture=canvas / ?capture=chat) — same
+   authenticated GameHudScreen, just chrome hidden down to one element via CSS
+   instead of a parallel renderer. See game-hud.ts render(). */
+.game-hud.capture-canvas .hud-layer,
+.game-hud.capture-chat #game-canvas,
+.game-hud.capture-chat .stage-transition-overlay,
+.game-hud.capture-chat .theater-bar,
+.game-hud.capture-chat .theater-toggle-btn,
+.game-hud.capture-chat .stream-link-btn,
+.game-hud.capture-canvas .theater-toggle-btn,
+.game-hud.capture-canvas .stream-link-btn {
+  display: none !important;
+}
+
+.game-hud.capture-chat .hud-layer>*:not(.hud-sidebar) {
+  display: none !important;
+}
+
+.game-hud.capture-chat .hud-sidebar {
+  opacity: 1 !important;
+}
+
 /* Pause overlay — Layer 3 (Overlays). Above the scene transition (10000) ON PURPOSE,
    same reason as .hud-layer: it's UI, not part of the map. */
 .hud-pause-overlay {

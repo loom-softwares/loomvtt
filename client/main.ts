@@ -523,9 +523,33 @@ bindContentEnricherHandlers();
 clog.banner();
 clog.success('Client bundle loaded successfully');
 
+/** Consumes a one-time stream setup code (`?setup=CODE`, see server/applications/api/stream.ts)
+ * and exchanges it for a normal session cookie — same login the app already
+ * uses everywhere else, just triggered without a form. Reloads without the
+ * `setup` param on success so it never lingers in OBS's browser history/cache. */
+async function consumeStreamSetupCode(): Promise<boolean> {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('setup');
+  if (!code) return false;
+
+  try {
+    await api.post('/stream/exchange', { code });
+    params.delete('setup');
+    const query = params.toString();
+    window.location.replace(`${window.location.pathname}${query ? `?${query}` : ''}`);
+    return true;
+  } catch (err) {
+    clog.error('Stream setup code exchange failed', err);
+    showToast('Código de stream inválido ou expirado.', 'error');
+    return false;
+  }
+}
+
 async function bootstrap(): Promise<void> {
   try {
     clog.info('Bootstrap started');
+
+    if (await consumeStreamSetupCode()) return;
 
     // 1. Check license status
     clog.info('Checking LoomVTT license...');

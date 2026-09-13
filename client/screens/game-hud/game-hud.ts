@@ -13,7 +13,8 @@ import { keybindManager, type KeybindAction } from '../../core/keybinds.js';
 import { JournalWindow } from '../../windows/journal-window.js';
 import { ActorSheetWindow } from '../../windows/actor-sheet-window.js';
 import { TokenConfigWindow } from '../../windows/token-config-window.js';
-import { showConfirm, showPrompt } from '../../components/dialog.js';
+import { showConfirm, showPrompt, showAlert } from '../../components/dialog.js';
+import { copyTextToClipboard } from '../../lib/clipboard.js';
 import { WallConfigWindow } from '../../windows/wall-config-window.js';
 import { DrawingConfigWindow } from '../../windows/drawing-config-window.js';
 import { NoiseConfigWindow } from '../../windows/noise-config-window.js';
@@ -147,8 +148,19 @@ export class GameHudScreen {
     gameContext.setCast(this.initState.cast);
   }
 
+  /** `?capture=canvas` or `?capture=chat` — OBS Browser Source views (see
+   * server/applications/api/stream.ts for how the session gets there without a
+   * login form). Reuses the exact same authenticated GameHudScreen instead of a
+   * parallel renderer, just hides everything but the one element via CSS. */
+  private captureMode: 'canvas' | 'chat' | null = null;
+
   private render(): void {
     this.container.classList.add('game-hud');
+    const captureParam = new URLSearchParams(window.location.search).get('capture');
+    if (captureParam === 'canvas' || captureParam === 'chat') {
+      this.captureMode = captureParam;
+      this.container.classList.add(`capture-${captureParam}`);
+    }
     this.container.innerHTML = `
       <canvas id="game-canvas"></canvas>
       <canvas id="stage-transition-overlay" class="stage-transition-overlay"></canvas>
@@ -165,6 +177,9 @@ export class GameHudScreen {
       <div class="theater-bar theater-bar-bottom"></div>
       <button id="theater-toggle-btn" class="theater-toggle-btn" style="display:none" title="Modo Teatro">
         <i class="fa-solid fa-masks-theater"></i>
+      </button>
+      <button id="stream-link-btn" class="theater-toggle-btn stream-link-btn" style="display:none" title="Gerar Links de Stream (OBS)">
+        <i class="fa-solid fa-satellite-dish"></i>
       </button>
       <div class="hud-layer">
         <div class="hud-top-nav" id="hud-top-nav"></div>
@@ -737,6 +752,31 @@ export class GameHudScreen {
       if (data.stageId !== this.initState.activeStage?.id) return;
       this.applyTheaterState(data.active);
     });
+
+    const streamBtn = this.container.querySelector<HTMLButtonElement>('#stream-link-btn');
+    if (streamBtn) {
+      streamBtn.style.display = isGM ? '' : 'none';
+      streamBtn.addEventListener('click', () => void this.generateStreamLinks());
+    }
+  }
+
+  /** GM-only: mints two one-time codes and builds the OBS Browser Source URLs
+   * (canvas view + chat view) — see server/applications/api/stream.ts for how
+   * a code turns into a session the first time each URL loads. */
+  private async generateStreamLinks(): Promise<void> {
+    try {
+      const { canvasCode, chatCode } = await api.post<{ canvasCode: string; chatCode: string }>('/stream/link', {});
+      const base = `${window.location.origin}${window.location.pathname}`;
+      const canvasUrl = `${base}?capture=canvas&setup=${canvasCode}`;
+      const chatUrl = `${base}?capture=chat&setup=${chatCode}`;
+      copyTextToClipboard(canvasUrl);
+      await showAlert(
+        'Links de Stream (OBS)',
+        `Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez — depois disso a sessão fica salva ali.\n\nCanvas (copiado):\n${canvasUrl}\n\nChat:\n${chatUrl}`,
+      );
+    } catch (err: any) {
+      showToast(err?.message || 'Erro ao gerar links de stream', 'error');
+    }
   }
 
   /** Toggles the theater overlay for everyone — hides tactical canvas layers,
@@ -2032,6 +2072,11 @@ export class GameHudScreen {
     // not as separate objects — so only the aggregate instance is exposed.
     (window as any).ui = (window as any).ui || {};
     (window as any).ui.sidebar = this.subcomponents.sidebar;
+
+    if (this.captureMode === 'chat') {
+      this.subcomponents.sidebar.setCollapsed(false);
+      this.subcomponents.sidebar.openTab('chat');
+    }
 
     const hotbarContainer = this.container.querySelector('#hud-hotbar') as HTMLElement;
     this.subcomponents.macroHotbar = new MacroHotbar(hotbarContainer, this.props.worldId, this.props.session);

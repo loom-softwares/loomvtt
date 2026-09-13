@@ -46,6 +46,7 @@ import { exportRouter } from './applications/api/export.js';
 import { tunnelRouter } from './applications/api/tunnel.js';
 import { docsRouter } from './applications/api/docs.js';
 import { worldsRouter } from './applications/api/worlds.js';
+import { streamRouter } from './applications/api/stream.js';
 import { combatRouter } from './applications/api/combat.js';
 import { wallsRouter } from './applications/api/walls.js';
 import { notesRouter } from './applications/api/notes.js';
@@ -485,6 +486,7 @@ app.use('/api/tunnel', tunnelRouter);
 
 // Mount Worlds + Users router
 app.use('/api/worlds', worldsRouter);
+app.use('/api/stream', streamRouter);
 
 // Mount Combat router
 app.use('/api/combat', combatRouter);
