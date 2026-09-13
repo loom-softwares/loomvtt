@@ -990,6 +990,11 @@ export class GameHudScreen {
   private applyTheaterState(active: boolean): void {
     this.theaterActive = active;
     this.container.classList.toggle('theater-mode', active);
+    // .sidebar-collapsed-chat vive fora de .game-hud (appendChild direto em
+    // document.body — ver setupCollapsedOverlay em sidebar.ts), então uma
+    // regra CSS restrita ao teatro precisa desse gatilho em <body>, não dá
+    // pra usar `.game-hud.theater-mode` como ancestral.
+    document.body.classList.toggle('theater-mode-active', active);
     this.canvasManager?.setTheaterActive(active);
     this.subcomponents.sidebar?.setCollapsed(active);
 
