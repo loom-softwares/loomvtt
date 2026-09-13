@@ -13,7 +13,8 @@ import { keybindManager, type KeybindAction } from '../../core/keybinds.js';
 import { JournalWindow } from '../../windows/journal-window.js';
 import { ActorSheetWindow } from '../../windows/actor-sheet-window.js';
 import { TokenConfigWindow } from '../../windows/token-config-window.js';
-import { showConfirm, showPrompt, showAlert } from '../../components/dialog.js';
+import { showConfirm, showPrompt } from '../../components/dialog.js';
+import { LoomDialog } from '../../windows/loom-dialog.js';
 import { copyTextToClipboard } from '../../lib/clipboard.js';
 import { mediaHtml } from '../../core/media-helper.js';
 import { theaterSkins, DEFAULT_THEATER_SKIN } from '../../core/theater-skins.js';
@@ -962,18 +963,57 @@ export class GameHudScreen {
 
   /** GM-only: mints two one-time codes and builds the OBS Browser Source URLs
    * (canvas view + chat view) — see server/applications/api/stream.ts for how
-   * a code turns into a session the first time each URL loads. */
+   * a code turns into a session the first time each URL loads. Each link gets
+   * its own labeled row + copy button instead of a wall of text with the URLs
+   * run together. */
   private async generateStreamLinks(): Promise<void> {
     try {
       const { canvasCode, chatCode } = await api.post<{ canvasCode: string; chatCode: string }>('/stream/link', {});
       const base = `${window.location.origin}${window.location.pathname}`;
       const canvasUrl = `${base}?capture=canvas&setup=${canvasCode}`;
       const chatUrl = `${base}?capture=chat&setup=${chatCode}`;
-      copyTextToClipboard(canvasUrl);
-      await showAlert(
-        'Links de Stream (OBS)',
-        `Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez — depois disso a sessão fica salva ali.\n\nCanvas (copiado):\n${canvasUrl}\n\nChat:\n${chatUrl}`,
-      );
+
+      const row = (label: string, url: string, key: string) => `
+        <div style="display:flex;flex-direction:column;gap:0.3rem;">
+          <label style="color:var(--color-text-secondary);font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${label}</label>
+          <div style="display:flex;gap:0.4rem;">
+            <input type="text" readonly value="${url}" data-stream-url="${key}"
+              style="flex:1;min-width:0;box-sizing:border-box;background:var(--color-bg-surface);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:4px;padding:0.4rem 0.6rem;font-size:0.8rem;font-family:monospace;" />
+            <button type="button" data-copy="${key}" class="icon-button" title="Copiar link">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const container = document.createElement('div');
+      container.style.cssText = 'display:flex;flex-direction:column;gap:0.85rem;box-sizing:border-box;width:100%;';
+      container.innerHTML = `
+        <p style="margin:0;color:var(--color-text-secondary);font-size:0.85rem;line-height:1.4;">
+          Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez —
+          depois disso a sessão fica salva ali.
+        </p>
+        ${row('Canvas (cena/mapa)', canvasUrl, 'canvas')}
+        ${row('Chat', chatUrl, 'chat')}
+      `;
+
+      container.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.copy!;
+          const input = container.querySelector<HTMLInputElement>(`[data-stream-url="${key}"]`)!;
+          copyTextToClipboard(input.value);
+          const icon = btn.querySelector('i')!;
+          icon.className = 'fa-solid fa-check';
+          setTimeout(() => { icon.className = 'fa-solid fa-copy'; }, 1200);
+        });
+      });
+
+      await LoomDialog.wait({
+        window: { title: 'Links de Stream (OBS)' },
+        content: container,
+        width: 480,
+        buttons: [{ action: 'confirm', label: 'Fechar', variant: 'primary', callback: () => {} }],
+      });
     } catch (err: any) {
       showToast(err?.message || 'Erro ao gerar links de stream', 'error');
     }
