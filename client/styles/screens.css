@@ -1021,7 +1021,15 @@
   pointer-events: none;
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transition: opacity var(--transition-fast), transform var(--transition-fast), width var(--transition-fast);
+}
+
+/* A pílula parada (230-260px) não tem largura pra barra de formatação inteira
+   numa linha só (medido: precisa de ~280px) — o wrap pra 2 linhas em
+   .sidebar-collapsed-format-bar fica colado no textarea, sem respiro. Alarga
+   a caixa toda enquanto algo dentro dela está focado, em vez de quebrar linha. */
+.sidebar-collapsed-chat:focus-within {
+  width: min(300px, calc(100vw - 64px));
 }
 
 .sidebar-collapsed-chat.visible {
