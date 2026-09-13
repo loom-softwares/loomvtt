@@ -570,7 +570,9 @@ export class GameHudScreen {
       }
     });
     this.canvasManager.setOnNoteClick((note) => {
-      if (note.journalId) {
+      if (note.targetStageId) {
+        wsClient.send('stage.activate', { stageId: note.targetStageId, worldId: this.props.worldId });
+      } else if (note.journalId) {
         void windowManager.open('journal', JournalWindow, { journalId: note.journalId });
       }
     });
@@ -583,6 +585,7 @@ export class GameHudScreen {
           x: position.x,
           y: position.y,
           visibleToPlayers: true,
+          levelId: position.levelId ?? this.activeLevelId,
           elevation: (this.canvasManager as any)?.currentLevelBounds?.bottom ?? 0,
         });
       } catch (err) {
@@ -662,6 +665,8 @@ export class GameHudScreen {
         void this.dropActorToken(data.id, x, y);
       } else if (data.type === 'Card') {
         void this.dropCardAsTile(JSON.stringify(data), x, y);
+      } else if (data.type === 'Journal') {
+        void this.dropJournalAsNote(data.id, x, y);
       }
     });
   }
@@ -687,6 +692,24 @@ export class GameHudScreen {
       });
     } catch (err) {
       clog.error('Falha ao soltar token', err);
+    }
+  }
+
+  /** Creates a map Note linked to the Journal dropped on the canvas via drag-and-drop. */
+  private async dropJournalAsNote(journalId: string, x: number, y: number): Promise<void> {
+    const stageId = this.initState.activeStage?.id;
+    if (!stageId) return;
+    try {
+      await api.post('/notes', {
+        stageId,
+        journalId,
+        x: Math.round(x),
+        y: Math.round(y),
+        visibleToPlayers: true,
+        levelId: this.activeLevelId,
+      });
+    } catch (err) {
+      clog.error('Falha ao soltar diário como nota', err);
     }
   }
 

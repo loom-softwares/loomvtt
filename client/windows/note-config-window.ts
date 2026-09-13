@@ -19,6 +19,7 @@ export interface NoteData {
   id: string;
   stageId: string;
   journalId: string;
+  targetStageId: string;
   x: number;
   y: number;
   visibleToPlayers: boolean;
@@ -41,8 +42,10 @@ export class NoteConfigWindow extends BaseWindow {
   private note: NoteData | null = null;
   private tabs: Tabs;
   private activeTabId: string = 'general';
+  private journals: { id: string; name: string }[] = [];
+  private stages: { id: string; name: string }[] = [];
 
-  constructor(private props: { id: string; noteId: string }) {
+  constructor(private props: { id: string; noteId: string; worldId?: string }) {
     super({
       id: props.id,
       title: t('noteConfig.title'),
@@ -68,7 +71,14 @@ export class NoteConfigWindow extends BaseWindow {
 
   private async load(): Promise<void> {
     try {
-      this.note = await api.get<NoteData>(`/notes/${this.props.noteId}`);
+      const [note, journals, stages] = await Promise.all([
+        api.get<NoteData>(`/notes/${this.props.noteId}`),
+        api.get<{ id: string; name: string }[]>(`/journals?worldId=${this.props.worldId ?? ''}`).catch(() => []),
+        api.get<{ id: string; name: string }[]>(`/stages`).catch(() => []),
+      ]);
+      this.note = note;
+      this.journals = journals;
+      this.stages = stages.filter((s) => s.id !== this.note!.stageId);
       this.rerenderBody();
     } catch (e: any) {
       showToast(e?.message || 'Erro ao carregar nota', 'error');
@@ -113,6 +123,28 @@ export class NoteConfigWindow extends BaseWindow {
           <input type="checkbox" name="visibleToPlayers" id="note-visible-players" ${n.visibleToPlayers ? 'checked' : ''} style="cursor: pointer;" />
           <label for="note-visible-players" class="checkbox-label">Visível para Jogadores</label>
         </div>
+
+        <details open>
+          <summary class="section-summary">Link</summary>
+          <div class="section-body">
+            <div class="field-stack">
+              <label class="field-label">Abrir Diário</label>
+              <select name="journalId" class="field-input">
+                <option value="">— Nenhum —</option>
+                ${this.journals.map(j => `<option value="${j.id}" ${n.journalId === j.id ? 'selected' : ''}>${j.name}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="field-stack">
+              <label class="field-label">Waypoint (Ir para Cena)</label>
+              <select name="targetStageId" class="field-input">
+                <option value="">— Nenhum —</option>
+                ${this.stages.map(s => `<option value="${s.id}" ${n.targetStageId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+              </select>
+              <small class="field-hint">Clicar nesta nota ativa a cena escolhida em vez de abrir um diário.</small>
+            </div>
+          </div>
+        </details>
       </div>
     `;
 
@@ -235,6 +267,17 @@ export class NoteConfigWindow extends BaseWindow {
       });
     }
 
+    const journalSelect = this.element.querySelector('[name="journalId"]') as HTMLSelectElement;
+    const targetStageSelect = this.element.querySelector('[name="targetStageId"]') as HTMLSelectElement;
+    if (journalSelect && targetStageSelect) {
+      journalSelect.addEventListener('change', () => {
+        if (journalSelect.value) targetStageSelect.value = '';
+      });
+      targetStageSelect.addEventListener('change', () => {
+        if (targetStageSelect.value) journalSelect.value = '';
+      });
+    }
+
     const textColorPicker = this.element.querySelector('[name="textColor"]') as HTMLInputElement;
     const textColorText = this.element.querySelector('[name="textColorText"]') as HTMLInputElement;
 
@@ -261,6 +304,7 @@ export class NoteConfigWindow extends BaseWindow {
 
     const payload = {
       journalId: data.journalId || '',
+      targetStageId: data.targetStageId || '',
       x: Number(data.x || 0),
       y: Number(data.y || 0),
       visibleToPlayers: Boolean(data.visibleToPlayers),
@@ -309,6 +353,7 @@ export class NoteConfigWindow extends BaseWindow {
 
     const defaultPayload = {
       journalId: '',
+      targetStageId: '',
       x: this.note.x,
       y: this.note.y,
       visibleToPlayers: false,

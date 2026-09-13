@@ -1506,6 +1506,7 @@ io.on('connection', (socket: any) => {
             weatherEffect: stage.weatherEffect || 'none',
             transitionType: stage.transitionType || 'none',
             transitionDuration: stage.transitionDuration ?? 1500,
+            flags: stageFlags,
           });
         }
       }

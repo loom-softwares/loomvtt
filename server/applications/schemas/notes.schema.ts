@@ -15,6 +15,7 @@ export const notesSchema = {
     stageId: new ForeignField({ ref: 'id' }),
     levelId: new StringField({ default: '' }),
     journalId: new StringField({ default: '' }),
+    targetStageId: new StringField({ default: '' }),
     x: new NumberField({ default: 0 }),
     y: new NumberField({ default: 0 }),
     visibleToPlayers: new BooleanField({ default: false }),

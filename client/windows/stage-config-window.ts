@@ -53,6 +53,7 @@ interface Stage {
   journalPageId?: string;
   transitionType?: string;
   transitionDuration?: number;
+  sceneType?: string;
 }
 
 export class StageConfigWindow extends BaseWindow {
@@ -247,6 +248,17 @@ export class StageConfigWindow extends BaseWindow {
             <label>${t('stageConfig.name')}</label>
             <div class="form-fields">
               <input type="text" name="name" value="${this.stage.name}" required />
+            </div>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.sceneType') || 'Tipo de Cena'}</label>
+            <div class="form-fields">
+              <select name="sceneType">
+                <option value="tactical" ${(this.stage.sceneType || 'tactical') === 'tactical' ? 'selected' : ''}>${t('stageConfig.sceneTypeTactical') || 'Tático (grid/combate)'}</option>
+                <option value="narrative" ${this.stage.sceneType === 'narrative' ? 'selected' : ''}>${t('stageConfig.sceneTypeNarrative') || 'Narrativo (teatro)'}</option>
+                <option value="map" ${this.stage.sceneType === 'map' ? 'selected' : ''}>${t('stageConfig.sceneTypeMap') || 'Mapa (waypoints)'}</option>
+              </select>
             </div>
           </div>
 
@@ -808,6 +820,7 @@ export class StageConfigWindow extends BaseWindow {
         globalLightThreshold: parseFloat(data.globalLightThreshold),
         journalId: data.journalId,
         journalPageId: data.journalPageId,
+        sceneType: data.sceneType || 'tactical',
         transitionType: data.transitionType,
         transitionDuration: parseInt(data.transitionDuration),
         flags: {

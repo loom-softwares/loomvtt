@@ -43,6 +43,7 @@ export const stagesSchema = {
     globalLightThreshold: new NumberField({ default: 1 }),
     journalId: new StringField({ default: '' }),
     journalPageId: new StringField({ default: '' }),
+    sceneType: new StringField({ default: 'tactical' }),
     transitionType: new StringField({ default: 'fade' }),
     transitionDuration: new NumberField({ default: 1500 }),
     flags: new JSONField({ default: () => ({}) }),

@@ -6,6 +6,12 @@ import { requireAuth, requireWorldMatch } from '../middleware/auth.js';
 export const notesRouter = Router();
 notesRouter.use(requireAuth, requireWorldMatch);
 
+const NOTE_FIELDS = [
+  'journalId', 'targetStageId', 'x', 'y', 'visibleToPlayers', 'levelId',
+  'floors', 'visibleGlobally', 'iconEntry', 'iconFontSize', 'iconTint',
+  'textLabel', 'fontFamily', 'fontSize', 'textColor', 'textAnchor',
+];
+
 notesRouter.get('/stage/:stageId', async (req, res) => {
   try {
     const notes = await NotesDocument.find({ stageId: req.params.stageId, orderBy: 'createdAt', orderDir: 'asc' });
@@ -15,18 +21,25 @@ notesRouter.get('/stage/:stageId', async (req, res) => {
   }
 });
 
+notesRouter.get('/:id', async (req, res) => {
+  try {
+    const note = await NotesDocument.findById(req.params.id);
+    if (!note) return res.status(404).json({ error: 'Note not found' });
+    res.json(note);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 notesRouter.post('/', async (req, res) => {
   try {
-    const { stageId, journalId, x, y, visibleToPlayers, levelId } = req.body;
+    const { stageId } = req.body;
     if (!stageId) return res.status(400).json({ error: 'stageId is required' });
-    const result = await NotesDocument.create({ 
-      stageId, 
-      journalId: journalId ?? '', 
-      x: x ?? 0, 
-      y: y ?? 0, 
-      visibleToPlayers: visibleToPlayers ?? false,
-      levelId: levelId ?? '' 
-    });
+    const payload: Record<string, any> = { stageId };
+    for (const field of NOTE_FIELDS) {
+      if (req.body[field] !== undefined) payload[field] = req.body[field];
+    }
+    const result = await NotesDocument.create(payload);
     if (result.error) return res.status(400).json({ error: result.error });
     const note = result.data;
     Signal.broadcast('note.created', note);
@@ -38,13 +51,15 @@ notesRouter.post('/', async (req, res) => {
 
 notesRouter.put('/:id', async (req, res) => {
   try {
-    const { journalId, x, y, visibleToPlayers, levelId } = req.body;
     const updates: Record<string, any> = {};
-    if (journalId !== undefined) updates.journalId = journalId;
-    if (x !== undefined) updates.x = x;
-    if (y !== undefined) updates.y = y;
-    if (visibleToPlayers !== undefined) updates.visibleToPlayers = visibleToPlayers;
-    if (levelId !== undefined) updates.levelId = levelId;
+    for (const field of NOTE_FIELDS) {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
+    // Linking a note to a scene (waypoint) and to a journal are mutually
+    // exclusive — clearing whichever one the client didn't just set avoids a
+    // note silently carrying a stale link from before it changed purpose.
+    if (updates.targetStageId) updates.journalId = '';
+    else if (updates.journalId) updates.targetStageId = '';
     const result = await NotesDocument.update(req.params.id, updates);
     if (result.error) return res.status(400).json({ error: result.error });
     const note = result.data;

@@ -189,6 +189,7 @@ export interface NoteData {
   id: string;
   stageId: string;
   journalId?: string;
+  targetStageId?: string;
   x: number;
   y: number;
   visibleToPlayers?: boolean;
@@ -1212,7 +1213,7 @@ export class CanvasManager {
     this.onNoteClick = callback;
   }
 
-  setOnNoteCreate(callback: (position: { x: number; y: number }) => void): void {
+  setOnNoteCreate(callback: (position: { x: number; y: number; levelId?: string }) => void): void {
     this.onNoteCreate = callback;
   }
 

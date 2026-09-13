@@ -140,7 +140,9 @@ const STAGE_FIELDS = ['name', 'gridSize', 'gridColor',
   'navigationName', 'showInNavigation', 'darknessLevel', 'weatherEffect',
   'gridDistance', 'gridUnit', 'gridStyle', 'gridOpacity', 'gridType', 'padding', 'offsetX', 'offsetY',
   'ambientPlaylistId', 'width', 'height', 'flags', 'folderId', 'thumbnailUrl',
-  'transitionType', 'transitionDuration'];
+  'transitionType', 'transitionDuration', 'sceneType', 'journalId', 'journalPageId',
+  'tokenVision', 'fogExplorationMode', 'fogExploredColor', 'fogUnexploredColor', 'fogImage',
+  'globalLight', 'globalLightThreshold'];
 
 // PUT /api/stages/:id — update stage configuration
 stagesRouter.put('/:id', requireGM, async (req, res) => {

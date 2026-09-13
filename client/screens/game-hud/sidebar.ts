@@ -2692,7 +2692,7 @@ export class Sidebar extends BaseComponent {
       return;
     }
     if (type === 'note') {
-      windowManager.open(`note-config-${id}`, NoteConfigWindow, { id: `note-config-${id}`, noteId: id });
+      windowManager.open(`note-config-${id}`, NoteConfigWindow, { id: `note-config-${id}`, noteId: id, worldId });
       return;
     }
     if (type === 'drawing') {
