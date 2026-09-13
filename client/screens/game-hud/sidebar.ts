@@ -1727,6 +1727,24 @@ export class Sidebar extends BaseComponent {
         label: 'Criar Token na Cena',
         action: () => void this.createActorToken(id),
       });
+      // Elenco do Modo Teatro — quem PODE aparecer como card na cena ativa.
+      // GM-only; ver setupCinemaTray()/paintCastPortraits() em game-hud.ts.
+      if (this.userRole >= 4) {
+        const activeStage = (this.gameHud as any)?.initState?.activeStage;
+        if (activeStage) {
+          const flags = (activeStage.flags ?? {}) as { castRoster?: string[] };
+          const roster: string[] = Array.isArray(flags.castRoster) ? flags.castRoster : [];
+          const inRoster = roster.includes(id);
+          items.splice(3, 0, {
+            icon: `<i class="fa-solid fa-user-${inRoster ? 'minus' : 'plus'}"></i>`,
+            label: inRoster ? 'Remover do Elenco' : 'Adicionar ao Elenco',
+            action: () => {
+              const next = inRoster ? roster.filter((r) => r !== id) : [...roster, id];
+              wsClient.send('stage.castRoster', { stageId: activeStage.id, castRoster: next, worldId: this.worldId });
+            },
+          });
+        }
+      }
     }
     if (type === 'macro') {
       items.unshift({

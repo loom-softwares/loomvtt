@@ -810,6 +810,9 @@ Signal.listen('stage.theaterSkinChanged', (payload) => {
 Signal.listen('stage.castChanged', (payload) => {
   broadcastToAll('stage.castChanged', payload);
 });
+Signal.listen('stage.castRosterChanged', (payload) => {
+  broadcastToAll('stage.castRosterChanged', payload);
+});
 
 Signal.listen('stages.updated', (payload) => {
   broadcastToAll('stage.updated', payload.data ?? payload);
@@ -1577,6 +1580,25 @@ io.on('connection', (socket: any) => {
         stageFlags.activeCast = activeCast.filter((id: unknown) => typeof id === 'string');
         await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
         Signal.broadcast('stage.castChanged', { stageId, activeCast: stageFlags.activeCast });
+      }
+
+      // ── Elenco da cena: quem PODE aparecer (adicionado pelo GM via menu de
+      // contexto do ator na barra lateral — "Adicionar/Remover do Elenco"). É a
+      // lista de candidatos; `activeCast` (acima) é o subconjunto visível AGORA.
+      // Tirar alguém do elenco também tira do palco, pra não sobrar card órfão.
+      if (type === 'stage.castRoster') {
+        if ((auth.userRole ?? 1) < 4) return;
+        const { stageId, castRoster } = data;
+        if (!stageId || !Array.isArray(castRoster)) return;
+        const stage = await db('stages').where({ id: stageId }).first();
+        if (!stage) return;
+        let stageFlags: Record<string, any> = {};
+        try { stageFlags = stage.flags ? JSON.parse(stage.flags) : {}; } catch { /* flags corrompido, ignora */ }
+        stageFlags.castRoster = castRoster.filter((id: unknown) => typeof id === 'string');
+        const prevActive: string[] = Array.isArray(stageFlags.activeCast) ? stageFlags.activeCast : [];
+        stageFlags.activeCast = prevActive.filter((id) => stageFlags.castRoster.includes(id));
+        await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
+        Signal.broadcast('stage.castRosterChanged', { stageId, castRoster: stageFlags.castRoster, activeCast: stageFlags.activeCast });
       }
 
       // ── Context update (room re-scoping) ────────────────────────────────────
