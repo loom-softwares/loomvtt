@@ -285,6 +285,62 @@
   opacity: 1;
 }
 
+/* Modo Teatro — barras letterbox acima do canvas, abaixo do hud-layer (10001) e da
+   transição de cena (10000), então nunca competem com eles. Ficam a 0 de altura
+   fora do modo teatro; a transição de altura é o que dá o efeito de "fechar cortina". */
+.theater-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #000;
+  z-index: 500;
+  pointer-events: none;
+  transition: height 0.6s ease;
+}
+
+.theater-bar-top {
+  top: 0;
+}
+
+.theater-bar-bottom {
+  bottom: 0;
+}
+
+.game-hud.theater-mode .theater-bar {
+  height: 12vh;
+}
+
+.theater-toggle-btn {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 12, 22, 0.75);
+  color: #f0e6d3;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.theater-toggle-btn:hover {
+  background: rgba(15, 12, 22, 0.95);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.game-hud.theater-mode .theater-toggle-btn {
+  color: var(--color-accent, #d8a24a);
+  border-color: var(--color-accent, #d8a24a);
+}
+
 /* Pause overlay — Layer 3 (Overlays). Above the scene transition (10000) ON PURPOSE,
    same reason as .hud-layer: it's UI, not part of the map. */
 .hud-pause-overlay {

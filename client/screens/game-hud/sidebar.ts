@@ -2031,6 +2031,19 @@ export class Sidebar extends BaseComponent {
     }
   }
 
+  /** Public so callers outside the sidebar (theater mode toggle) can collapse/expand
+   * it programmatically — same code path as the manual collapse button. */
+  setCollapsed(value: boolean): void {
+    if (this.collapsed === value) return;
+    this.collapsed = value;
+    this.markAnimating();
+    this.element.classList.toggle('collapsed', this.collapsed);
+    const collapseBtn = this.element.querySelector('.sidebar-collapse-btn');
+    if (collapseBtn) collapseBtn.textContent = this.collapsed ? '◀' : '▶';
+    this.updateCollapsedOverlayVisibility();
+    if (!this.collapsed && this.tabs.active === 'chat') this.updateChatDisplay();
+  }
+
   protected onAction(
     action: string,
     id: string | null,
@@ -2069,18 +2082,7 @@ export class Sidebar extends BaseComponent {
       return;
     }
     if (action === 'sidebar-toggle') {
-      this.collapsed = !this.collapsed;
-      this.markAnimating();
-      // 1a. Toggle directly via classList, no this.render()
-      this.element.classList.toggle('collapsed', this.collapsed);
-      // The button's arrow is mounted in the template (line ~1210, `this.collapsed ? '◀' : '▶'`).
-      // Since this path stopped calling render() — on purpose, so as not to destroy
-      // the content mid-transition — it needs to be updated by hand, otherwise
-      // it stays pointing the wrong way until the next re-render for another reason.
-      const collapseBtn = this.element.querySelector('.sidebar-collapse-btn');
-      if (collapseBtn) collapseBtn.textContent = this.collapsed ? '◀' : '▶';
-      this.updateCollapsedOverlayVisibility();
-      if (!this.collapsed && this.tabs.active === 'chat') this.updateChatDisplay();
+      this.setCollapsed(!this.collapsed);
     } else if (this.tabs.handleAction(action)) {
       if (this.collapsed) {
         this.collapsed = false;

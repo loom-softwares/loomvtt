@@ -161,6 +161,11 @@ export class GameHudScreen {
       <div id="hud-pause-overlay" class="hud-pause-overlay" style="display:none">
         <div class="hud-pause-icon">⏳</div>
       </div>
+      <div class="theater-bar theater-bar-top"></div>
+      <div class="theater-bar theater-bar-bottom"></div>
+      <button id="theater-toggle-btn" class="theater-toggle-btn" style="display:none" title="Modo Teatro">
+        <i class="fa-solid fa-masks-theater"></i>
+      </button>
       <div class="hud-layer">
         <div class="hud-top-nav" id="hud-top-nav"></div>
         <div class="hud-toolbox" id="hud-toolbox"></div>
@@ -647,6 +652,7 @@ export class GameHudScreen {
     this.setupTileTriggers();
 
     this.setupTokenStatusHandler();
+    this.setupTheaterMode();
 
     // Listener for actor drops from canvas-manager.ts
     const mgr = this.canvasManager;
@@ -711,6 +717,36 @@ export class GameHudScreen {
     } catch (err) {
       clog.error('Falha ao soltar diário como nota', err);
     }
+  }
+
+  private theaterActive = false;
+
+  private setupTheaterMode(): void {
+    const isGM = (this.props.session.userRole ?? 1) >= 4;
+    const btn = this.container.querySelector<HTMLButtonElement>('#theater-toggle-btn');
+    if (btn) {
+      btn.style.display = isGM ? '' : 'none';
+      btn.addEventListener('click', () => {
+        const stageId = this.initState.activeStage?.id;
+        if (!stageId) return;
+        wsClient.send('stage.theater', { stageId, active: !this.theaterActive, worldId: this.props.worldId });
+      });
+    }
+
+    wsClient.on('stage.theaterToggled', (data: { stageId: string; active: boolean }) => {
+      if (data.stageId !== this.initState.activeStage?.id) return;
+      this.applyTheaterState(data.active);
+    });
+  }
+
+  /** Toggles the theater overlay for everyone — hides tactical canvas layers,
+   * shows the letterbox bars, and auto-collapses the sidebar for immersion
+   * (the collapse button stays reachable, so a sheet/item is never out of reach). */
+  private applyTheaterState(active: boolean): void {
+    this.theaterActive = active;
+    this.container.classList.toggle('theater-mode', active);
+    this.canvasManager?.setTheaterActive(active);
+    this.subcomponents.sidebar?.setCollapsed(active);
   }
 
   /** Creates an Actor/Item from a compendium entry dragged onto the canvas. */
@@ -1264,6 +1300,11 @@ export class GameHudScreen {
               soundManager.setDarkness(data.darknessLevel ?? 0);
               const isGM = (this.props.session.userRole ?? 1) >= 4;
               this.canvasManager?.setGM(isGM);
+              // `theaterActive` (live toggle) wins once it's been set; before that,
+              // `theaterDefault` (the scene-config checkbox) decides what a fresh
+              // activation opens with — joining/reconnecting mid-scene lands correctly either way.
+              const theaterFlags = (data.flags ?? {}) as { theaterActive?: boolean; theaterDefault?: boolean };
+              this.applyTheaterState(theaterFlags.theaterActive ?? theaterFlags.theaterDefault ?? false);
               this.subcomponents.stageNav?.setStages(this.initState.stages, data.stageId);
               this.canvasManager?.clearTokens();
 

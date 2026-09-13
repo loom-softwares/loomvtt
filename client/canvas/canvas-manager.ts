@@ -1217,6 +1217,26 @@ export class CanvasManager {
     this.onNoteCreate = callback;
   }
 
+  /**
+   * Modo teatro — esconde as camadas táticas (grid, tokens, paredes, luz, fog,
+   * notas) mantendo só o `bgSprite` (fundo do andar) visível. Não é uma
+   * cinemática de verdade ainda (sem cast/cards/legenda) — v1 é só "esconder
+   * o tático e mostrar o cenário", igual o storyteller-cinema faz antes de
+   * entrar retrato nenhum.
+   */
+  setTheaterActive(active: boolean): void {
+    this.gridGraphics.visible = !active;
+    this.layers.tile.visible = !active;
+    this.layers.wall.visible = !active;
+    this.layers.drawings.visible = !active;
+    this.layers.cast.visible = !active;
+    this.layers.fog.visible = !active;
+    this.layers.lighting.visible = !active;
+    this.layers.overhead.visible = !active;
+    this.layers.effects.visible = !active;
+    this.layers.interface.visible = !active;
+  }
+
   setOnTokenClick(callback: (castMember: any) => void): void {
     this.onTokenClick = callback;
   }

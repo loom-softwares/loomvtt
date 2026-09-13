@@ -1511,6 +1511,23 @@ io.on('connection', (socket: any) => {
         }
       }
 
+      // ── Theater mode toggle ──────────────────────────────────────────────────
+      // Live on/off for a scene's theater overlay — separate from `flags.theaterDefault`
+      // (the scene-config checkbox deciding what state a scene OPENS in). This is the
+      // GM flipping it mid-session; persisted so a reconnect/late-join sees the right state.
+      if (type === 'stage.theater') {
+        if ((auth.userRole ?? 1) < 4) return;
+        const { stageId, active } = data;
+        if (!stageId) return;
+        const stage = await db('stages').where({ id: stageId }).first();
+        if (!stage) return;
+        let stageFlags: Record<string, any> = {};
+        try { stageFlags = stage.flags ? JSON.parse(stage.flags) : {}; } catch { /* flags corrompido, ignora */ }
+        stageFlags.theaterActive = !!active;
+        await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
+        Signal.broadcast('stage.theaterToggled', { stageId, active: !!active });
+      }
+
       // ── Context update (room re-scoping) ────────────────────────────────────
       // Client notifies world + active stage so the socket can leave old stage
       // rooms and join the correct ones. Without this, non-GM clients stay in
