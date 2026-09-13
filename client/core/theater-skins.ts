@@ -79,11 +79,12 @@ theaterSkins.register({
 
 theaterSkins.register({
   id: 'noir',
-  name: 'Noir Detetive',
+  name: 'Noir Detective',
   author: 'Loom',
-  // Sem filter aqui de propósito: o P&B já existe como opção separada em
-  // `flags.theaterEffect` (efeito "noir"); a skin só cuida da moldura.
-  filter: '',
+  // Quem escolhe essa skin no seletor rápido espera P&B na hora — mesmo
+  // valor do efeito "noir" separado (flags.theaterEffect, só na config da
+  // cena); os dois convivem bem porque TheaterEffectFilters os concatena.
+  filter: 'grayscale(100%) contrast(1.2)',
   styles: {
     '--cinematic-bar-bg': '#1a1a1a',
     '--cinematic-bar-border': '1px solid #333333',
