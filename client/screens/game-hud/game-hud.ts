@@ -996,7 +996,10 @@ export class GameHudScreen {
     // pra usar `.game-hud.theater-mode` como ancestral.
     document.body.classList.toggle('theater-mode-active', active);
     this.canvasManager?.setTheaterActive(active);
-    this.subcomponents.sidebar?.setCollapsed(active);
+    // Só colapsa AO ENTRAR no teatro (pra não brigar com a moldura/cards).
+    // Ao sair, não força expandir de volta — se o jogador colapsou por
+    // conta própria antes ou durante, isso é escolha dele, não do teatro.
+    if (active) this.subcomponents.sidebar?.setCollapsed(true);
 
     const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
     const isGM = (this.props.session.userRole ?? 1) >= 4;
