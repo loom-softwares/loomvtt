@@ -801,6 +801,10 @@ Signal.listen('stage.activated', (payload) => {
   logger.debug('Signal stage.activated relayed to WS clients', { stageId: payload.stageId });
 });
 
+Signal.listen('stage.theaterToggled', (payload) => {
+  broadcastToAll('stage.theaterToggled', payload);
+});
+
 Signal.listen('stages.updated', (payload) => {
   broadcastToAll('stage.updated', payload.data ?? payload);
 });

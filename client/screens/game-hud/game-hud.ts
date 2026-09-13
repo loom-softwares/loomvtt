@@ -1623,6 +1623,8 @@ export class GameHudScreen {
           soundManager.setDarkness(activeStage.darknessLevel ?? 0);
           const isGM = (this.props.session.userRole ?? 1) >= 4;
           this.canvasManager?.setGM(isGM);
+          const initTheaterFlags = (activeStage.flags ?? {}) as { theaterActive?: boolean; theaterDefault?: boolean };
+          this.applyTheaterState(initTheaterFlags.theaterActive ?? initTheaterFlags.theaterDefault ?? false);
 
           for (const member of cast) {
             if (member.stageId !== activeStage.id) continue;
