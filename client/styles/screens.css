@@ -1096,6 +1096,21 @@
   gap: 0.25rem;
 }
 
+/* Ao focar pra digitar, a caixa (input expandido + barra de formatação)
+   fica mais alta que a pílula parada e pode sobrepor conteúdo atrás dela
+   (ex.: um card do modo teatro). Painel sólido com sombra deixa isso claro
+   como um flutuante de propósito, não um vazamento de CSS — em vez de tentar
+   caçar todo lugar onde a caixa poderia cobrir algo. */
+.sidebar-collapsed-editor:focus-within {
+  background: rgba(10, 8, 14, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
 .sidebar-collapsed-format-bar {
   display: none;
   align-items: center;
