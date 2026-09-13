@@ -1029,7 +1029,7 @@
    .sidebar-collapsed-format-bar fica colado no textarea, sem respiro. Alarga
    a caixa toda enquanto algo dentro dela está focado, em vez de quebrar linha. */
 .sidebar-collapsed-chat:focus-within {
-  width: min(300px, calc(100vw - 64px));
+  width: min(284px, calc(100vw - 64px));
 }
 
 .sidebar-collapsed-chat.visible {
@@ -1078,6 +1078,12 @@
   resize: none;
   outline: none;
   height: 34px;
+  /* main.css tem uma regra global `textarea { min-height: 6rem; }` — sem
+     isso ela vence o `height: 34px` acima (min-height sempre tem prioridade
+     sobre height), e a pílula "parada" na verdade sempre renderizou com
+     96px de altura, invadindo o que estivesse atrás dela. Achado medindo
+     o computed style real, não visualmente. */
+  min-height: 34px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: height var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
 }
@@ -1123,7 +1129,7 @@ body.theater-mode-active .sidebar-collapsed-editor:focus-within {
 .sidebar-collapsed-format-bar {
   display: none;
   align-items: center;
-  /* Fallback pra viewport estreito: se nem os 300px do container focado
+  /* Fallback pra viewport estreito: se nem os 284px do container focado
      (ver .sidebar-collapsed-chat:focus-within) bastarem, quebra linha em
      vez de vazar pra fora. */
   flex-wrap: wrap;
@@ -1135,11 +1141,10 @@ body.theater-mode-active .sidebar-collapsed-editor:focus-within {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
   border: 1px solid rgba(255, 255, 255, 0.02);
-  /* O container (.sidebar-collapsed-editor, flex-column) estica os filhos
-     pra largura cheia por padrão — a barra ficava com ~50px de vão morto à
-     direita do último ícone. Abraça só o próprio conteúdo. */
-  width: fit-content;
-  max-width: 100%;
+  /* Largura travada igual à do textarea embaixo (ambos esticam 100% do
+     .sidebar-collapsed-editor) — nada de fit-content deixando vão morto
+     de um lado, nem 100% de um esticado além do conteúdo do outro. */
+  box-sizing: border-box;
 }
 
 .sidebar-collapsed-editor:focus-within .sidebar-collapsed-format-bar {
