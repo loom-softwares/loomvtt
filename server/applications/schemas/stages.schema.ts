@@ -44,6 +44,7 @@ export const stagesSchema = {
     journalId: new StringField({ default: '' }),
     journalPageId: new StringField({ default: '' }),
     sceneType: new StringField({ default: 'tactical' }),
+    parentStageId: new StringField({ default: '' }),
     transitionType: new StringField({ default: 'fade' }),
     transitionDuration: new NumberField({ default: 1500 }),
     flags: new JSONField({ default: () => ({}) }),

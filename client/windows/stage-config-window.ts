@@ -54,6 +54,7 @@ interface Stage {
   transitionType?: string;
   transitionDuration?: number;
   sceneType?: string;
+  parentStageId?: string;
 }
 
 export class StageConfigWindow extends BaseWindow {
@@ -65,6 +66,7 @@ export class StageConfigWindow extends BaseWindow {
   private worldId = '';
   private levels: LevelData[] = [];
   private journals: any[] = [];
+  private parentCandidates: { id: string; name: string }[] = [];
 
   constructor(props: { stage: Stage; onSaved: () => void; initialTab?: string; worldId?: string }) {
     super({
@@ -90,6 +92,27 @@ export class StageConfigWindow extends BaseWindow {
     }
     this.fetchLevels();
     this.fetchJournals();
+    this.fetchParentCandidates();
+  }
+
+  private async fetchParentCandidates(): Promise<void> {
+    try {
+      const stages = await api.get<{ id: string; name: string; sceneType?: string }[]>('/stages');
+      this.parentCandidates = stages.filter((s) => s.sceneType === 'map' && s.id !== this.stage.id);
+      this.renderParentStageList();
+    } catch (err) {
+      console.error('Failed to fetch parent stage candidates:', err);
+    }
+  }
+
+  private renderParentStageList(): void {
+    const select = this.element.querySelector('select[name="parentStageId"]') as HTMLSelectElement;
+    if (!select) return;
+    let html = `<option value="">${t('stageConfig.noParentStage') || '— Nenhuma —'}</option>`;
+    for (const s of this.parentCandidates) {
+      html += `<option value="${s.id}" ${this.stage.parentStageId === s.id ? 'selected' : ''}>${s.name}</option>`;
+    }
+    select.innerHTML = html;
   }
 
   /**
@@ -232,7 +255,7 @@ export class StageConfigWindow extends BaseWindow {
       <div class="banner-spacer"></div>
       <div class="tabs">
         <button class="tab-button active" data-action="tab-basics" data-tab="basics"><i class="fa-solid fa-image"></i> ${t('stageConfig.tabBasics')}</button>
-        <button class="tab-button" data-action="tab-levels" data-tab="levels"><i class="fa-solid fa-layer-group"></i> ${t('stageConfig.tabLevels')}</button>
+        ${this.stage.sceneType !== 'map' ? `<button class="tab-button" data-action="tab-levels" data-tab="levels"><i class="fa-solid fa-layer-group"></i> ${t('stageConfig.tabLevels')}</button>` : ''}
         <button class="tab-button" data-action="tab-grid" data-tab="grid"><i class="fa-solid fa-border-all"></i> ${t('stageConfig.tabGrid')}</button>
         <button class="tab-button" data-action="tab-visibility" data-tab="visibility"><i class="fa-solid fa-eye"></i> ${t('stageConfig.tabVisibility')}</button>
         <button class="tab-button" data-action="tab-env" data-tab="env"><i class="fa-solid fa-sun"></i> ${t('stageConfig.tabEnv')}</button>
@@ -256,9 +279,27 @@ export class StageConfigWindow extends BaseWindow {
             <div class="form-fields">
               <select name="sceneType">
                 <option value="tactical" ${(this.stage.sceneType || 'tactical') === 'tactical' ? 'selected' : ''}>${t('stageConfig.sceneTypeTactical') || 'Tático (grid/combate)'}</option>
-                <option value="narrative" ${this.stage.sceneType === 'narrative' ? 'selected' : ''}>${t('stageConfig.sceneTypeNarrative') || 'Narrativo (teatro)'}</option>
                 <option value="map" ${this.stage.sceneType === 'map' ? 'selected' : ''}>${t('stageConfig.sceneTypeMap') || 'Mapa (waypoints)'}</option>
               </select>
+            </div>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.parentStage') || 'Cena Pai (mapa)'}</label>
+            <div class="form-fields">
+              <select name="parentStageId">
+                <option value="">${t('stageConfig.noParentStage') || '— Nenhuma —'}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group-horizontal">
+            <label>${t('stageConfig.theaterDefault') || 'Abrir em Modo Teatro'}</label>
+            <div class="form-fields">
+              <label class="form-checkbox-label" style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="flags.theaterDefault" ${(this.stage.flags as any)?.theaterDefault ? 'checked' : ''} />
+                ${t('stageConfig.theaterDefaultDesc') || 'A cena já abre em modo teatro (o GM desliga quando a ação começa).'}
+              </label>
             </div>
           </div>
 
@@ -821,6 +862,7 @@ export class StageConfigWindow extends BaseWindow {
         journalId: data.journalId,
         journalPageId: data.journalPageId,
         sceneType: data.sceneType || 'tactical',
+        parentStageId: data.parentStageId || '',
         transitionType: data.transitionType,
         transitionDuration: parseInt(data.transitionDuration),
         flags: {
@@ -829,6 +871,7 @@ export class StageConfigWindow extends BaseWindow {
           initialY: parseInt(data['flags.initialY'] || '0'),
           initialZoom: parseFloat(data['flags.initialZoom'] || '1'),
           initialLevel: data['flags.initialLevel'] || this.stage.flags?.initialLevel,
+          theaterDefault: !!data['flags.theaterDefault'],
         }
       });
 

@@ -3019,6 +3019,49 @@
   flex-shrink: 0;
 }
 
+/* Cena tipo "mapa" funciona como cabeçalho de pasta — mais baixa que uma cena
+   de verdade, clique expande/recolhe as cenas filhas em vez de ativar a cena. */
+.stage-card-map {
+  height: 44px;
+}
+
+.stage-card-map .stage-card-overlay {
+  min-height: 100%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+.stage-card-map .fa-chevron-right,
+.stage-card-map .fa-chevron-down {
+  font-size: 10px;
+  color: #c9c2b5;
+  flex-shrink: 0;
+}
+
+.stage-card-group-children {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  margin-left: 6px;
+}
+
+.stage-card-group-empty {
+  font-size: 11px;
+  color: rgba(240, 230, 211, 0.5);
+  padding: 8px 4px;
+  font-style: italic;
+}
+
+.stage-card-no-thumb {
+  background-color: #17131f;
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
 
 /* Compêndio — acento violeta, pra diferenciar de Atores e Cenas */
 .sidebar-compendium-item {

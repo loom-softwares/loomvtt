@@ -140,7 +140,7 @@ const STAGE_FIELDS = ['name', 'gridSize', 'gridColor',
   'navigationName', 'showInNavigation', 'darknessLevel', 'weatherEffect',
   'gridDistance', 'gridUnit', 'gridStyle', 'gridOpacity', 'gridType', 'padding', 'offsetX', 'offsetY',
   'ambientPlaylistId', 'width', 'height', 'flags', 'folderId', 'thumbnailUrl',
-  'transitionType', 'transitionDuration', 'sceneType', 'journalId', 'journalPageId',
+  'transitionType', 'transitionDuration', 'sceneType', 'parentStageId', 'journalId', 'journalPageId',
   'tokenVision', 'fogExplorationMode', 'fogExploredColor', 'fogUnexploredColor', 'fogImage',
   'globalLight', 'globalLightThreshold'];
 

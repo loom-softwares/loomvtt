@@ -139,6 +139,8 @@ interface StageSummary {
   backgroundUrl?: string;
   thumbUrl?: string;
   folderId?: string;
+  sceneType?: string;
+  parentStageId?: string;
 }
 
 interface ItemSummary {
@@ -300,6 +302,7 @@ export class Sidebar extends BaseComponent {
    * it combines various data types into a single list (not an EntityType/renderGroupedList). */
   private placeablesQuery = '';
   private stages: StageSummary[] = [];
+  private expandedMapStages = new Set<string>();
   private stagesLoaded = false;
   private items: ItemSummary[] = [];
   private itemsLoaded = false;
@@ -2234,6 +2237,10 @@ export class Sidebar extends BaseComponent {
       else if (type === 'compendium') void this.createCompendiumPack(id);
     } else if (action === 'open-stage' && id) {
       this.openEntity('stage', id);
+    } else if (action === 'toggle-stage-group' && id) {
+      if (this.expandedMapStages.has(id)) this.expandedMapStages.delete(id);
+      else this.expandedMapStages.add(id);
+      this.render();
     } else if (action === 'create-stage') {
       this.createStage();
     } else if (action === 'open-item' && id) {
@@ -2919,13 +2926,39 @@ export class Sidebar extends BaseComponent {
   }
 
   private renderStageListGrouped(): string {
-    return this.renderGroupedList(this.stageFolders, this.stages, (s) => this.renderStageItem(s), 'stage');
+    // Cenas-filhas (com parentStageId) só aparecem aninhadas dentro do card da
+    // cena-mapa que as agrupa — sem esse filtro apareceriam duas vezes: solta
+    // no topo da lista E dentro do grupo do mapa.
+    const topLevelStages = this.stages.filter((s) => !s.parentStageId);
+    return this.renderGroupedList(this.stageFolders, topLevelStages, (s) => this.renderStageItem(s), 'stage');
   }
 
   private renderStageItem(s: StageSummary): string {
+    const bg = s.thumbUrl || s.backgroundUrl;
+    const bgStyle = bg ? `background-image:url('${this.escapeHtml(bg as string)}')` : '';
+    const noThumbClass = bg ? '' : ' stage-card-no-thumb';
+
+    if (s.sceneType === 'map') {
+      const expanded = this.expandedMapStages.has(s.id);
+      const children = this.stages.filter((c) => c.parentStageId === s.id);
+      const childrenHtml = expanded
+        ? `<div class="stage-card-group-children">${children.map((c) => this.renderStageItem(c)).join('') || '<div class="stage-card-group-empty">Nenhuma cena filha ainda</div>'}</div>`
+        : '';
+      return `
+        <div class="stage-card stage-card-map${noThumbClass} ${s.isActive ? 'active' : ''}" data-action="toggle-stage-group" data-entity-type="stage" data-id="${s.id}" title="Clique para expandir • Botão direito para configurar" draggable="true"
+             style="${bgStyle}">
+          <div class="stage-card-overlay">
+            <i class="fa-solid fa-chevron-${expanded ? 'down' : 'right'}"></i>
+            <span class="stage-card-name">${this.escapeHtml(s.name)}</span>
+            ${s.isActive ? '<span class="stage-card-active-dot"></span>' : ''}
+          </div>
+        </div>
+        ${childrenHtml}`;
+    }
+
     return `
-      <div class="stage-card ${s.isActive ? 'active' : ''}" data-action="open-stage" data-entity-type="stage" data-id="${s.id}" title="Clique para configurar • Botão direito para mais opções" draggable="true"
-           style="${s.thumbUrl || s.backgroundUrl ? `background-image:url('${this.escapeHtml((s.thumbUrl || s.backgroundUrl) as string)}')` : ''}">
+      <div class="stage-card${noThumbClass} ${s.isActive ? 'active' : ''}" data-action="open-stage" data-entity-type="stage" data-id="${s.id}" title="Clique para configurar • Botão direito para mais opções" draggable="true"
+           style="${bgStyle}">
         <div class="stage-card-overlay">
           <span class="stage-card-name">${this.escapeHtml(s.name)}</span>
           ${s.isActive ? '<span class="stage-card-active-dot"></span>' : ''}
