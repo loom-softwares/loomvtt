@@ -236,6 +236,7 @@ stagesRouter.post('/:id/activate', requireGM, async (req, res) => {
       weatherEffect: stage.weatherEffect || 'none',
       transitionType: stage.transitionType || 'none',
       transitionDuration: stage.transitionDuration ?? 1500,
+      flags: stage.flags || {},
     };
 
     Signal.broadcast('stage.activated', activationPayload);

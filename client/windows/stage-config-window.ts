@@ -704,9 +704,9 @@ export class StageConfigWindow extends BaseWindow {
         return;
       }
       const view = activeCM.getCameraView();
-      const xInput = this.element?.querySelector('[name="initialX"]') as HTMLInputElement;
-      const yInput = this.element?.querySelector('[name="initialY"]') as HTMLInputElement;
-      const zoomInput = this.element?.querySelector('[name="initialZoom"]') as HTMLInputElement;
+      const xInput = this.element?.querySelector('[name="flags.initialX"]') as HTMLInputElement;
+      const yInput = this.element?.querySelector('[name="flags.initialY"]') as HTMLInputElement;
+      const zoomInput = this.element?.querySelector('[name="flags.initialZoom"]') as HTMLInputElement;
 
       if (xInput) xInput.value = view.x.toString();
       if (yInput) yInput.value = view.y.toString();
@@ -812,9 +812,10 @@ export class StageConfigWindow extends BaseWindow {
         transitionDuration: parseInt(data.transitionDuration),
         flags: {
           ...(this.stage.flags || {}),
-          initialX: parseInt(data.initialX || '0'),
-          initialY: parseInt(data.initialY || '0'),
-          initialZoom: parseFloat(data.initialZoom || '1'),
+          initialX: parseInt(data['flags.initialX'] || '0'),
+          initialY: parseInt(data['flags.initialY'] || '0'),
+          initialZoom: parseFloat(data['flags.initialZoom'] || '1'),
+          initialLevel: data['flags.initialLevel'] || this.stage.flags?.initialLevel,
         }
       });
 
