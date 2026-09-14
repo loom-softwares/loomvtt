@@ -289,8 +289,8 @@ export class EditWorldWindow extends BaseWindow {
       showToast('Mundo atualizado com sucesso', 'success');
       windowManager.close(this.options.id);
       this.onSaved();
-    } catch (e) {
-      showToast('Erro ao atualizar mundo', 'error');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao atualizar mundo', 'error');
     }
   }
 

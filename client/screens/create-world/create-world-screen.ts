@@ -271,9 +271,9 @@ export class CreateWorldScreen extends BaseComponent {
 
   private pickSystem(id: string | null): void {
     if (!id) return;
-    this.selectedSystem = id;
+    this.selectedSystem = this.selectedSystem === id ? '' : id;
     this.element.querySelectorAll<HTMLElement>('.wf-sys').forEach((el) => {
-      el.setAttribute('aria-pressed', String(el.getAttribute('data-id') === id));
+      el.setAttribute('aria-pressed', String(el.getAttribute('data-id') === this.selectedSystem));
     });
     this.destravarTrilho();
     this.atualizarPrevia();

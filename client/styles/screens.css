@@ -294,11 +294,15 @@
   inset: 0;
   z-index: 500;
   pointer-events: none;
-  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 }
 
 .game-hud.theater-mode .theater-layer {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 
 .theater-bg {
@@ -589,7 +593,10 @@
    ferramentas de desenho fica, o GM pode continuar editando. */
 .game-hud.theater-mode .hud-top-nav,
 .game-hud.theater-mode .hud-hotbar {
-  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s !important;
 }
 
 /* OBS Browser Source capture views (?capture=canvas / ?capture=chat) — same
@@ -665,7 +672,7 @@
   z-index: 50;
   flex-shrink: 0;
   border: none;
-  transition: right 0.3s ease;
+  transition: right 0.3s ease, opacity 0.35s ease, visibility 0s linear;
 }
 
 .hud-top-nav::-webkit-scrollbar {
@@ -893,6 +900,7 @@
 .macro-slots-container,
 .hud-hotbar {
   gap: var(--hud-bar-gap);
+  transition: opacity 0.35s ease, visibility 0s linear;
 }
 
 .tool-help {
