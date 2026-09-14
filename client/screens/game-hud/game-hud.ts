@@ -18,6 +18,7 @@ import { LoomDialog } from '../../windows/loom-dialog.js';
 import { copyTextToClipboard } from '../../lib/clipboard.js';
 import { mediaHtml } from '../../core/media-helper.js';
 import { theaterSkins, DEFAULT_THEATER_SKIN } from '../../core/theater-skins.js';
+import { TheaterFog } from './theater-fog.js';
 import { WallConfigWindow } from '../../windows/wall-config-window.js';
 import { DrawingConfigWindow } from '../../windows/drawing-config-window.js';
 import { NoiseConfigWindow } from '../../windows/noise-config-window.js';
@@ -73,12 +74,14 @@ const OWNERSHIP_OWNER = 3;
  * entirely separate from CanvasManager's tactical weather, so the two can never mix. */
 const TheaterEffectFilters: Record<string, string> = {
   none: '',
-  noir: 'grayscale(100%) contrast(1.2)',
-  blood: 'sepia(50%) hue-rotate(-50deg) saturate(3)',
-  fog: '',
+  noir: 'grayscale(100%) contrast(1.3) brightness(0.92)',
+  blood: 'saturate(2) contrast(1.15) hue-rotate(-20deg)',
+  fog: 'contrast(0.94) brightness(0.95)',
 };
 
 export class GameHudScreen {
+  public static activeInstance: GameHudScreen | null = null;
+  private theaterFogAnim: TheaterFog | null = null;
   private loadingProgress = new LoadingProgress();
   private canvasManager: CanvasManager | null = null;
   private tokenHud: TokenHud | null = null;
@@ -146,11 +149,16 @@ export class GameHudScreen {
     private container: HTMLElement,
     private props: { session: any; worldId: string },
   ) {
+    GameHudScreen.activeInstance = this;
     // Populates the global context BEFORE any system script runs (bootstrap() loads
     // the addons/rulesets right below) — without this `Loom.user`/`Loom.settings` (world scope) had
     // no way of knowing which world/session they were in.
     gameContext.set(this.props.worldId, this.props.session);
     this.render();
+  }
+
+  public isTheaterActive(): boolean {
+    return this.theaterActive;
   }
 
   /** Keeps gameContext.cast up to date — that's where `Loom.user.targets` (main.ts) reads from,
@@ -188,6 +196,7 @@ export class GameHudScreen {
       <div id="theater-layer" class="theater-layer">
         <div id="theater-bg" class="theater-bg"></div>
         <div id="theater-fog" class="theater-fog" hidden></div>
+        <div id="theater-fx-overlay" class="theater-fx-overlay"></div>
         <div id="theater-portraits" class="theater-portraits"></div>
         <div class="theater-bar theater-bar-top"></div>
         <div class="theater-bar theater-bar-bottom"></div>
@@ -198,6 +207,12 @@ export class GameHudScreen {
         </button>
         <select id="theater-skin-select" class="theater-control-select" style="display:none" title="${t('gameHud.theaterSkinSelect')}">
           ${theaterSkins.list().map((s) => `<option value="${s.id}">${s.nameKey ? t(s.nameKey) : s.name}</option>`).join('')}
+        </select>
+        <select id="theater-effect-select" class="theater-control-select" style="display:none" title="${t('gameHud.theaterEffectSelect')}">
+          <option value="none">${t('stageConfig.theaterEffectNone') || 'Nenhum'}</option>
+          <option value="fog">${t('stageConfig.theaterEffectFog') || 'Neblina'}</option>
+          <option value="noir">${t('stageConfig.theaterEffectNoir') || 'Noir'}</option>
+          <option value="blood">${t('stageConfig.theaterEffectBlood') || 'Sangue'}</option>
         </select>
         <button id="cast-tray-btn" class="theater-control-btn" style="display:none" title="${t('gameHud.castTray')}">
           <i class="fa-solid fa-people-group"></i>
@@ -800,7 +815,25 @@ export class GameHudScreen {
       const stage = this.initState.activeStage;
       if (!stage || data.stageId !== stage.id) return;
       // Grava na cópia em memória pra um toggle posterior já abrir com a skin nova.
-      stage.flags = { ...((stage.flags ?? {}) as Record<string, any>), theaterSkin: data.skinId };
+      const flags = typeof stage.flags === 'string' ? JSON.parse(stage.flags) : (stage.flags ?? {});
+      stage.flags = { ...flags, theaterSkin: data.skinId };
+      if (this.theaterActive) this.paintTheaterSkin();
+    });
+
+    const effectSelect = this.container.querySelector<HTMLSelectElement>('#theater-effect-select');
+    if (effectSelect) {
+      effectSelect.addEventListener('change', () => {
+        const stageId = this.initState.activeStage?.id;
+        if (!stageId) return;
+        wsClient.send('stage.theaterEffect', { stageId, effect: effectSelect.value, worldId: this.props.worldId });
+      });
+    }
+
+    wsClient.on('stage.theaterEffectChanged', (data: { stageId: string; effect: string }) => {
+      const stage = this.initState.activeStage;
+      if (!stage || data.stageId !== stage.id) return;
+      const flags = typeof stage.flags === 'string' ? JSON.parse(stage.flags) : (stage.flags ?? {});
+      stage.flags = { ...flags, theaterEffect: data.effect };
       if (this.theaterActive) this.paintTheaterSkin();
     });
 
@@ -1041,14 +1074,17 @@ export class GameHudScreen {
     if (active) this.subcomponents.sidebar?.setCollapsed(true);
 
     const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
+    const effectSelect = this.container.querySelector<HTMLSelectElement>('#theater-effect-select');
     const isGM = (this.props.session.userRole ?? 1) >= 4;
     if (select) select.style.display = active && isGM ? '' : 'none';
+    if (effectSelect) effectSelect.style.display = active && isGM ? '' : 'none';
 
     const trayBtn = this.container.querySelector<HTMLButtonElement>('#cast-tray-btn');
     if (trayBtn) trayBtn.style.display = active && isGM ? '' : 'none';
     if (!active) {
       const tray = this.container.querySelector<HTMLElement>('#cast-tray');
       if (tray) tray.hidden = true;
+      this.theaterFogAnim?.stop();
     }
 
     if (!active) return;
@@ -1059,17 +1095,24 @@ export class GameHudScreen {
    * Separado de `applyTheaterState` porque a troca de skin ao vivo precisa
    * repintar sem religar o modo. */
   private paintTheaterSkin(): void {
-    const flags = (this.initState.activeStage?.flags ?? {}) as {
+    const rawFlags = this.initState.activeStage?.flags;
+    const flags = (typeof rawFlags === 'string'
+      ? (() => { try { return JSON.parse(rawFlags); } catch { return {}; } })()
+      : (rawFlags ?? {})) as {
       cinematicBg?: string;
       theaterSkin?: string;
       theaterEffect?: string;
     };
+    const effectId = flags.theaterEffect || 'none';
     const bgUrl = flags.cinematicBg || this.canvasManager?.getCurrentBackgroundUrl?.() || '';
     const skinId = flags.theaterSkin || DEFAULT_THEATER_SKIN;
     const skin = theaterSkins.get(skinId);
 
     const select = this.container.querySelector<HTMLSelectElement>('#theater-skin-select');
     if (select && select.value !== skinId) select.value = skinId;
+
+    const effectSelect = this.container.querySelector<HTMLSelectElement>('#theater-effect-select');
+    if (effectSelect && effectSelect.value !== effectId) effectSelect.value = effectId;
 
     const layer = this.container.querySelector<HTMLElement>('#theater-layer');
     const bgEl = this.container.querySelector<HTMLElement>('#theater-bg');
@@ -1079,14 +1122,26 @@ export class GameHudScreen {
 
     if (bgEl) {
       bgEl.innerHTML = bgUrl ? mediaHtml(bgUrl, { className: 'theater-bg-media' }) : '';
-      const effectFilter = TheaterEffectFilters[flags.theaterEffect || 'none'] || '';
+      const effectFilter = TheaterEffectFilters[effectId] || '';
       const skinFilter = skin?.filter || '';
       bgEl.style.filter = [skinFilter, effectFilter].filter(Boolean).join(' ');
     }
 
-    if (fogEl) fogEl.hidden = flags.theaterEffect !== 'fog';
+    if (fogEl) {
+      const isFog = effectId === 'fog';
+      fogEl.hidden = !isFog;
+      if (isFog) {
+        if (!this.theaterFogAnim) {
+          this.theaterFogAnim = new TheaterFog(fogEl);
+        }
+        this.theaterFogAnim.start();
+      } else {
+        this.theaterFogAnim?.stop();
+      }
+    }
 
     if (layer) {
+      layer.setAttribute('data-effect', effectId);
       // Limpa as vars da skin anterior antes de aplicar as novas — senão uma skin
       // sem `--cinematic-bar-border` herdaria a borda da skin anterior.
       for (const s of theaterSkins.list()) {
@@ -1569,6 +1624,12 @@ export class GameHudScreen {
             // what was already there. After the merge the two would always be equal.
             const prevStage: any = { ...this.initState.activeStage };
             this.initState.activeStage = { ...this.initState.activeStage, ...data };
+            if (data.flags) {
+              const parsedFlags = typeof data.flags === 'string'
+                ? (() => { try { return JSON.parse(data.flags); } catch { return {}; } })()
+                : data.flags;
+              this.initState.activeStage.flags = parsedFlags;
+            }
             try {
               // `applyStage` is a COMPLETE reconstruction of the scene: reloads levels,
               // remakes layers, redraws everything and reevaluates which level is active.
@@ -1614,6 +1675,11 @@ export class GameHudScreen {
               await this.refreshStageLevels(this.initState.activeStage.id);
             } catch (err) {
               clog.error('Falha ao aplicar cena atualizada', err);
+            }
+
+            // Atualiza o modo teatro (skin, efeito, neblina, fundo) ao vivo sem precisar de reload
+            if (this.theaterActive) {
+              this.paintTheaterSkin();
             }
           }
         });

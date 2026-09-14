@@ -909,7 +909,9 @@ export class StageConfigWindow extends BaseWindow {
         transitionType: data.transitionType,
         transitionDuration: parseInt(data.transitionDuration),
         flags: {
-          ...(this.stage.flags || {}),
+          ...(typeof this.stage.flags === 'string'
+            ? (() => { try { return JSON.parse(this.stage.flags); } catch { return {}; } })()
+            : (this.stage.flags || {})),
           initialX: parseInt(data['flags.initialX'] || '0'),
           initialY: parseInt(data['flags.initialY'] || '0'),
           initialZoom: parseFloat(data['flags.initialZoom'] || '1'),

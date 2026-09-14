@@ -1306,6 +1306,7 @@
         "streamLinksError": "Error generating stream links",
         "theaterToggle": "Theater Mode",
         "theaterSkinSelect": "Theater Mode Skin",
+        "theaterEffectSelect": "Theater Mode Effect",
         "castTray": "Cast on Stage",
         "streamLinkBtn": "Generate Stream Links (OBS)"
     },

@@ -807,6 +807,9 @@ Signal.listen('stage.theaterToggled', (payload) => {
 Signal.listen('stage.theaterSkinChanged', (payload) => {
   broadcastToAll('stage.theaterSkinChanged', payload);
 });
+Signal.listen('stage.theaterEffectChanged', (payload) => {
+  broadcastToAll('stage.theaterEffectChanged', payload);
+});
 Signal.listen('stage.castChanged', (payload) => {
   broadcastToAll('stage.castChanged', payload);
 });
@@ -1564,6 +1567,22 @@ io.on('connection', (socket: any) => {
         stageFlags.theaterSkin = skinId;
         await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
         Signal.broadcast('stage.theaterSkinChanged', { stageId, skinId });
+      }
+
+      // ── Troca rápida de efeito do modo teatro ────────────────────────────────
+      // Seletor ao vivo de efeito (neblina, noir, sangue...); persiste em
+      // flags.theaterEffect e retransmite para sincronizar em todas as telas.
+      if (type === 'stage.theaterEffect') {
+        if ((auth.userRole ?? 1) < 4) return;
+        const { stageId, effect } = data;
+        if (!stageId || typeof effect !== 'string') return;
+        const stage = await db('stages').where({ id: stageId }).first();
+        if (!stage) return;
+        let stageFlags: Record<string, any> = {};
+        try { stageFlags = stage.flags ? JSON.parse(stage.flags) : {}; } catch { /* flags corrompido, ignora */ }
+        stageFlags.theaterEffect = effect;
+        await db('stages').where({ id: stageId }).update({ flags: JSON.stringify(stageFlags) });
+        Signal.broadcast('stage.theaterEffectChanged', { stageId, effect });
       }
 
       // ── Cinema Tray: quais atores aparecem como card no modo teatro ─────────

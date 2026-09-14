@@ -1436,6 +1436,7 @@
         "streamLinksError": "Erro ao gerar links de stream",
         "theaterToggle": "Modo Teatro",
         "theaterSkinSelect": "Moldura do Modo Teatro",
+        "theaterEffectSelect": "Efeito do Modo Teatro",
         "castTray": "Elenco em Cena",
         "streamLinkBtn": "Gerar Links de Stream (OBS)"
     },
