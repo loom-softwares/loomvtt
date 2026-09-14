@@ -22,6 +22,7 @@ export const compendium_entriesSchema = {
     imgUrl: new StringField({ default: '' }),
     ownership: new JSONField({ default: () => ({}) }),
     data: new JSONField({ default: () => ({}) }),
+    folderId: new StringField({ default: '' }),
     createdAt: new StringField(),
     updatedAt: new StringField(),
   },

@@ -8,14 +8,21 @@ import { requireAuth, requireWorldMatch } from '../middleware/auth.js';
 export const foldersRouter = Router();
 foldersRouter.use(requireAuth, requireWorldMatch);
 
-const FOLDER_TYPES = ['actor', 'item', 'scene', 'journal', 'roll-table', 'macro', 'deck', 'playlist', 'compendium'];
+// 'compendium-source-owner': a cor salva do agrupador "Sistema/Addon" na sidebar (packs
+// de fonte, não pertence a nenhum mundo). `name` é o ownerName (ex.: "SRD5E") — não tem
+// `parent`/hierarquia real, é só um jeito de reaproveitar a tabela pra guardar 1 cor por
+// grupo em vez de criar uma tabela nova só pra isso.
+const FOLDER_TYPES = ['actor', 'item', 'scene', 'journal', 'roll-table', 'macro', 'deck', 'playlist', 'compendium', 'compendium-entry', 'compendium-source-owner'];
 
-// GET /api/folders?worldId= — list folders
+// GET /api/folders?worldId=&packId= — list folders
 foldersRouter.get('/', async (req, res) => {
   try {
     const filter: Record<string, any> = {};
     if (req.query.worldId) filter.worldId = req.query.worldId as string;
     if (req.query.type) filter.type = req.query.type as string;
+    // Só faz sentido (e só é aplicado) pra type === 'compendium-entry' — os demais tipos
+    // nunca gravam packId, então filtrar por ele pra eles devolveria uma lista vazia.
+    if (req.query.packId) filter.packId = req.query.packId as string;
     filter.orderBy = 'createdAt';
     filter.orderDir = 'asc';
     const folders = await FoldersDocument.find(filter);
@@ -40,7 +47,7 @@ foldersRouter.get('/:id', async (req, res) => {
 
 // POST /api/folders — create
 foldersRouter.post('/', async (req, res) => {
-  const { worldId = 'world-1', name, type, parent = '', sorting = 'm', color = '' } = req.body;
+  const { worldId = 'world-1', name, type, packId = '', parent = '', sorting = 'm', color = '' } = req.body;
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return res.status(400).json({ error: 'Field "name" is required.' });
@@ -48,15 +55,21 @@ foldersRouter.post('/', async (req, res) => {
   if (!FOLDER_TYPES.includes(type)) {
     return res.status(400).json({ error: `Field "type" must be one of: ${FOLDER_TYPES.join(', ')}` });
   }
+  if (type === 'compendium-entry' && !packId) {
+    return res.status(400).json({ error: 'Field "packId" is required for type "compendium-entry".' });
+  }
 
   // Validate parent exists if provided
   if (parent) {
     const parentFolder = await FoldersDocument.findById(parent);
     if (!parentFolder) return res.status(400).json({ error: 'Parent folder not found' });
     if (parentFolder.type !== type) return res.status(400).json({ error: 'Parent folder type mismatch' });
+    if (type === 'compendium-entry' && parentFolder.packId !== packId) {
+      return res.status(400).json({ error: 'Parent folder belongs to a different compendium pack' });
+    }
   }
 
-  const newFolder = { worldId, name: name.trim(), type, parent, sorting, color };
+  const newFolder = { worldId, name: name.trim(), type, packId, parent, sorting, color };
 
   try {
     const result = await FoldersDocument.create(newFolder);
@@ -127,6 +140,7 @@ foldersRouter.delete('/:id', async (req, res) => {
     const tableMap: Record<string, string> = {
       actor: 'cast', item: 'items', scene: 'stages',
       journal: 'journals', 'roll-table': 'roll_tables', macro: 'macros',
+      'compendium-entry': 'compendium_entries',
     };
     const docTable = tableMap[existing.type];
     if (docTable && await db.schema.hasTable(docTable)) {

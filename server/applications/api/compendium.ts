@@ -6,6 +6,7 @@ import { Signal } from '../signals/index.js';
 import { getDataRoot } from '../database/db.js';
 import { Compendium_packsDocument } from '../schemas/compendium_packs.schema.js';
 import { Compendium_entriesDocument } from '../schemas/compendium_entries.schema.js';
+import { FoldersDocument } from '../schemas/folders.schema.js';
 import logger from '../utils/logger.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requirePermission, requireGM } from '../middleware/permissions.js';
@@ -35,7 +36,8 @@ async function loadPackWithEntries(packId: string): Promise<any | null> {
   const pack = await Compendium_packsDocument.findById<any>(packId);
   if (!pack) return null;
   const entries = await Compendium_entriesDocument.find<any>({ packId, orderBy: 'sortOrder' });
-  return { ...pack, entries };
+  const folders = await FoldersDocument.find<any>({ type: 'compendium-entry', packId, orderBy: 'createdAt', orderDir: 'asc' });
+  return { ...pack, entries, folders };
 }
 
 // GET /api/compendium — list all packs for a world
@@ -374,6 +376,7 @@ compendiumRouter.put('/:id', requirePermission('compendiumEdit'), async (req, re
           imgUrl: entry.imgUrl || '',
           ownership: entry.ownership || {},
           data: entry.data || {},
+          folderId: entry.folderId || '',
         });
       }
     }

@@ -1045,7 +1045,15 @@ export abstract class BaseWindow {
 
   private attachHandlers(): void {
     attachDataActionDispatch(this.element, (action, id, target) => {
-      void this._onAction(action, id, target);
+      // `_onAction` is async (awaits `_onBeforeClose`/`_onBeforeSubmit`, guards that a
+      // subclass could override to reject). Firing it with a bare `void` swallowed any
+      // rejection silently — a guard that throws (instead of resolving false) left the
+      // window permanently stuck open with zero trace in the console, indistinguishable
+      // from "the click just didn't register". Logging here doesn't change behavior when
+      // nothing throws; it just stops failures from vanishing.
+      this._onAction(action, id, target).catch((err) => {
+        clog.error(`[WINDOW] action "${action}" failed on window "${this.options.id}": ${err instanceof Error ? (err.stack || err.message) : String(err)}`);
+      });
     });
   }
 

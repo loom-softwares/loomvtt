@@ -11,12 +11,21 @@ import { windowManager } from '../core/window-manager.js';
 import { api } from '../core/api.js';
 import { showToast } from '../components/toast.js';
 import { t } from '../lib/i18n.js';
-import { showPrompt, showConfirm } from '../components/dialog.js';
+import { showPrompt, showConfirm, showColorDialog, showFolderEditDialog } from '../components/dialog.js';
 import { nextDefaultName } from '../lib/unique-name.js';
 import { LoomDialog } from './loom-dialog.js';
 import { ItemCreateWindow } from './item-create-window.js';
 import { openCompendiumEntrySheet } from '../core/compendium-entry-dispatch.js';
 import { wsClient } from '../core/ws-client.js';
+import { showContextMenu, ContextMenuItem } from '../components/context-menu.js';
+import { folderColorStyles } from '../lib/folder-color.js';
+
+interface CompendiumFolder {
+  id: string;
+  name: string;
+  parent: string;
+  color: string;
+}
 
 interface CompendiumPack {
   id: string;
@@ -24,6 +33,7 @@ interface CompendiumPack {
   name: string;
   type: string;
   entries: any[];
+  folders: CompendiumFolder[];
 }
 
 // Pack-level types (`pack.type`) only — these are LoomVTT's own core document
@@ -58,6 +68,7 @@ export class CompendiumPackWindow extends BaseWindow {
   private loading = true;
   private searchQuery = '';
   private unsubscribeCompendium: (() => void) | null = null;
+  private expandedFolders = new Set<string>();
 
   constructor(private props: { packId: string; packType?: string }) {
     super({
@@ -83,6 +94,16 @@ export class CompendiumPackWindow extends BaseWindow {
         this.searchQuery = target.value.toLowerCase();
         this.rerenderBody();
       }
+    });
+
+    // Mesmo padrão de compendium-source-window.ts: um listener delegado só pra
+    // pasta, via `data-folder-id` (nome próprio pra não colidir com
+    // `data-entry-id`/`data-id`, já usados pelas entries nesta mesma lista).
+    this.element.addEventListener('contextmenu', (e: MouseEvent) => {
+      const header = (e.target as HTMLElement).closest<HTMLElement>('[data-folder-id]');
+      if (!header) return;
+      e.preventDefault();
+      this.showFolderContextMenu(header.getAttribute('data-folder-id')!, e);
     });
 
     // Drag FROM this window onto sidebar/canvas
@@ -249,6 +270,9 @@ export class CompendiumPackWindow extends BaseWindow {
             <i class="fa-solid fa-book-medical"></i>
             ${t('sidebar.compendiumAddEntry')}
           </button>
+          <button class="btn cp-dir-btn-icon" data-action="create-folder" title="Criar pasta">
+            <i class="fa-solid fa-folder-plus"></i>
+          </button>
           <button class="btn cp-dir-btn-icon" data-action="export-pack" title="${t('sidebar.compendiumExport')}">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
           </button>
@@ -275,17 +299,80 @@ export class CompendiumPackWindow extends BaseWindow {
 
         <!-- Entry list -->
         <div class="cp-dir-list">
-          ${filtered.length === 0
+          ${p.entries.length === 0
         ? `<div class="cp-empty">
                  <i class="fa-solid fa-box-open"></i>
                  <span>${t('sidebar.emptyCompendium')}</span>
                </div>`
-        : filtered.map((entry: any) => this.entryTemplate(entry)).join('')
+        : this.searchQuery
+          ? filtered.map((entry: any) => this.entryTemplate(entry)).join('')
+          : this.renderEntryTree()
       }
         </div>
 
       </div>
     `;
+  }
+
+  /** Fora de busca: agrupa por pasta (mesmo padrão de compendium-source-window.ts —
+   * sem ícone de pasta, só chevron + nome + contador). Durante busca, a busca
+   * atravessa as pastas (lista plana), igual ao pack de fonte. */
+  private renderEntryTree(): string {
+    if (!this.pack) return '';
+    const folders = this.pack.folders || [];
+    const byFolder = new Map<string, any[]>();
+    const loose: any[] = [];
+    for (const entry of this.pack.entries) {
+      const fid = entry.folderId || '';
+      if (fid && folders.some((f) => f.id === fid)) {
+        if (!byFolder.has(fid)) byFolder.set(fid, []);
+        byFolder.get(fid)!.push(entry);
+      } else {
+        loose.push(entry);
+      }
+    }
+    const subfoldersByParent = new Map<string, CompendiumFolder[]>();
+    const rootFolders: CompendiumFolder[] = [];
+    for (const f of folders) {
+      if (f.parent) {
+        if (!subfoldersByParent.has(f.parent)) subfoldersByParent.set(f.parent, []);
+        subfoldersByParent.get(f.parent)!.push(f);
+      } else {
+        rootFolders.push(f);
+      }
+    }
+
+    const renderFolder = (f: CompendiumFolder): string => {
+      const expanded = this.expandedFolders.has(f.id);
+      const children = subfoldersByParent.get(f.id) || [];
+      const entries = byFolder.get(f.id) || [];
+      const count = entries.length + children.reduce((n, c) => n + this.countInFolder(c.id, byFolder, subfoldersByParent), 0);
+      const { folderStyle, textStyle } = folderColorStyles(f.color);
+      return `
+        <div class="sidebar-folder">
+          <div class="sidebar-folder-header" data-action="toggle-pack-folder" data-id="${f.id}" data-folder-id="${f.id}" ${folderStyle}>
+            <i class="fa-solid fa-chevron-${expanded ? 'down' : 'right'} sidebar-folder-caret" ${textStyle}></i>
+            <span class="sidebar-folder-name" ${textStyle}>${this.esc(f.name)}</span>
+            <span class="sidebar-folder-count" ${textStyle}>${count}</span>
+          </div>
+          ${expanded ? `<div class="sidebar-folder-items">
+            ${children.map((c) => renderFolder(c)).join('')}
+            ${entries.map((entry) => this.entryTemplate(entry)).join('')}
+          </div>` : ''}
+        </div>
+      `;
+    };
+
+    return `
+      ${rootFolders.map((f) => renderFolder(f)).join('')}
+      ${loose.map((entry) => this.entryTemplate(entry)).join('')}
+    `;
+  }
+
+  private countInFolder(folderId: string, byFolder: Map<string, any[]>, subfoldersByParent: Map<string, CompendiumFolder[]>): number {
+    const own = (byFolder.get(folderId) || []).length;
+    const children = subfoldersByParent.get(folderId) || [];
+    return own + children.reduce((n, c) => n + this.countInFolder(c.id, byFolder, subfoldersByParent), 0);
   }
 
   private entryTemplate(entry: any): string {
@@ -317,6 +404,92 @@ export class CompendiumPackWindow extends BaseWindow {
     else if (action === 'save') { void this.save(); }
     else if (action === 'edit-entry' && id !== null) { this.editEntryById(id); }
     else if (action === 'remove-entry' && id !== null) { void this.removeEntryById(id); }
+    else if (action === 'create-folder') { void this.createFolder(); }
+    else if (action === 'toggle-pack-folder' && id !== null) {
+      if (this.expandedFolders.has(id)) this.expandedFolders.delete(id);
+      else this.expandedFolders.add(id);
+      this.rerenderBody();
+    }
+  }
+
+  // ── Pastas ─────────────────────────────────────────────────────────────────
+
+  private async createFolder(parent = ''): Promise<void> {
+    if (!this.pack) return;
+    const existingNames = this.pack.folders.map((f) => f.name);
+    const name = nextDefaultName('Nova Pasta', existingNames);
+    try {
+      const folder = await api.post<CompendiumFolder>('/folders', {
+        worldId: this.pack.worldId,
+        name,
+        type: 'compendium-entry',
+        packId: this.pack.id,
+        parent,
+      });
+      this.pack.folders = [...this.pack.folders, folder];
+      this.expandedFolders.add(folder.id);
+      this.rerenderBody();
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao criar pasta', 'error');
+    }
+  }
+
+  private showFolderContextMenu(folderId: string, event: MouseEvent): void {
+    if (!this.pack) return;
+    const folder = this.pack.folders.find((f) => f.id === folderId);
+    if (!folder) return;
+
+    const items: ContextMenuItem[] = [
+      {
+        icon: '<i class="fa-solid fa-folder-plus"></i>',
+        label: 'Criar Subpasta',
+        action: () => void this.createFolder(folderId),
+      },
+      {
+        icon: '<i class="fa-solid fa-pen-to-square"></i>',
+        label: 'Editar Pasta',
+        action: async () => {
+          const result = await showFolderEditDialog('Editar Pasta', folder.name, folder.color || '');
+          if (result === null) return;
+          const { name, color } = result;
+
+          try {
+            const updated = await api.put<CompendiumFolder>(`/folders/${folderId}`, { name: name.trim(), color: color.trim() });
+            if (!this.pack) return;
+            this.pack.folders = this.pack.folders.map((f) => (f.id === folderId ? updated : f));
+            this.rerenderBody();
+            showToast('Pasta atualizada', 'success');
+          } catch (e: any) {
+            showToast(e?.message || 'Erro ao atualizar pasta', 'error');
+          }
+        },
+      },
+      { divider: true, label: '' },
+      {
+        icon: '<i class="fa-solid fa-trash"></i>',
+        label: 'Excluir Pasta',
+        danger: true,
+        action: async () => {
+          const confirmed = await showConfirm('Excluir Pasta', `Deseja mesmo excluir a pasta "${folder.name}"? As entries nela ficam soltas fora de pastas.`);
+          if (!confirmed) return;
+          try {
+            await api.delete(`/folders/${folderId}`);
+            if (!this.pack) return;
+            const grandparent = this.pack.folders.find((f) => f.id === folderId)?.parent || '';
+            this.pack.folders = this.pack.folders
+              .filter((f) => f.id !== folderId)
+              .map((f) => (f.parent === folderId ? { ...f, parent: grandparent } : f));
+            this.pack.entries = this.pack.entries.map((en: any) => (en.folderId === folderId ? { ...en, folderId: '' } : en));
+            this.expandedFolders.delete(folderId);
+            this.rerenderBody();
+            showToast('Pasta excluída', 'success');
+          } catch (e: any) {
+            showToast(e?.message || 'Erro ao excluir pasta', 'error');
+          }
+        },
+      },
+    ];
+    showContextMenu(event, items);
   }
 
   // ── Add ────────────────────────────────────────────────────────────────────

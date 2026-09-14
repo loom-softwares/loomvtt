@@ -497,10 +497,19 @@ async function ensureWorldSchema(db: Knex): Promise<void> {
       t.string('worldId').notNullable();
       t.string('name').notNullable();
       t.string('type').notNullable();
+      t.string('packId').defaultTo('');
       t.string('parent').defaultTo('');
       t.string('sorting').defaultTo('m');
       t.string('color').defaultTo('');
       t.timestamps(true, true, true);
+    });
+  }
+  // Self-heal pra worlds criados antes do type 'compendium-entry' existir — `packId`
+  // escopa a pasta a UM pack de compêndio (entries dentro dele), distinto do type
+  // 'compendium' que organiza a lista de packs do mundo inteiro.
+  if (!(await db.schema.hasColumn('folders', 'packId'))) {
+    await db.schema.alterTable('folders', (t) => {
+      t.string('packId').notNullable().defaultTo('');
     });
   }
 
@@ -1038,7 +1047,14 @@ async function ensureWorldSchema(db: Knex): Promise<void> {
       t.string('imgUrl').defaultTo('');
       t.text('ownership').defaultTo('{}');
       t.text('data').defaultTo('{}');
+      t.string('folderId').defaultTo('');
       t.timestamps(true, true, true);
+    });
+  }
+  // Self-heal pra worlds criados antes das pastas dentro de um pack existirem.
+  if (!(await db.schema.hasColumn('compendium_entries', 'folderId'))) {
+    await db.schema.alterTable('compendium_entries', (t) => {
+      t.string('folderId').notNullable().defaultTo('');
     });
   }
 

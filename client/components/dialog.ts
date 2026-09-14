@@ -173,6 +173,58 @@ export function showColorDialog(
   });
 }
 
+/** Dialog padrão de edição de pasta (nome + cor juntos, um só diálogo) — usado por toda
+ * pasta do core (atores/itens/diários/cenas/decks/macros/playlists, packs de compêndio
+ * do mundo, packs de fonte de addon/ruleset, e o agrupador Sistema/Addon da sidebar).
+ * Substitui o fluxo antigo de dois diálogos sequenciais (showPrompt + showColorDialog). */
+export function showFolderEditDialog(
+  title: string,
+  defaultName: string,
+  defaultColor?: string,
+): Promise<{ name: string; color: string } | null> {
+  const colorValue = defaultColor || '#ffffff';
+  const container = document.createElement('div');
+  container.style.cssText = 'display:flex;flex-direction:column;gap:0.75rem;box-sizing:border-box;width:100%;';
+  container.innerHTML = `
+    <div class="form-group">
+      <label>Nome da pasta</label>
+      <input type="text" name="folder-name" value="${escDialogHtml(defaultName)}" style="width:100%;box-sizing:border-box;background:var(--color-bg-surface);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:4px;padding:0.35rem 0.5rem;">
+    </div>
+    <div class="form-group">
+      <label>Cor da pasta</label>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <input type="color" name="color-input" value="${colorValue}" style="width: 50px; height: 40px; border: none; border-radius: 4px;">
+        <input type="text" name="color-text" value="${colorValue}" placeholder="#ffffff" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+      </div>
+    </div>
+  `;
+
+  const nameInput = container.querySelector<HTMLInputElement>('[name="folder-name"]')!;
+  const colorInput = container.querySelector<HTMLInputElement>('[name="color-input"]')!;
+  const colorText = container.querySelector<HTMLInputElement>('[name="color-text"]')!;
+  colorInput.addEventListener('input', () => { colorText.value = colorInput.value; });
+  colorText.addEventListener('input', () => {
+    if (/^#[0-9A-F]{6}$/i.test(colorText.value)) colorInput.value = colorText.value;
+  });
+  setTimeout(() => nameInput.focus(), 50);
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      container.closest('.loom-dialog')?.querySelector<HTMLButtonElement>('[data-action="confirm"]')?.click();
+    }
+  });
+
+  return LoomDialog.wait({
+    window: { title },
+    content: container,
+    width: 400,
+    buttons: [
+      { action: 'cancel', label: t('common.cancel'), variant: 'ghost', callback: () => null },
+      { action: 'confirm', label: t('common.confirm'), variant: 'primary', callback: () => ({ name: nameInput.value.trim(), color: colorInput.value }) },
+    ],
+  });
+}
+
 /** Dialog de slider numérico (range input). */
 export function showRangeDialog(
   title: string,

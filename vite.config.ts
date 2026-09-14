@@ -44,6 +44,11 @@ export default defineConfig({
           server.watcher.on('change', (file) => {
             if (file.endsWith('.css')) {
               server.ws.send({ type: 'custom', event: 'loom:css-update', data: { file } });
+            } else if (file.endsWith('.sqlite') || file.endsWith('.sqlite-journal') || file.endsWith('.sqlite-wal') || file.endsWith('.sqlite-shm')) {
+              // Escrita normal de gameplay (editar/travar um pack, criar pasta, mover
+              // entry) — o app já propaga isso ao vivo via WebSocket (Signal.broadcast).
+              // Recarregar a página inteira aqui derrubava o estado do usuário toda vez
+              // que ele mexia no compêndio.
             } else {
               console.log(`[Addon Watcher] Modificado: ${file}`);
               server.ws.send({ type: 'full-reload' });

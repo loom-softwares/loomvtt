@@ -25,9 +25,10 @@ import { t } from '../lib/i18n.js';
 import { openCompendiumEntrySheet } from '../core/compendium-entry-dispatch.js';
 import { gameContext } from '../core/game-context.js';
 import { showContextMenu, ContextMenuItem } from '../components/context-menu.js';
-import { showPrompt, showColorDialog, showConfirm } from '../components/dialog.js';
+import { showPrompt, showColorDialog, showConfirm, showFolderEditDialog } from '../components/dialog.js';
 import { nextDefaultName } from '../lib/unique-name.js';
 import { folderColorStyles } from '../lib/folder-color.js';
+import { wsClient } from '../core/ws-client.js';
 
 interface SourceEntrySummary {
   id: string;
@@ -98,6 +99,13 @@ export class CompendiumSourceWindow extends BaseWindow {
    * é leve, sem `data`). Pré-busca no mousedown (antes do drag de fato
    * começar) e cacheia aqui, pra ter o payload pronto quando dragstart disparar. */
   private entryCache = new Map<string, any>();
+  /** Lock/pastas são compartilhados por todo mundo que usa este pack — outro
+   * cliente (ou a própria sidebar) pode travar/destravar ou mexer nas pastas
+   * enquanto esta janela está aberta. Sem isso, `this.locked` ficava preso no
+   * valor lido no mount() e o botão de criar pasta continuava escondido
+   * mesmo depois do GM destravar em outro lugar. */
+  private unsubscribeLockChanged: (() => void) | null = null;
+  private unsubscribeFolderChanged: (() => void) | null = null;
 
   constructor(private props: { sourceId: string; worldId: string }) {
     super({
@@ -165,7 +173,21 @@ export class CompendiumSourceWindow extends BaseWindow {
       e.dataTransfer.effectAllowed = 'copy';
     });
 
+    this.unsubscribeLockChanged = wsClient.on('compendium.sourceLockChanged', (data: any) => {
+      if (data.sourceId !== this.props.sourceId) return;
+      void this.load();
+    });
+    this.unsubscribeFolderChanged = wsClient.on('compendium.sourceFolderChanged', (data: any) => {
+      if (data.sourceId !== this.props.sourceId) return;
+      void this.load();
+    });
+
     await this.load();
+  }
+
+  protected onClose(): void {
+    this.unsubscribeLockChanged?.();
+    this.unsubscribeFolderChanged?.();
   }
 
   private async buildDragPayload(entryId: string): Promise<Record<string, any> | null> {
@@ -377,10 +399,9 @@ export class CompendiumSourceWindow extends BaseWindow {
         icon: '<i class="fa-solid fa-pen-to-square"></i>',
         label: 'Editar Pasta',
         action: async () => {
-          const name = await showPrompt('Editar Pasta', 'Nome da pasta', folder.name);
-          if (name === null) return;
-          const color = await showColorDialog('Editar Pasta', 'Cor da pasta', folder.color || '');
-          if (color === null) return;
+          const result = await showFolderEditDialog('Editar Pasta', folder.name, folder.color || '');
+          if (result === null) return;
+          const { name, color } = result;
 
           try {
             const updated = await api.put<SourceFolder>(

@@ -3,7 +3,7 @@ import { BaseComponent } from '../../components/base-component.js';
 import { DEFAULT_PORTRAIT_URL } from '../../lib/default-portrait.js';
 import { Tabs } from '../../components/tabs.js';
 import { showToast } from '../../components/toast.js';
-import { showConfirm, showPrompt, showSelectDialog, showColorDialog, showRangeDialog, wait } from '../../components/dialog.js';
+import { showConfirm, showPrompt, showSelectDialog, showColorDialog, showRangeDialog, showFolderEditDialog, wait } from '../../components/dialog.js';
 import { systemRegistry } from '../../core/system-registry.js';
 import { copyTextToClipboard } from '../../lib/clipboard.js';
 import { nextDefaultName } from '../../lib/unique-name.js';
@@ -20,6 +20,7 @@ import { sheetCatalog } from '../../core/sheet-catalog.js';
 import { resolveSheetClass } from '../../core/sheet-resolver.js';
 import { applyUiOverride } from '../../core/ui-override.js';
 import { UserManagementWindow } from '../../windows/user-management-window.js';
+import { UserPermissionsWindow } from '../../windows/user-permissions-window.js';
 import { OwnershipConfigWindow } from '../../windows/ownership-config-window.js';
 import { InviteLinksWindow } from '../../windows/invite-links-window.js';
 import { WorldConfigLiteWindow } from '../../windows/world-config-lite-window.js';
@@ -131,6 +132,7 @@ interface FolderSummary {
   type: string;
   parent?: string;
   color?: string;
+  packId?: string;
 }
 
 interface StageSummary {
@@ -332,6 +334,12 @@ export class Sidebar extends BaseComponent {
   private compendiumPacksLoaded = false;
   private compendiumSources: CompendiumSourceSummary[] = [];
   private compendiumSourcesLoaded = false;
+  /** Cor salva do agrupador "Sistema/Addon" (`renderCompendiumSourceGroups`) — o grupo em
+   * si é calculado na hora a partir de `compendiumSources` (sem pasta real), mas a cor
+   * escolhida pelo GM precisa persistir em algum lugar: uma linha de `folders`
+   * (type='compendium-source-owner') por ownerName, criada só quando alguém edita a cor. */
+  private compendiumSourceGroupFolders: FolderSummary[] = [];
+  private compendiumSourceGroupFoldersLoaded = false;
   private combat: any = null;
   private combatLoaded = false;
   private liveVisionOnDrag = true;
@@ -522,6 +530,10 @@ export class Sidebar extends BaseComponent {
       if (entityType === 'folder') {
         const folderType = item.getAttribute('data-folder-type') as 'actor' | 'item' | 'journal';
         this.showFolderContextMenu(id, folderType, e);
+      } else if (entityType === 'compendium-source') {
+        this.showCompendiumSourceContextMenu(id, e);
+      } else if (entityType === 'compendium-source-group') {
+        void this.showCompendiumSourceGroupContextMenu(id, e);
       } else {
         this.showEntityContextMenu(entityType as EntityType, id, e);
       }
@@ -740,6 +752,14 @@ export class Sidebar extends BaseComponent {
         this.compendiumSources = [];
       }
       this.compendiumSourcesLoaded = true;
+    }
+    if (!this.compendiumSourceGroupFoldersLoaded) {
+      try {
+        this.compendiumSourceGroupFolders = await api.get<FolderSummary[]>(`/folders?worldId=${this.worldId}&type=compendium-source-owner`);
+      } catch {
+        this.compendiumSourceGroupFolders = [];
+      }
+      this.compendiumSourceGroupFoldersLoaded = true;
     }
   }
 
@@ -3068,11 +3088,16 @@ export class Sidebar extends BaseComponent {
     return [...byOwner.entries()].map(([ownerName, packs]) => {
       const expanded = this.expandedSourceGroups.has(ownerName);
       const ownerType = packs[0].ownerType === 'ruleset' ? 'Sistema' : 'Addon';
+      // `packId` (campo sem uso real pra esse type) guarda o ownerName ESTÁVEL — a
+      // chave de agrupamento nunca muda mesmo se o GM editar o `name` exibido (alias).
+      const savedFolder = this.compendiumSourceGroupFolders.find((f) => (f.packId || f.name) === ownerName);
+      const { folderStyle, textStyle } = folderColorStyles(savedFolder?.color);
+      const displayName = savedFolder?.name || ownerName;
       return `
         <div class="sidebar-folder">
-          <div class="sidebar-folder-header" data-action="toggle-source-group" data-id="${ownerName}" title="${ownerType}">
-            <span class="sidebar-folder-name">${this.escapeHtml(ownerName)}</span>
-            <span class="sidebar-folder-count">${packs.length}</span>
+          <div class="sidebar-folder-header ${folderStyle ? 'has-color' : ''}" data-action="toggle-source-group" data-entity-type="compendium-source-group" data-id="${this.escapeHtml(ownerName)}" title="${ownerType}" ${folderStyle}>
+            <span class="sidebar-folder-name" ${textStyle}>${this.escapeHtml(displayName)}</span>
+            <span class="sidebar-folder-count" ${textStyle}>${packs.length}</span>
           </div>
           ${expanded ? `<div class="sidebar-folder-items">${packs.map((s) => this.renderCompendiumSourceItem(s)).join('')}</div>` : ''}
         </div>
@@ -3119,7 +3144,7 @@ export class Sidebar extends BaseComponent {
     const lockAction = isRealGM ? 'data-action="toggle-compendium-lock"' : '';
 
     return `
-      <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-id="${s.sourceId}" style="${bgStyle}">
+      <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-entity-type="compendium-source" data-id="${s.sourceId}" style="${bgStyle}">
         <div class="sidebar-compendium-banner-overlay"></div>
         <div class="sidebar-compendium-banner-content">
           <div class="sidebar-compendium-banner-title">
@@ -3360,10 +3385,9 @@ export class Sidebar extends BaseComponent {
         icon: '<i class="fa-solid fa-pen-to-square"></i>',
         label: 'Editar Pasta',
         action: async () => {
-          const name = await showPrompt('Editar Pasta', 'Nome da pasta', folder.name);
-          if (name === null) return;
-          const color = await showColorDialog('Editar Pasta', 'Cor da pasta', folder.color || '');
-          if (color === null) return;
+          const result = await showFolderEditDialog('Editar Pasta', folder.name, folder.color || '');
+          if (result === null) return;
+          const { name, color } = result;
 
           try {
             await api.put(`/folders/${folderId}`, {
@@ -3804,13 +3828,79 @@ export class Sidebar extends BaseComponent {
     if (!source) return;
     const nextLocked = !source.locked;
     try {
-      await api.post(`/compendium/sources/${sourceId}/lock`, { locked: nextLocked });
+      await api.post(`/compendium/sources/${encodeURIComponent(sourceId)}/lock`, { locked: nextLocked });
       source.locked = nextLocked;
       this.render();
       showToast(nextLocked ? 'Compêndio travado' : 'Compêndio destravado — editável agora', 'success');
     } catch (e: any) {
       showToast(e?.message || 'Erro ao mudar o cadeado do compêndio', 'error');
     }
+  }
+
+  /** Menu de contexto (clique direito) do pack de fonte, GM real (`userRole >= 4`,
+   * igual ao gate do ícone de cadeado — travar/destravar afeta todo mundo que usa o
+   * addon/ruleset, não é uma permissão delegável). Quem pode VER/editar este e os
+   * demais compêndios continua sendo o `compendiumEdit` do mundo (já existe, gateia
+   * `GET /sources` no servidor) — o item "Gerenciar Permissões" abre a janela real
+   * em vez de reinventar um seletor de cargo aqui. */
+  private showCompendiumSourceContextMenu(sourceId: string, event: MouseEvent): void {
+    if (this.userRole < 4) return;
+    const source = this.compendiumSources.find((s) => s.sourceId === sourceId);
+    if (!source) return;
+    const items: ContextMenuItem[] = [
+      {
+        icon: `<i class="fa-solid ${source.locked ? 'fa-lock-open' : 'fa-lock'}"></i>`,
+        label: source.locked ? 'Destravar Pack' : 'Travar Pack',
+        action: () => void this.toggleCompendiumSourceLock(sourceId),
+      },
+      {
+        icon: '<i class="fa-solid fa-user-shield"></i>',
+        label: 'Gerenciar Permissões',
+        action: () => windowManager.open(`user-permissions-${this.worldId}`, UserPermissionsWindow, { worldId: this.worldId }),
+      },
+    ];
+    showContextMenu(event, items);
+  }
+
+  /** Menu de contexto do cabeçalho "Sistema/Addon" (`renderCompendiumSourceGroups`) —
+   * só tem cor pra editar, porque o grupo em si não é uma pasta real (é calculado a
+   * partir do ownerName dos packs de fonte, não tem hierarquia/rename fazendo sentido:
+   * o nome É o nome do addon/ruleset). Cria a linha em `folders` no primeiro uso. */
+  private async showCompendiumSourceGroupContextMenu(ownerName: string, event: MouseEvent): Promise<void> {
+    if (this.userRole < 4) return;
+    const existing = this.compendiumSourceGroupFolders.find((f) => (f.packId || f.name) === ownerName);
+    const items: ContextMenuItem[] = [
+      {
+        icon: '<i class="fa-solid fa-pen-to-square"></i>',
+        label: 'Editar Pasta',
+        action: async () => {
+          const result = await showFolderEditDialog('Editar Pasta', existing?.name || ownerName, existing?.color || '');
+          if (result === null) return;
+          const { name, color } = result;
+          try {
+            if (existing) {
+              await api.put(`/folders/${existing.id}`, { name: name.trim(), color: color.trim() });
+              existing.name = name.trim();
+              existing.color = color.trim();
+            } else {
+              const created = await api.post<FolderSummary>('/folders', {
+                worldId: this.worldId,
+                name: name.trim(),
+                type: 'compendium-source-owner',
+                packId: ownerName,
+                color: color.trim(),
+              });
+              this.compendiumSourceGroupFolders.push(created);
+            }
+            this.render();
+            showToast('Pasta atualizada', 'success');
+          } catch (e: any) {
+            showToast(e?.message || 'Erro ao atualizar pasta', 'error');
+          }
+        },
+      },
+    ];
+    showContextMenu(event, items);
   }
 
   private async nextTurn(): Promise<void> {
