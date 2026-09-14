@@ -1,0 +1,16 @@
+Package: loomvtt
+Version: 1.0.0-alpha
+Architecture: amd64
+Maintainer: Rob Oliveira
+Depends: nodejs (>= 18), npm
+Filename: https://github.com/loom-softwares/loomvtt/releases/download/v1.0.0-alpha/loomvtt_1.0.0-alpha_amd64.deb
+Size: 552235656
+MD5sum: 263fd0141a8f446d5cbc2e9fcb7a7ed6
+SHA1: 4d662c6fbe69e605a659f951a8fba53f3b6a6de4
+SHA256: e0a10866e024e023d62ae65cd120918487c15ed37c9d696e41f01d48345a12a4
+Section: web
+Priority: optional
+Description: LoomVTT server
+ Installs the LoomVTT server as a systemd service, running headless on
+ port 3000. Data lives in /var/lib/loomvtt.
+
