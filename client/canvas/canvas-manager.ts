@@ -1780,7 +1780,13 @@ export class CanvasManager {
     }, 80);
 
     this.app.stage.on('pointerdown', (event: FederatedPointerEvent) => {
-      if (event.button === 2 || event.button === 1) {
+      // No mouse, arrastar a cena é botão direito/meio — que não existe no
+      // toque. Sem este caminho o mapa fica imóvel no celular. Um dedo na área
+      // VAZIA do mapa (`target === stage`) arrasta a cena; um dedo em cima de
+      // um token continua arrastando o token, porque aí o alvo não é o stage.
+      // Custo pro desktop: zero — a condição exige `pointerType === 'touch'`.
+      const touchPan = event.pointerType === 'touch' && event.target === this.app.stage;
+      if (event.button === 2 || event.button === 1 || touchPan) {
         panStart = {
           x: event.global.x,
           y: event.global.y,
@@ -2040,6 +2046,86 @@ export class CanvasManager {
 
     this.soundsContainer = new Container();
     this.layers.interface.addChild(this.soundsContainer);
+
+    // ─── GESTOS DE TOQUE (dois dedos) ────────────────────────────────────────
+    // Nível DOM, não PixiJS: multi-touch aqui é mais previsível do que passar
+    // pelo hit-test do federated event, e o alvo não importa — dois dedos são
+    // sempre câmera, nunca token.
+    //
+    // Tudo abaixo sai fora com `pointerType !== 'touch'`, então nenhum caminho
+    // de mouse muda. `handleWheel` (zoom do desktop) fica intocado de
+    // propósito: ele dá zoom na origem do stage, e mudá-lo pra zoom ancorado
+    // alteraria a sensação do zoom no desktop.
+    //
+    // Depende de `touch-action: none` no #game-canvas (client/styles/responsive.css):
+    // sem isso o navegador consome o gesto como scroll/zoom de página e os
+    // pointermove param de chegar no meio do movimento.
+    const touchPointers = new Map<number, { x: number; y: number }>();
+    let pinch: { dist: number; cx: number; cy: number } | null = null;
+
+    /** Zoom ancorado: mantém sob os dedos o mesmo ponto do mundo que estava lá
+     * antes de escalar. Sem isso o mapa foge do dedo durante o pinch. */
+    const zoomAnchored = (nextZoom: number, screenX: number, screenY: number): void => {
+      const stage = this.app.stage;
+      const clamped = Math.max(this.MIN_ZOOM, Math.min(this.MAX_ZOOM, nextZoom));
+      const worldX = (screenX - stage.x) / stage.scale.x;
+      const worldY = (screenY - stage.y) / stage.scale.y;
+      stage.scale.set(clamped);
+      stage.x = screenX - worldX * clamped;
+      stage.y = screenY - worldY * clamped;
+      this.zoomLevel = clamped;
+    };
+
+    canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touchPointers.size === 2) {
+        // O segundo dedo cancela o pan de um dedo, senão os dois competem
+        // pela posição do stage e a cena treme.
+        panStart = null;
+        const [a, b] = [...touchPointers.values()];
+        pinch = {
+          dist: Math.hypot(a.x - b.x, a.y - b.y),
+          cx: (a.x + b.x) / 2,
+          cy: (a.y + b.y) / 2,
+        };
+      }
+    });
+
+    canvas.addEventListener(
+      'pointermove',
+      (e: PointerEvent) => {
+        if (e.pointerType !== 'touch' || !touchPointers.has(e.pointerId)) return;
+        touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (touchPointers.size !== 2 || !pinch) return;
+        e.preventDefault();
+
+        const [a, b] = [...touchPointers.values()];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        const cx = (a.x + b.x) / 2;
+        const cy = (a.y + b.y) / 2;
+
+        if (pinch.dist > 0 && dist > 0) {
+          const rect = canvas.getBoundingClientRect();
+          zoomAnchored(this.zoomLevel * (dist / pinch.dist), cx - rect.left, cy - rect.top);
+        }
+        // Dois dedos também arrastam: a cena acompanha o centroide.
+        this.app.stage.x += cx - pinch.cx;
+        this.app.stage.y += cy - pinch.cy;
+
+        pinch = { dist, cx, cy };
+      },
+      { passive: false },
+    );
+
+    const endTouchPointer = (e: PointerEvent): void => {
+      if (e.pointerType !== 'touch') return;
+      touchPointers.delete(e.pointerId);
+      if (touchPointers.size < 2) pinch = null;
+    };
+    canvas.addEventListener('pointerup', endTouchPointer);
+    canvas.addEventListener('pointercancel', endTouchPointer);
+    // ─────────────────────────────────────────────────────────────────────────
 
     canvas.addEventListener('wheel', this.handleWheel, { passive: false });
     window.addEventListener('resize', this.handleResize);
