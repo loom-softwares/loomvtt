@@ -599,7 +599,9 @@
     "gameConfig": {
         "title": "Configurações do Jogo",
         "categoryCore": "Core",
+        "categorySystem": "Sistema",
         "categoryIntegrations": "Integrações",
+        "systemNoConfigHint": "Este sistema de regras ainda não definiu opções de configuração adicionais ou utiliza os parâmetros padrão.",
         "liveVisionDrag": "Visão ao Arrastar Token",
         "liveVisionDragDesc": "Recalcula o campo de visão em tempo real enquanto o token é arrastado.",
         "lightAnimations": "Animação de Luzes",

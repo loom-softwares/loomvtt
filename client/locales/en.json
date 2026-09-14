@@ -599,7 +599,9 @@
     "gameConfig": {
         "title": "Game Configuration",
         "categoryCore": "Core",
+        "categorySystem": "System",
         "categoryIntegrations": "Integrations",
+        "systemNoConfigHint": "This ruleset has not registered additional configuration options or uses system defaults.",
         "liveVisionDrag": "Token Vision on Drag",
         "liveVisionDragDesc": "Recalculates field of view in real-time while token is being dragged.",
         "lightAnimations": "Light Animations",

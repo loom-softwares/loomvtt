@@ -419,6 +419,42 @@
   white-space: nowrap;
 }
 
+.settings-system-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  margin-top: 1rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 15%, transparent);
+}
+
+.settings-system-empty i {
+  font-size: 2.5rem;
+  color: var(--color-accent);
+  opacity: 0.65;
+  margin-bottom: 0.85rem;
+}
+
+.settings-system-empty-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.settings-system-empty-desc {
+  font-size: 0.85rem;
+  max-width: 440px;
+  line-height: 1.45;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
 /* ── Keybind Config ───────────────────────── */
 .keybind-list {
   padding: var(--spacing-xs) 0 var(--spacing-md);

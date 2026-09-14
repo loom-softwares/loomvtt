@@ -61,7 +61,13 @@ class ClientSystemRegistry {
   }
 
   getActive(): LoomSystem | undefined {
-    return this.activeSystemId ? this.systems.get(this.activeSystemId) : undefined;
+    if (this.activeSystemId && this.systems.has(this.activeSystemId)) {
+      return this.systems.get(this.activeSystemId);
+    }
+    if (this.systems.size === 1) {
+      return Array.from(this.systems.values())[0];
+    }
+    return undefined;
   }
 
   setActive(id: string): void {

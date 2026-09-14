@@ -173,36 +173,34 @@ export class GameConfigWindow extends BaseWindow {
       },
     ];
 
-    const activeSystem = systemRegistry.getActive();
+    const activeSystem = systemRegistry.getActive() ?? systemRegistry.getAll()[0];
     if (activeSystem) {
       const systemSettings = settingsRegistry.getDefinitionsForModule(activeSystem.id);
-      if (systemSettings.length > 0) {
-        this.categories.push({
-          id: 'system',
-          label: activeSystem.title,
-          toggles: systemSettings.map((s) => {
-            const kind = normalizeType(s.type); // 'boolean' | 'string' | 'number'
-            const controlType: ConfigToggle['type'] = s.choices
-              ? 'select'
-              : kind === 'boolean'
-                ? 'checkbox'
-                : kind === 'number'
-                  ? 'number'
-                  : 'text';
-            return {
-              action: `system-setting-${s.module}-${s.key}`,
-              label: s.name || s.key,
-              desc: s.hint || '',
-              type: controlType,
-              options: s.choices ? Object.entries(s.choices).map(([value, label]) => ({ value, label })) : undefined,
-              get: () => settingsRegistry.get(s.module, s.key),
-              set: (val: boolean) => { void settingsRegistry.set(s.module, s.key, val); },
-              getValue: () => String(settingsRegistry.get(s.module, s.key) ?? ''),
-              setValue: (val: string) => { void settingsRegistry.set(s.module, s.key, kind === 'number' ? Number(val) : val); },
-            };
-          }),
-        });
-      }
+      this.categories.push({
+        id: 'system',
+        label: activeSystem.title || t('gameConfig.categorySystem'),
+        toggles: systemSettings.map((s) => {
+          const kind = normalizeType(s.type); // 'boolean' | 'string' | 'number'
+          const controlType: ConfigToggle['type'] = s.choices
+            ? 'select'
+            : kind === 'boolean'
+              ? 'checkbox'
+              : kind === 'number'
+                ? 'number'
+                : 'text';
+          return {
+            action: `system-setting-${s.module}-${s.key}`,
+            label: s.name || s.key,
+            desc: s.hint || '',
+            type: controlType,
+            options: s.choices ? Object.entries(s.choices).map(([value, label]) => ({ value, label })) : undefined,
+            get: () => settingsRegistry.get(s.module, s.key),
+            set: (val: boolean) => { void settingsRegistry.set(s.module, s.key, val); },
+            getValue: () => String(settingsRegistry.get(s.module, s.key) ?? ''),
+            setValue: (val: string) => { void settingsRegistry.set(s.module, s.key, kind === 'number' ? Number(val) : val); },
+          };
+        }),
+      });
     }
 
     // Add categories for any active addons/modules that registered settings
@@ -299,7 +297,13 @@ export class GameConfigWindow extends BaseWindow {
         </div>
         <div class="settings-content">
           <div class="settings-group-title">${category.label}</div>
-          ${toggles.length === 0 ? `<p class="hint">${t('gameConfig.noSettingsFound')}</p>` : toggles.map((toggle) => `
+          ${category.id === 'system' && category.toggles.length === 0 ? `
+            <div class="settings-system-empty">
+              <i class="fa-solid fa-dice-d20"></i>
+              <div class="settings-system-empty-title">${category.label}</div>
+              <p class="settings-system-empty-desc">${t('gameConfig.systemNoConfigHint')}</p>
+            </div>
+          ` : toggles.length === 0 ? `<p class="hint">${t('gameConfig.noSettingsFound')}</p>` : toggles.map((toggle) => `
             <div class="settings-row">
               <div class="settings-row-top">
                 <span class="settings-row-label">${toggle.label}</span>
