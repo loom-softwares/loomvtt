@@ -999,7 +999,15 @@ export class GameHudScreen {
    * a code turns into a session the first time each URL loads. Each link gets
    * its own labeled row + copy button instead of a wall of text with the URLs
    * run together. */
+  private streamLinksDialogOpen = false;
+
   private async generateStreamLinks(): Promise<void> {
+    // `LoomDialog.wait` doesn't go through `windowManager` (no deterministic id to
+    // dedupe on), so nothing stopped a double-click — or clicking again before
+    // closing the first — from minting a fresh pair of one-time codes and stacking
+    // another copy of this same dialog on top.
+    if (this.streamLinksDialogOpen) return;
+    this.streamLinksDialogOpen = true;
     try {
       const { canvasCode, chatCode } = await api.post<{ canvasCode: string; chatCode: string }>('/stream/link', {});
       const base = `${window.location.origin}${window.location.pathname}`;
@@ -1048,6 +1056,8 @@ export class GameHudScreen {
       });
     } catch (err: any) {
       showToast(err?.message || t('gameHud.streamLinksError'), 'error');
+    } finally {
+      this.streamLinksDialogOpen = false;
     }
   }
 

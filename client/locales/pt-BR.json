@@ -1430,7 +1430,7 @@
         "deleteLightCommand": "Excluir luz",
         "lightingRemoveError": "Erro ao remover iluminação",
         "streamLinksTitle": "Links de Stream (OBS)",
-        "streamLinksDesc": "Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez — depois disso a sessão fica salva ali.",
+        "streamLinksDesc": "Cole cada link numa Browser Source separada no OBS. Cada um só funciona uma vez — depois disso a sessão fica salva ali. ATENÇÃO: nunca abra esses links no seu navegador normal — eles substituem sua sessão de GM por uma sessão de espectador. Use só dentro do OBS.",
         "streamLinksCanvas": "Canvas (cena/mapa)",
         "streamLinksChat": "Chat",
         "streamLinksCopy": "Copiar link",

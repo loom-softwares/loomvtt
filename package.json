@@ -1,6 +1,6 @@
 {
   "name": "loomvtt",
-  "version": "0.0.2",
+  "version": "1.0.0-alpha.0",
   "type": "module",
   "author": "Rob Oliveira",
   "description": "A Virtual Tabletop application for tabletop role-playing games.",

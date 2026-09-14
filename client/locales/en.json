@@ -1300,7 +1300,7 @@
         "deleteLightCommand": "Delete light",
         "lightingRemoveError": "Error removing lighting",
         "streamLinksTitle": "Stream Links (OBS)",
-        "streamLinksDesc": "Paste each link into a separate Browser Source in OBS. Each one only works once — after that the session stays saved there.",
+        "streamLinksDesc": "Paste each link into a separate Browser Source in OBS. Each one only works once — after that the session stays saved there. WARNING: never open these links in your own regular browser — they replace your GM session with a viewer session. Only use them inside OBS.",
         "streamLinksCanvas": "Canvas (scene/map)",
         "streamLinksChat": "Chat",
         "streamLinksCopy": "Copy link",
