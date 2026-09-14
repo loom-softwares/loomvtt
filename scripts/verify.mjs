@@ -7,6 +7,7 @@ import { execSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkResponsiveGates } from './check-responsive-gates.mjs';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 // Passe um caminho/regex como argumento pra filtrar só os arquivos que você tocou,
@@ -58,6 +59,13 @@ function checkMigrations() {
 runTsc('tsc client', 'tsconfig.json');
 runTsc('tsc server', 'tsconfig.server.json');
 checkMigrations();
+
+console.log('\n--- gates de responsividade ---');
+const gates = checkResponsiveGates();
+console.log(gates.summary);
+gates.offenders.forEach((o) => console.log('⚠️  ' + o));
+if (!gates.ok) hasError = true;
+else console.log('Todo CSS mobile está atrás de "pointer: coarse" — desktop intacto.');
 
 console.log('\n' + (hasError ? '❌ Verificação encontrou problemas.' : '✅ Tudo limpo.'));
 process.exit(hasError ? 1 : 0);
