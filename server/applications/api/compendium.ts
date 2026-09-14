@@ -8,7 +8,7 @@ import { Compendium_packsDocument } from '../schemas/compendium_packs.schema.js'
 import { Compendium_entriesDocument } from '../schemas/compendium_entries.schema.js';
 import logger from '../utils/logger.js';
 import { requireAuth } from '../middleware/auth.js';
-import { requirePermission } from '../middleware/permissions.js';
+import { requirePermission, requireGM } from '../middleware/permissions.js';
 import { ActorsDocument } from '../schemas/actors.schema.js';
 import { ItemsDocument } from '../schemas/items.schema.js';
 import { StagesDocument } from '../schemas/stages.schema.js';
@@ -16,7 +16,7 @@ import { JournalsDocument } from '../schemas/journals.schema.js';
 import { MacrosDocument } from '../schemas/macros.schema.js';
 import { PlaylistsDocument } from '../schemas/playlists.schema.js';
 import { Playlist_soundsDocument } from '../schemas/playlist_sounds.schema.js';
-import { listSourcePacks, getSourcePackMeta, querySourceEntries, getSourceEntry } from '../addons/compendium-source.js';
+import { listSourcePacks, getSourcePackMeta, querySourceEntries, getSourceEntry, setSourceLock, updateSourceEntry, listSourceFolders, createSourceFolder, updateSourceFolder, deleteSourceFolder } from '../addons/compendium-source.js';
 
 export const compendiumRouter = Router();
 compendiumRouter.use(requireAuth);
@@ -84,20 +84,23 @@ compendiumRouter.post('/', requirePermission('compendiumEdit'), async (req, res)
 compendiumRouter.get('/sources', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const sources = await listSourcePacks();
-    res.json(sources.map(s => ({ sourceId: s.sourceId, name: s.name, type: s.type, ownerName: s.ownerName, ownerType: s.ownerType })));
+    res.json(sources.map(s => ({ sourceId: s.sourceId, name: s.name, type: s.type, ownerName: s.ownerName, ownerType: s.ownerType, locked: s.locked })));
   } catch (err: any) {
     logger.error('GET /compendium/sources failed', { error: err.message });
     res.status(500).json({ error: 'Failed to list compendium sources.' });
   }
 });
 
-// GET /api/compendium/sources/:sourceId/entries — lightweight entry list (no `data`)
+// GET /api/compendium/sources/:sourceId/entries — lightweight entry list (no `data`) + folders
 compendiumRouter.get('/sources/:sourceId/entries', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const meta = await getSourcePackMeta(req.params.sourceId);
     if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
-    const entries = await querySourceEntries(req.params.sourceId, { search: req.query.search as string | undefined });
-    res.json({ sourceId: meta.sourceId, name: meta.name, type: meta.type, entries });
+    const [entries, folders] = await Promise.all([
+      querySourceEntries(req.params.sourceId, { search: req.query.search as string | undefined }),
+      listSourceFolders(req.params.sourceId),
+    ]);
+    res.json({ sourceId: meta.sourceId, name: meta.name, type: meta.type, locked: meta.locked, entries, folders });
   } catch (err: any) {
     logger.error('GET /compendium/sources/:sourceId/entries failed', { error: err.message });
     res.status(500).json({ error: 'Failed to read compendium source.' });
@@ -105,6 +108,12 @@ compendiumRouter.get('/sources/:sourceId/entries', requirePermission('compendium
 });
 
 // GET /api/compendium/sources/:sourceId/entries/:entryId — full entry (with `data`)
+// Formato "cru" (id/name/type/sortOrder/imgUrl/folderId/data) — usado pelo
+// payload de drag-and-drop (`buildDragPayload` em compendium-source-window.ts),
+// que já funciona hoje pra arrastar Actor/Item pro canvas/ficha. NÃO
+// reformatar por tipo aqui — quem precisa do formato de documento real
+// (systemData pra Actor, pages pra Journal) usa a rota `entries-sheet`
+// abaixo, dedicada a isso.
 compendiumRouter.get('/sources/:sourceId/entries/:entryId', requirePermission('compendiumEdit'), async (req, res) => {
   try {
     const entry = await getSourceEntry(req.params.sourceId, req.params.entryId);
@@ -153,6 +162,168 @@ compendiumRouter.post('/sources/:sourceId/entries/:entryId/import', requirePermi
   } catch (err: any) {
     logger.error('POST /compendium/sources/:sourceId/entries/:entryId/import failed', { error: err.message });
     res.status(500).json({ error: 'Failed to import compendium entry.' });
+  }
+});
+
+// ── Cadeado + edição direta do pack de fonte (destrava a base compartilhada) ──
+// `pack_meta.locked` vive no PRÓPRIO .sqlite (ver compendium-source.ts) — não é um
+// registro por mundo. `requireGM` (não `requirePermission`) de propósito: destravar
+// afeta TODO mundo que usa este addon/ruleset instalado, então isso não é delegável
+// pra um role configurável — só quem já é GM de verdade.
+
+// POST /api/compendium/sources/:sourceId/lock — trava/destrava o pack inteiro
+compendiumRouter.post('/sources/:sourceId/lock', requireGM, async (req, res) => {
+  try {
+    const { locked } = req.body;
+    if (typeof locked !== 'boolean') return res.status(400).json({ error: '"locked" (boolean) is required.' });
+
+    const ok = await setSourceLock(req.params.sourceId, locked);
+    if (!ok) return res.status(404).json({ error: 'Compendium source not found or not editable.' });
+
+    Signal.broadcast('compendium.sourceLockChanged', { sourceId: req.params.sourceId, locked });
+    logger.info('Compendium source lock changed', { sourceId: req.params.sourceId, locked, userId: req.auth?.userId });
+    res.json({ sourceId: req.params.sourceId, locked });
+  } catch (err: any) {
+    logger.error('POST /compendium/sources/:sourceId/lock failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to change compendium source lock.' });
+  }
+});
+
+// GET/PUT /api/compendium/sources/:sourceId/entries-sheet/:entryId — the same entry,
+// through the generic document contract a real sheet reads/writes (`apiRoute` +
+// `/${id}` for BOTH verbs — that's why this needs its own path segment
+// ("entries-sheet", not "entries"): a sheet can't ask GET and PUT to hit two
+// differently-shaped routes under the same base. Kept fully separate from
+// `/entries/:entryId` above (raw shape, used by the drag-and-drop payload) so
+// this reshape can never ripple into that already-working path.
+//
+// GET mirrors GET /:packId/entries/:entryId (world-materialized packs, line
+// ~352) field-for-field: Actor gets `systemData`, Item/others get `data`,
+// Journal gets `pages`. PUT mirrors PUT /:packId/entries/:entryId (~377) the
+// same way, so `LoomDocumentSheet`'s save (whichever shape it sends per
+// document type) lands correctly, and is gated by `pack_meta.locked` — every
+// world using this addon/ruleset shares the same write, so only a real GM
+// (`requireGM`, not the delegable `compendiumEdit`) may trigger it.
+compendiumRouter.get('/sources/:sourceId/entries-sheet/:entryId', requirePermission('compendiumEdit'), async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    const entry = await getSourceEntry(req.params.sourceId, req.params.entryId);
+    if (!entry) return res.status(404).json({ error: 'Entry not found.' });
+
+    const base = { id: entry.id, name: entry.name, type: entry.type, imgUrl: entry.imgUrl, ownership: {}, worldId: req.query.worldId ?? '' };
+    if (meta.type === 'Actor') {
+      return res.json({ ...base, systemData: entry.data || {} });
+    } else if (meta.type === 'JournalEntry' || meta.type === 'Journal') {
+      return res.json({ ...base, pages: entry.data?.pages || [] });
+    }
+    res.json({ ...base, data: entry.data || {} });
+  } catch (err: any) {
+    logger.error('GET /compendium/sources/:sourceId/entries-sheet/:entryId failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to read compendium entry.' });
+  }
+});
+
+compendiumRouter.put('/sources/:sourceId/entries-sheet/:entryId', requireGM, async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    if (meta.locked) return res.status(403).json({ error: 'Compendium source is locked. Unlock it first.' });
+
+    const payload = req.body;
+    const patch: Record<string, any> = {};
+    if (payload.name !== undefined) patch.name = payload.name;
+    if (payload.imgUrl !== undefined) patch.imgUrl = payload.imgUrl;
+    // Mesma lógica de PUT /:packId/entries/:entryId (~394-400): cada tipo de
+    // documento manda seu campo de dado com um nome diferente, mas o `.sqlite`
+    // só tem UMA coluna `data` — normaliza os três pro mesmo destino.
+    if (meta.type === 'Actor' && payload.systemData !== undefined) {
+      patch.data = payload.systemData;
+    } else if ((meta.type === 'JournalEntry' || meta.type === 'Journal') && payload.pages !== undefined) {
+      patch.data = { pages: payload.pages };
+    } else if (payload.data !== undefined) {
+      patch.data = payload.data;
+    }
+
+    const ok = await updateSourceEntry(req.params.sourceId, req.params.entryId, patch);
+    if (!ok) return res.status(404).json({ error: 'Entry not found.' });
+
+    Signal.broadcast('compendium.sourceEntryUpdated', { sourceId: req.params.sourceId, entryId: req.params.entryId });
+    logger.info('Compendium source entry edited', { sourceId: req.params.sourceId, entryId: req.params.entryId, userId: req.auth?.userId });
+
+    // Devolve no mesmo formato do GET — o save de LoomDocumentSheet costuma
+    // usar a resposta pra atualizar o documento em memória sem precisar de um
+    // segundo round-trip.
+    const entry = await getSourceEntry(req.params.sourceId, req.params.entryId);
+    const base = { id: req.params.entryId, name: entry?.name, type: entry?.type, imgUrl: entry?.imgUrl, ownership: {}, worldId: req.query.worldId ?? '' };
+    if (meta.type === 'Actor') return res.json({ ...base, systemData: entry?.data || {} });
+    if (meta.type === 'JournalEntry' || meta.type === 'Journal') return res.json({ ...base, pages: entry?.data?.pages || [] });
+    res.json({ ...base, data: entry?.data || {} });
+  } catch (err: any) {
+    logger.error('PUT /compendium/sources/:sourceId/entries-sheet/:entryId failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to update compendium entry.' });
+  }
+});
+
+// ── Pastas dentro de um pack de fonte ─────────────────────────────────────────
+// Vivem na PRÓPRIA `.sqlite` do pack (ver compendium-source.ts::ensureFolderSchema),
+// não na tabela `folders` central (essa é por mundo; o pack não pertence a
+// nenhum). Espelham server/applications/api/folders.ts campo a campo, menos
+// worldId/type. Mesmo gate de POST /lock: requireGM (não compendiumEdit —
+// reorganizar afeta todo mundo que usa este addon/ruleset) + pack destravado
+// (mexer na estrutura também é escrever no arquivo compartilhado).
+
+compendiumRouter.post('/sources/:sourceId/folders', requireGM, async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    if (meta.locked) return res.status(403).json({ error: 'Compendium source is locked. Unlock it first.' });
+
+    const { folder, error } = await createSourceFolder(req.params.sourceId, req.body);
+    if (error) return res.status(400).json({ error });
+
+    Signal.broadcast('compendium.sourceFolderChanged', { sourceId: req.params.sourceId });
+    logger.info('Compendium source folder created', { sourceId: req.params.sourceId, folderId: folder?.id, userId: req.auth?.userId });
+    res.status(201).json(folder);
+  } catch (err: any) {
+    logger.error('POST /compendium/sources/:sourceId/folders failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to create compendium folder.' });
+  }
+});
+
+compendiumRouter.put('/sources/:sourceId/folders/:folderId', requireGM, async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    if (meta.locked) return res.status(403).json({ error: 'Compendium source is locked. Unlock it first.' });
+
+    const { folder, error } = await updateSourceFolder(req.params.sourceId, req.params.folderId, req.body);
+    if (error) return res.status(error === 'Folder not found.' ? 404 : 400).json({ error });
+
+    Signal.broadcast('compendium.sourceFolderChanged', { sourceId: req.params.sourceId });
+    logger.info('Compendium source folder updated', { sourceId: req.params.sourceId, folderId: req.params.folderId, userId: req.auth?.userId });
+    res.json(folder);
+  } catch (err: any) {
+    logger.error('PUT /compendium/sources/:sourceId/folders/:folderId failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to update compendium folder.' });
+  }
+});
+
+compendiumRouter.delete('/sources/:sourceId/folders/:folderId', requireGM, async (req, res) => {
+  try {
+    const meta = await getSourcePackMeta(req.params.sourceId);
+    if (!meta) return res.status(404).json({ error: 'Compendium source not found.' });
+    if (meta.locked) return res.status(403).json({ error: 'Compendium source is locked. Unlock it first.' });
+
+    const ok = await deleteSourceFolder(req.params.sourceId, req.params.folderId);
+    if (!ok) return res.status(404).json({ error: 'Folder not found.' });
+
+    Signal.broadcast('compendium.sourceFolderChanged', { sourceId: req.params.sourceId });
+    logger.info('Compendium source folder deleted', { sourceId: req.params.sourceId, folderId: req.params.folderId, userId: req.auth?.userId });
+    res.json({ success: true, id: req.params.folderId });
+  } catch (err: any) {
+    logger.error('DELETE /compendium/sources/:sourceId/folders/:folderId failed', { error: err.message });
+    res.status(500).json({ error: 'Failed to delete compendium folder.' });
   }
 });
 

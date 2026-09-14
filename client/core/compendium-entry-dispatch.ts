@@ -20,6 +20,12 @@ interface PackInfo {
   id: string;
   type: string;
   worldId: string;
+  /** Sobrescreve a rota de leitura/gravação da ficha (default:
+   * `/compendium/${pack.id}/entries`, o pack materializado no mundo). Usado
+   * pra ligar a MESMA ficha real a um compendium source de addon/ruleset
+   * (`/compendium/sources/:sourceId/entries`), sem duplicar nenhuma lógica de
+   * abertura — só troca de onde ela lê/grava. */
+  apiRoute?: string;
 }
 
 interface EntryInfo {
@@ -53,12 +59,13 @@ export function openCompendiumEntrySheet(pack: PackInfo, entry: EntryInfo): any 
   const SheetClass = resolveSheetClass(mapping.docType, entry.type, mapping.Default) as any;
 
   const id = `compendium-entry-${pack.id}-${entry.id}`;
+  const apiRoute = pack.apiRoute ?? `/compendium/${pack.id}/entries`;
 
   class CompendiumBoundSheet extends SheetClass {
     constructor(...args: any[]) {
       super(...args);
       (this as any).options.id = id;
-      (this as any)._apiRouteOverride = `/compendium/${pack.id}/entries`;
+      (this as any)._apiRouteOverride = apiRoute;
     }
   }
 
@@ -70,7 +77,8 @@ export function openCompendiumEntrySheet(pack: PackInfo, entry: EntryInfo): any 
 
 async function openSceneEntryFromCompendium(pack: PackInfo, entry: EntryInfo): Promise<void> {
   try {
-    const entryData = await api.get<any>(`/compendium/${pack.id}/entries/${entry.id}`);
+    const apiRoute = pack.apiRoute ?? `/compendium/${pack.id}/entries`;
+    const entryData = await api.get<any>(`${apiRoute}/${entry.id}`);
     const d = entryData.data || {};
     const bg = d.backgroundUrl || entryData.imgUrl || '';
     const lines = [

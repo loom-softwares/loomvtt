@@ -7,6 +7,7 @@ import { showConfirm, showPrompt, showSelectDialog, showColorDialog, showRangeDi
 import { systemRegistry } from '../../core/system-registry.js';
 import { copyTextToClipboard } from '../../lib/clipboard.js';
 import { nextDefaultName } from '../../lib/unique-name.js';
+import { folderColorStyles } from '../../lib/folder-color.js';
 
 interface CombatantGroupSummary { id: string; name: string; initiative: number | null; }
 import { wsClient } from '../../core/ws-client.js';
@@ -200,6 +201,7 @@ interface CompendiumSourceSummary {
   type: string;
   ownerName: string;
   ownerType: 'addon' | 'ruleset';
+  locked: boolean;
 }
 
 interface MacroSummary {
@@ -303,6 +305,10 @@ export class Sidebar extends BaseComponent {
   private placeablesQuery = '';
   private stages: StageSummary[] = [];
   private expandedMapStages = new Set<string>();
+  /** Grupo por `ownerName` dos compêndios de fonte (addon/ruleset) — calculado
+   * na hora a partir de `compendiumSources`, sem tabela de pasta nenhuma
+   * (mesmo espírito de `expandedMapStages`, não do `renderGroupedList`). */
+  private expandedSourceGroups = new Set<string>();
   private stagesLoaded = false;
   private items: ItemSummary[] = [];
   private itemsLoaded = false;
@@ -1507,27 +1513,29 @@ export class Sidebar extends BaseComponent {
     `;
 
     const canEditCompendium = this.hasPermission('compendiumEdit');
+    // O "vazio" só aparece quando NADA existe em lugar nenhum — nem pack do
+    // mundo, nem de sistema/addon. Antes cada lista checava só a própria
+    // contagem, então o vazio do mundo (ícone grande + texto) ocupava a tela
+    // inteira e empurrava os packs de sistema pra fora da vista, mesmo eles
+    // existindo — pareciam duas abas separadas quando é uma lista só.
+    const hasWorldPacks = this.compendiumPacks.length > 0 || this.compendiumFolders.length > 0;
+    const hasSourcePacks = this.compendiumSources.length > 0;
     const compendiumTab = `
       ${canEditCompendium ? `<div class="sidebar-header-actions">
             <button class="btn" data-action="create-compendium-pack">${t('sidebar.compendiumCreate')}</button>
             <button class="btn btn-secondary" data-action="create-compendium-folder" title="Nova Pasta"><i class="fa-solid fa-folder-plus"></i></button>
           </div>` : ''}
       ${this.renderSearchBox('compendium', 'Procurar Compêndios')}
-      ${this.compendiumPacks.length === 0 && this.compendiumFolders.length === 0
+      ${!hasWorldPacks && !hasSourcePacks
         ? `<div class="empty-state">
             <div class="empty-state-icon"><i class="fa-solid fa-book-atlas"></i></div>
             <div class="empty-state-title">${t('sidebar.compendium')}</div>
             <p>${t('sidebar.emptyCompendium')}</p>
           </div>`
         : `<div class="sidebar-actor-list">
-            ${this.renderCompendiumListGrouped()}
+            ${hasWorldPacks ? this.renderCompendiumListGrouped() : ''}
+            ${hasSourcePacks ? this.renderCompendiumSourceGroups() : ''}
           </div>`}
-      ${this.compendiumSources.length > 0 ? `
-        <div class="sidebar-section-label">Compêndios do Sistema/Addons</div>
-        <div class="sidebar-actor-list">
-          ${this.compendiumSources.map((s) => this.renderCompendiumSourceItem(s)).join('')}
-        </div>
-      ` : ''}
     `;
 
     const combatTab = `
@@ -2304,6 +2312,12 @@ export class Sidebar extends BaseComponent {
       windowManager.open(`compendium-pack-${id}`, CompendiumPackWindow, { packId: id });
     } else if (action === 'open-compendium-source' && id) {
       windowManager.open(`compendium-source-${id}`, CompendiumSourceWindow, { sourceId: id, worldId: this.worldId });
+    } else if (action === 'toggle-source-group' && id) {
+      if (this.expandedSourceGroups.has(id)) this.expandedSourceGroups.delete(id);
+      else this.expandedSourceGroups.add(id);
+      this.render();
+    } else if (action === 'toggle-compendium-lock' && id) {
+      void this.toggleCompendiumSourceLock(id);
     } else if (action === 'create-compendium-pack') {
       this.createCompendiumPack();
     } else if (action === 'combat-next') {
@@ -2893,14 +2907,8 @@ export class Sidebar extends BaseComponent {
       const subfolders = subfoldersByParent.get(f.id) ?? [];
       const collapsed = this.collapsedFolders.has(f.id);
 
-      const hexToRgb = (hex: string) => {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
-      };
-
-      const rgb = f.color ? hexToRgb(f.color) : null;
-      const folderStyle = rgb ? `style="background: rgba(${rgb}, 0.85); color: #fff; border-radius: 4px;"` : '';
-      const textStyle = rgb ? `style="color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8);"` : '';
+      const { folderStyle, textStyle } = folderColorStyles(f.color);
+      const hasColor = !!folderStyle;
       const indentStyle = depth > 0 ? `style="margin-left: ${depth * 10}px;"` : '';
 
       let contentHtml = '';
@@ -2915,7 +2923,7 @@ export class Sidebar extends BaseComponent {
 
       return `
         <div class="sidebar-folder" ${indentStyle}>
-          <div class="sidebar-folder-header ${rgb ? 'has-color' : ''}" data-action="toggle-folder" data-id="${f.id}" data-entity-type="folder" data-folder-type="${type}" ${folderStyle}>
+          <div class="sidebar-folder-header ${hasColor ? 'has-color' : ''}" data-action="toggle-folder" data-id="${f.id}" data-entity-type="folder" data-folder-type="${type}" ${folderStyle}>
             <span class="sidebar-folder-caret" ${textStyle}>${collapsed ? '<i class="fa-solid fa-folder"></i>' : '<i class="fa-solid fa-folder-open"></i>'}</span>
             <span class="sidebar-folder-name" ${textStyle}>${this.escapeHtml(f.name)}</span>
             <span class="sidebar-folder-count" ${textStyle}>${items.length + subfolders.length}</span>
@@ -3043,6 +3051,35 @@ export class Sidebar extends BaseComponent {
       ${this.renderPlaylistSounds(p)}`;
   }
 
+  /** Agrupa os compêndios de fonte por `ownerName` (addon OU ruleset — não filtra por
+   * tipo) numa "pasta" colapsável. Sem tabela de pasta nenhuma: o grupo é calculado na
+   * hora a partir de `compendiumSources`, e o estado aberto/fechado vive só em memória
+   * (`expandedSourceGroups`) — mesmo modelo de `expandedMapStages` (cena-mapa com
+   * filhas), não o `renderGroupedList`/`FolderSummary` das outras abas, que exige uma
+   * pasta real no banco. */
+  private renderCompendiumSourceGroups(): string {
+    const byOwner = new Map<string, CompendiumSourceSummary[]>();
+    for (const s of this.compendiumSources) {
+      const list = byOwner.get(s.ownerName);
+      if (list) list.push(s);
+      else byOwner.set(s.ownerName, [s]);
+    }
+
+    return [...byOwner.entries()].map(([ownerName, packs]) => {
+      const expanded = this.expandedSourceGroups.has(ownerName);
+      const ownerType = packs[0].ownerType === 'ruleset' ? 'Sistema' : 'Addon';
+      return `
+        <div class="sidebar-folder">
+          <div class="sidebar-folder-header" data-action="toggle-source-group" data-id="${ownerName}" title="${ownerType}">
+            <span class="sidebar-folder-name">${this.escapeHtml(ownerName)}</span>
+            <span class="sidebar-folder-count">${packs.length}</span>
+          </div>
+          ${expanded ? `<div class="sidebar-folder-items">${packs.map((s) => this.renderCompendiumSourceItem(s)).join('')}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
   /** Pack de addon/ruleset — banner simplificado (sem pasta/contagem, é read-only
    * na origem). Abre CompendiumSourceWindow, nunca CompendiumPackWindow. */
   private renderCompendiumSourceItem(s: CompendiumSourceSummary): string {
@@ -3050,7 +3087,12 @@ export class Sidebar extends BaseComponent {
       Actor: '/images/compendium-bg/actor.png',
       Item: '/images/compendium-bg/item.png',
       Scene: '/images/compendium-bg/scenes.png',
+      // Os dois nomes existem na prática: rotas/documentos do core usam
+      // "JournalEntry", mas o manifest de um ruleset pode declarar "Journal"
+      // pro type do pack (foi o caso do SDR 5.2 — o pack de regras ficava sem
+      // fundo porque só "JournalEntry" estava mapeado aqui).
       JournalEntry: '/images/compendium-bg/journal.png',
+      Journal: '/images/compendium-bg/journal.png',
       RollTable: '/images/compendium-bg/roll-tabels.png',
       Cards: '/images/compendium-bg/cards.png',
     };
@@ -3059,10 +3101,23 @@ export class Sidebar extends BaseComponent {
       Item: 'fa-solid fa-briefcase',
       Scene: 'fa-solid fa-map',
       JournalEntry: 'fa-solid fa-book-open',
+      Journal: 'fa-solid fa-book-open',
     };
     const bgUrl = bgMap[s.type] || '';
     const icon = iconMap[s.type] || 'fa-solid fa-book';
     const bgStyle = bgUrl ? `background-image: url('${bgUrl}');` : '';
+
+    // Cadeado é do PACK (pack_meta.locked, compartilhado por todo mundo que usa este
+    // addon/ruleset), não do mundo — por isso o gate é GM de verdade (`userRole >= 4`),
+    // igual ao servidor (`requireGM`, não o `compendiumEdit` delegável de
+    // `canEditCompendium`). Destravar aqui afeta todo mundo, não só o seu.
+    const isRealGM = this.userRole >= 4;
+    const lockIcon = s.locked ? 'fa-lock' : 'fa-lock-open';
+    const lockTitle = s.locked
+      ? (isRealGM ? 'Travado — clique para destravar e editar' : 'Travado (somente leitura)')
+      : (isRealGM ? 'Destravado — clique para travar de novo' : 'Destravado pelo GM (editável)');
+    const lockAction = isRealGM ? 'data-action="toggle-compendium-lock"' : '';
+
     return `
       <div class="sidebar-compendium-banner" data-action="open-compendium-source" data-id="${s.sourceId}" style="${bgStyle}">
         <div class="sidebar-compendium-banner-overlay"></div>
@@ -3073,7 +3128,7 @@ export class Sidebar extends BaseComponent {
           </div>
           <div class="sidebar-compendium-banner-badges">
             <span class="compendium-badge sys-badge"><i class="fa-solid fa-cube"></i> ${this.escapeHtml(s.ownerName)}</span>
-            <i class="fa-solid fa-lock" style="font-size: 0.7rem; opacity: 0.5;" title="Bloqueado (somente leitura)"></i>
+            <i class="fa-solid ${lockIcon}" ${lockAction} style="font-size: 0.7rem; opacity: 0.5;${isRealGM ? ' cursor:pointer;' : ''}" title="${lockTitle}"></i>
           </div>
         </div>
       </div>
@@ -3738,6 +3793,23 @@ export class Sidebar extends BaseComponent {
       windowManager.open(`compendium-pack-${pack.id}`, CompendiumPackWindow, { packId: pack.id, packType });
     } catch (e: any) {
       showToast(e?.message || 'Erro ao criar pack', 'error');
+    }
+  }
+
+  /** Trava/destrava o `.sqlite` do PACK inteiro (não é por mundo — afeta todo mundo
+   * que usa este addon/ruleset instalado). Atualiza o estado local otimisticamente
+   * pra não esperar um reload inteiro só pra virar o ícone. */
+  private async toggleCompendiumSourceLock(sourceId: string): Promise<void> {
+    const source = this.compendiumSources.find((s) => s.sourceId === sourceId);
+    if (!source) return;
+    const nextLocked = !source.locked;
+    try {
+      await api.post(`/compendium/sources/${sourceId}/lock`, { locked: nextLocked });
+      source.locked = nextLocked;
+      this.render();
+      showToast(nextLocked ? 'Compêndio travado' : 'Compêndio destravado — editável agora', 'success');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao mudar o cadeado do compêndio', 'error');
     }
   }
 

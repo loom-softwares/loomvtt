@@ -26,6 +26,9 @@ async function convertOne(jsonPath, sqlitePath) {
   await db.schema.createTable('pack_meta', (t) => {
     t.string('name').notNullable();
     t.string('type').notNullable();
+    // Trava por padrão — o GM destrava explicitamente pra editar (self-heal em
+    // packs mais antigos feito por compendium-source.ts::ensureLockColumn).
+    t.boolean('locked').notNullable().defaultTo(true);
   });
   await db.schema.createTable('entries', (t) => {
     t.string('id').primary();
@@ -34,6 +37,17 @@ async function convertOne(jsonPath, sqlitePath) {
     t.integer('sortOrder').defaultTo(0);
     t.string('imgUrl').defaultTo('');
     t.text('data').defaultTo('{}');
+    // Solta ('') por padrão — organizar em pastas é opt-in via UI depois da
+    // conversão (self-heal pra packs mais antigos em
+    // compendium-source.ts::ensureFolderSchema).
+    t.string('folderId').notNullable().defaultTo('');
+  });
+  await db.schema.createTable('folders', (t) => {
+    t.string('id').primary();
+    t.string('name').notNullable();
+    t.string('parent').notNullable().defaultTo('');
+    t.string('color').notNullable().defaultTo('');
+    t.string('sorting').notNullable().defaultTo('m');
   });
 
   await db('pack_meta').insert({ name: raw.name, type: raw.type || 'Item' });

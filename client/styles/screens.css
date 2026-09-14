@@ -3238,7 +3238,7 @@ body.theater-mode-active .sidebar-collapsed-editor:focus-within {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 6.5rem;
+  height: 3.25rem;
   flex-shrink: 0;
   margin: 0.25rem 0.75rem;
   /* Grimório: an old book page has one soft corner and one squared
@@ -3267,19 +3267,31 @@ body.theater-mode-active .sidebar-collapsed-editor:focus-within {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  padding: 0.6rem 0.85rem;
+  padding: 0.4rem 0.7rem;
   z-index: 1;
 }
 
+/* Cabeçalho meio do tamanho de antes (6.5rem -> 3.25rem) precisa do título
+   numa linha só — "Magias — Truques (SRD 5.2)" quebrando em 2 linhas não
+   cabe mais na altura nova. `min-width: 0` é o que deixa o `text-overflow`
+   funcionar dentro de um pai flex (senão o span nunca encolhe). */
 .sidebar-compendium-banner-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--color-text-primary);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  min-width: 0;
+}
+
+.sidebar-compendium-banner-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .sidebar-compendium-banner-title i {
