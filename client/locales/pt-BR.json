@@ -1,4 +1,8 @@
 {
+    "responsive": {
+        "rotateTitle": "Gire o dispositivo",
+        "rotateDesc": "O Loom foi desenhado para telas na horizontal. Gire seu aparelho para continuar."
+    },
     "playersList": {
         "empty": "Nenhum jogador online",
         "latencyTitle": "Latência do servidor",

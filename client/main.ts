@@ -53,6 +53,7 @@ import { settingsRegistry } from './core/settings-registry.js';
 import { mainMenuRegistry } from './core/main-menu-registry.js';
 import { transitionEffectRegistry } from './canvas/transition-effect-registry.js';
 import { rulesetI18n } from './core/ruleset-i18n.js';
+import { t } from './lib/i18n.js';
 import { actorsCollection } from './core/actors-collection.js';
 import { scenesCollection } from './core/scenes-collection.js';
 import { itemsCollection } from './core/items-collection.js';
@@ -1252,6 +1253,15 @@ import Handlebars from 'handlebars';
 (window as any).Handlebars = Handlebars;
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Texto do aviso de "gire o dispositivo" (client/index.html). O markup é
+  // estático e não alcança t(), então o texto entra aqui. O elemento em si
+  // fica escondido até a media query de retrato+toque revelá-lo.
+  const rotateGate = document.getElementById('rotate-gate');
+  if (rotateGate) {
+    rotateGate.querySelector('.rotate-gate-title')!.textContent = t('responsive.rotateTitle');
+    rotateGate.querySelector('.rotate-gate-desc')!.textContent = t('responsive.rotateDesc');
+  }
+
   bootstrap().catch((e) => {
     console.error('[Bootstrap] Fatal error:', e);
     showToast('Erro fatal ao inicializar', 'error');

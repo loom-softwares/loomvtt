@@ -1,4 +1,8 @@
 {
+    "responsive": {
+        "rotateTitle": "Rotate your device",
+        "rotateDesc": "Loom is designed for landscape screens. Turn your device to continue."
+    },
     "playersList": {
         "empty": "No players online",
         "latencyTitle": "Server latency",

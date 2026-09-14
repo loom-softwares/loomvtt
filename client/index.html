@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>LoomVTT</title>
     <link rel="icon" type="image/png" href="/images/loom-logo.png" />
     <link rel="stylesheet" href="/css/font-awesome.min.css" />
@@ -17,11 +17,27 @@
     <script src="/theme-init.js"></script>
 
     <link rel="stylesheet" href="./styles/main.css" />
+
+    <!-- Responsividade (tablet/celular em paisagem). <link> próprio, DEPOIS do
+         main.css, de propósito: `@import` só vale antes de qualquer regra e o
+         main.css já tem regras, então um import lá seria ignorado em silêncio.
+         Apagar esta linha desliga 100% do layout de toque. -->
+    <link rel="stylesheet" href="./styles/responsive.css" />
   </head>
   <body>
     <div id="app"></div>
     <div id="windows"></div>
     <div id="toasts"></div>
+
+    <!-- Aviso de "gire o dispositivo". Nasce `hidden` para falhar do lado
+         seguro: se responsive.css não carregar, some em vez de vazar pro
+         desktop. Só a media query G0 (toque + retrato) o revela. Texto vem
+         do i18n em main.ts — este HTML é estático e não tem acesso a t(). -->
+    <div id="rotate-gate" hidden>
+      <i class="fa-solid fa-mobile-screen rotate-gate-icon" aria-hidden="true"></i>
+      <span class="rotate-gate-title"></span>
+      <span class="rotate-gate-desc"></span>
+    </div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

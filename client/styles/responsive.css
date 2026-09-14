@@ -1,0 +1,453 @@
+/* ==========================================================================
+   LoomVTT — Responsividade (tablet e celular, orientação paisagem)
+
+   REGRA INEGOCIÁVEL DESTE ARQUIVO
+   -------------------------------
+   Toda regra aqui vive dentro de um dos três gates abaixo, e todo gate carrega
+   `pointer: coarse`. Nada pode existir no nível raiz do arquivo além de
+   comentários e blocos `@media`. Isso é conferido por `scripts/check-responsive-gates.mjs`
+   (roda no `npm run verify`) — não é convenção, o build quebra.
+
+   Por que `pointer: coarse` em todos: significa "o apontador primário é
+   grosseiro (dedo)". Um desktop com mouse NUNCA casa, por mais estreita que o
+   usuário deixe a janela. É isso que garante que esta operação não pode
+   regredir o desktop — a garantia é estrutural, não disciplina de quem escreve.
+
+   Consequência: redimensionar a janela do desktop não ativa nada aqui. Para
+   testar, use emulação de dispositivo (DevTools ou o preset `mobile` do
+   Browser pane), que emula `pointer: coarse` de verdade.
+
+   Este arquivo é carregado por <link> próprio em client/index.html, DEPOIS do
+   main.css — não por @import. Dois motivos: `@import` só é válido antes de
+   qualquer regra (main.css já tem regras a partir da linha 57, então um import
+   no fim seria silenciosamente ignorado), e o <link> separado desacopla o parse
+   e serve de kill switch: apagar aquela linha desliga 100% desta operação.
+
+   Escopo: paisagem apenas. Retrato recebe um aviso para girar o dispositivo
+   (G0) em vez de um segundo layout vertical.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   G0 — Retrato em dispositivo de toque: apenas o aviso para girar.
+
+   O #rotate-gate nasce com o atributo `hidden` no próprio index.html. Se este
+   arquivo não carregar, ele continua invisível — falha para o lado seguro.
+   Por isso o `display` aqui precisa de !important: vence o `[hidden]`.
+   ========================================================================== */
+@media (pointer: coarse) and (orientation: portrait) {
+
+  #rotate-gate {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem max(2rem, env(safe-area-inset-right)) 2rem max(2rem, env(safe-area-inset-left));
+    text-align: center;
+    background: var(--color-bg-deep, #0b0a09);
+    color: var(--color-text-primary, #f0e6d3);
+  }
+
+  #rotate-gate .rotate-gate-icon {
+    font-size: 3rem;
+    color: var(--color-accent, #d8a24a);
+    animation: rotate-gate-nudge 2.4s ease-in-out infinite;
+  }
+
+  #rotate-gate .rotate-gate-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  #rotate-gate .rotate-gate-desc {
+    max-width: 32ch;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary, #9c9385);
+  }
+
+  @keyframes rotate-gate-nudge {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    80% { transform: rotate(90deg); }
+  }
+}
+
+@media (pointer: coarse) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
+
+  #rotate-gate .rotate-gate-icon {
+    animation: none;
+  }
+}
+
+
+/* ==========================================================================
+   GT — Qualquer dispositivo de toque, independente de orientação/tamanho.
+
+   Só entra aqui o que é pré-requisito de gesto, não layout.
+   ========================================================================== */
+@media (pointer: coarse) {
+
+  /* Sem isto o navegador trata o arrasto/pinça sobre o mapa como scroll e zoom
+     DA PÁGINA, e os `pointermove` param de chegar no meio do gesto — os
+     handlers de pan/pinch em canvas-manager.ts (init()) dependem disto para
+     receber o movimento inteiro. Não tem efeito nenhum com mouse. */
+  #game-canvas {
+    touch-action: none;
+  }
+
+  /* Impede o "puxa e balança" da página ao arrastar o mapa até a borda. */
+  html, body {
+    overscroll-behavior: none;
+  }
+
+}
+
+
+/* ==========================================================================
+   GH — Dispositivo de toque sem hover.
+
+   Separado do GT porque a condição aqui não é "é toque", é "não existe hover":
+   são regras que consertam interações cujo ÚNICO gatilho é passar o mouse.
+   ========================================================================== */
+@media (pointer: coarse) and (hover: none) {
+
+  /* O HUD nasce a 55% de opacidade e só volta a 100% em `:hover`/`:focus-within`
+     (screens.css:268-277) — a ideia é não competir com o mapa enquanto você não
+     está usando. Só que num aparelho de toque NENHUM dos dois gatilhos existe,
+     então o HUD inteiro fica permanentemente esmaecido: hotbar, toolbox,
+     barra de cenas e lista de jogadores viram fantasmas sobre um mapa escuro.
+     Foi lido como "a hotbar sumiu" e como "a tela está cortada" — mas os
+     elementos estavam todos dentro da tela, só apagados.
+
+     Sem hover, "esmaece até você apontar" não tem tradução possível a não ser
+     "sempre visível". Controle invisível é pior que controle que disputa
+     atenção com o mapa. */
+  .hud-layer > * {
+    opacity: 1;
+  }
+}
+
+
+/* ==========================================================================
+   G1 — Qualquer dispositivo de toque em paisagem (tablet e celular).
+
+   SEM teto de largura, de propósito. A primeira versão tinha
+   `max-width: 1366px` mirando "iPad Pro e abaixo", e um iPad real de 1380px
+   escapou do gate inteiro — caía no layout de desktop e cortava embaixo.
+   Largura não identifica tablet; `pointer: coarse` já faz esse trabalho.
+   ========================================================================== */
+@media (pointer: coarse) and (orientation: landscape) {
+
+  /* ---- Composição: o limiar e a porta -------------------------------------
+     Em paisagem a tela é LARGA e BAIXA. O empilhamento do desktop (arte em
+     cima, portão embaixo) é a forma errada para esse formato: espreme a arte
+     numa tarja e empurra o formulário para fora da tela — era a causa tanto do
+     corte no iPad quanto do visual chapado no celular. Espremer o layout de
+     desktop até caber não era desenhar para este formato.
+
+     Então a tela se divide no eixo que sobra, o horizontal:
+
+       ┌───────────────────────────┬──────────────────┐
+       │ ◆ LOOM                    │                  │
+       │                           │  QUEM É VOCÊ?    │
+       │   [arte em altura cheia]  │  ______________  │
+       │                           │  SENHA           │
+       │   SESSÃO ABERTA           │  ______________  │
+       │   SDR 5e                  │                  │
+       │   SISTEMA · PRÓX. SESSÃO  │  [ ENTRAR ] G  D │
+       │                           │                  │
+       │   NA SESSÃO AGORA — 0/2   │                  │
+       └───────────────────────────┴──────────────────┘
+
+     À esquerda o mundo em que você está prestes a entrar: a arte sangrando em
+     altura cheia, o nome da mesa, quem já chegou. À direita, você: um plano
+     sólido só com o formulário. A divisão é literal — um fio vertical separa o
+     limiar da porta, e é o único ornamento que esta tela ganha.
+
+     Ganho colateral: com a altura deixando de ser disputada, "sistema/próxima
+     sessão" e o texto de ajuda VOLTAM. Antes eu tinha cortado os dois só para
+     caber; a composição certa devolve a informação em vez de sacrificá-la.
+
+     `display: contents` no `.wg-gate` dissolve a caixa dele para que roster e
+     formulário entrem como itens diretos desta grade. O fundo e a borda que
+     viviam nele passam para `.wg-form-side`. */
+  .world-gate {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.82fr);
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
+
+  .wg-top {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .wg-mid {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .wg-gate {
+    display: contents;
+  }
+
+  /* `position: relative; z-index: 1` não é enfeite: o `.wg-gate` original tinha
+     isso (world-gate.css:284-285) e era o que mantinha seus filhos ACIMA da
+     arte — `.wg-art` é `absolute; z-index: 0`, e elemento posicionado pinta por
+     cima de elemento estático. Ao dissolver a caixa do `.wg-gate` com
+     `display: contents`, roster e formulário perdem esse contexto e somem atrás
+     da imagem. Descoberto com o roster invisível: o texto estava lá, com
+     opacidade 1, pintado atrás da arte. */
+  .wg-roster-side {
+    grid-column: 1;
+    grid-row: 3;
+    position: relative;
+    z-index: 1;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .wg-form-side {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    position: relative;
+    z-index: 1;
+    border-left: 1px solid var(--wg-warp-lit);
+    background: rgba(6, 8, 13, 0.86);
+    backdrop-filter: blur(2px);
+  }
+
+  /* Senha de administrador + "voltar à configuração": controle de host. Quem
+     abre o Loom no celular é jogador entrando numa mesa alheia — o host roda o
+     servidor, e isso é desktop. */
+  .wg-exit {
+    display: none;
+  }
+
+
+  /* ---- Hotbar x chat recolhido -------------------------------------------
+     A hotbar centraliza no viewport INTEIRO (screens.css:1983-1992) enquanto o
+     chat recolhido e fixo a direita ocupando `48px + clamp(230px,18vw,260px)`
+     (screens.css:1019-1023). Medido em 760x570: chat em l:482, slots ate
+     r:567 - 85px de sobreposicao, com a pilula do chat cobrindo os slots 9 e 0.
+
+     Duas coisas sao necessarias juntas, e por isso corrigir so uma nao
+     resolvia: a barra tem 505px e o espaco livre a esquerda do chat tem 482,
+     entao ela precisa ao mesmo tempo SER DESLOCADA e ENCOLHER.
+
+     O encolhimento sai de graca: o grid ja e
+     `repeat(10, var(--hud-control-size-slot))` (screens.css:2057) e o slot le a
+     mesma variavel (:2009) - redefinir so ela redimensiona os 10 juntos, sem
+     recorte e sem rolagem (tentativas anteriores esconderam slots atras de
+     `overflow`, que e pior que encolher).
+
+     Sobre os seletores: screens.css:1983-1985 usa
+     `#hud-sidebar.collapsed ~ .hud-hotbar`, especificidade (0,1,2,0). Empatar
+     essa forma nao basta - em dev o Vite injeta o CSS do projeto numa folha
+     INLINE que vem depois deste arquivo, entao todo empate e perdido por
+     ordem. Dai o prefixo `.game-hud`, que leva para (0,1,3,0) e vence por
+     especificidade, independente da ordem de carregamento. */
+  /* Largura da pilula do chat recolhido, compartilhada: o chat a consome para
+     nao cortar o proprio texto, e a hotbar a consome para saber de quanto
+     espaco precisa desviar. Uma fonte so, para os dois nunca saírem de sincronia. */
+  :root {
+    --loom-chat-pill: min(270px, calc(100vw - 64px));
+  }
+
+  /* O campo e um `<textarea rows="1">` de altura fixa (34px). Medido em 230px
+     de largura: o placeholder "Digite uma mensagem... (/r 2d6+3)" precisa de
+     ~211px e so ha 203px uteis depois do padding — ele quebra para a segunda
+     linha, que o textarea corta (scrollHeight 44 contra clientHeight 32).
+     Faltavam 8px. A largura base e `clamp(230px, 18vw, 260px)`
+     (screens.css:1022), que em tela estreita fica presa no piso de 230.
+
+     `body` no seletor nao e decoracao: sem ele a especificidade empata com a
+     regra original e perde por ordem, porque o Vite injeta o CSS do projeto
+     numa folha inline posterior a este arquivo. */
+  body .sidebar-collapsed-chat {
+    width: var(--loom-chat-pill);
+  }
+
+  /* A fileira de baixo tem tres moradores: lista de jogadores a esquerda
+     (termina em ~128px), chat a direita, e a hotbar centralizada. Medido:
+     sobram 197px de faixa livre em 667x375 e 290px em 760x570, e os controles
+     proprios da hotbar (menu, som, paginacao, cadeado, lixeira) ja consomem
+     110px disso.
+
+     Em vez de uma fileira de 10 slots que nao cabe, a hotbar passa a ocupar
+     apenas a faixa entre os dois vizinhos e quebra em DUAS LINHAS de 5. Sobram
+     180px para os slots no tablet, o que da ~33px cada — tamanho cheio, sem
+     espremer. A altura extra cresce para cima, onde so ha mapa.
+
+     No celular essa conta nao fecha (87px para 5 slots = 14px cada, intocavel),
+     e por isso o G2 mais abaixo desfaz isto e sobe a barra. */
+  .game-hud .hud-hotbar,
+  .game-hud #hud-sidebar:not(.collapsed) ~ .hud-hotbar,
+  .game-hud #hud-sidebar.collapsed ~ .hud-hotbar {
+    --hotbar-left-gutter: 140px;
+    --hotbar-right-gutter: calc(60px + var(--loom-chat-pill));
+    left: calc(
+      var(--hotbar-left-gutter)
+      + (100% - var(--hotbar-left-gutter) - var(--hotbar-right-gutter)) / 2
+    ) !important;
+    max-width: calc(100% - var(--hotbar-left-gutter) - var(--hotbar-right-gutter));
+  }
+
+  /* `place-content: center` mantem as duas linhas centradas na faixa e com o
+     mesmo respiro dos dois lados — sem isso a segunda linha (se incompleta)
+     encostaria a esquerda e o conjunto ficaria torto. O `gap` uniforme vem de
+     screens.css:2058 e vale para linha e coluna, entao os vaos ja sao iguais
+     entre si. */
+  .game-hud .macro-slots-container {
+    grid-template-columns: repeat(5, var(--hud-control-size-slot));
+    place-content: center;
+  }
+}
+
+
+/* ==========================================================================
+   G2 — Celular em paisagem. Aqui o recurso escasso é a ALTURA (~375–430px),
+   não a largura — por isso o gate é de `max-height`, não de `max-width`.
+
+   G2 é subconjunto de G1 de propósito: G1 define a base de toque, G2 refina
+   para tela baixa, e G2 vem depois no arquivo para vencer por ordem.
+   ========================================================================== */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
+
+  /* ---- Janelas viram folha de rosto em tela cheia --------------------------
+     Numa tela de ~375px de altura não existe "janela flutuante" utilizável: a
+     `min-width: 480px` de windows.css:522 já estoura sozinha, e cada janela
+     ainda escreve a própria largura em px.
+
+     O `!important` aqui não é preguiça: `base-window.ts` (init/restore de
+     posição, ~linha 545 e ~729) grava `left/top/width/height` como ESTILO
+     INLINE, e estilo inline só perde para `!important`. Em compensação, este
+     único bloco resolve as ~25 janelas de uma vez, sem tocar em nenhuma delas.
+
+     Efeito colateral aceito: arrastar/redimensionar continua gravando inline e
+     vira no-op visual — nada quebra, só não move. Por isso o handle de resize
+     some, para não prometer um gesto que não faz nada.
+
+     `env(safe-area-inset-*)` mantém a janela fora do notch, que em paisagem
+     come justamente a borda esquerda ou direita. */
+  .loom-window:not(.no-mobile-sheet) {
+    inset:
+      env(safe-area-inset-top, 0px)
+      env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px)
+      env(safe-area-inset-left, 0px) !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border-width: 0 !important;
+  }
+
+  .loom-window:not(.no-mobile-sheet) .loom-window-resize-handle {
+    display: none !important;
+  }
+
+
+  /* ---- Hotbar no celular: sobe em vez de quebrar em duas linhas -----------
+     O G1 acima coloca a hotbar entre a lista de jogadores e o chat, em duas
+     linhas de 5. No tablet isso da 36px por slot. Aqui nao: a faixa livre tem
+     197px e os controles proprios da barra ja levam 110, sobrando 87px para 5
+     slots — 14px cada, pequeno demais para o dedo.
+
+     Entao no celular ela volta a ocupar a largura inteira, numa linha so, e
+     sobe 60px para limpar a lista de jogadores (32px em bottom:12) e o chat
+     (34px em bottom:16). Acima dela so ha mapa. */
+  .game-hud .hud-hotbar,
+  .game-hud #hud-sidebar:not(.collapsed) ~ .hud-hotbar,
+  .game-hud #hud-sidebar.collapsed ~ .hud-hotbar {
+    --hud-control-size-slot: clamp(24px, 4vw, 36px) !important;
+    left: 50% !important;
+    max-width: none;
+    bottom: 60px !important;
+  }
+
+  .game-hud .macro-slots-container {
+    grid-template-columns: repeat(10, var(--hud-control-size-slot));
+  }
+
+
+  /* ---- Regra geral: celular não rola ---------------------------------------
+     Em paisagem a tela é baixa, e rolagem de página aqui esconde justamente o
+     que importa (título fora da tela, botão de entrar abaixo da dobra). A
+     escolha é caber, não rolar: o que não couber some (ambientação primeiro),
+     o resto compacta. Rolagem interna de listas continua valendo — o que não
+     pode é a PÁGINA rolar. */
+  html, body {
+    overflow: hidden;
+  }
+
+
+  /* ---- world-login: afinação para tela baixa ------------------------------
+     A composição de duas colunas vem do G1. Aqui só a escala: uma tela de
+     375px de altura precisa de passo tipográfico e respiros menores. */
+  .world-gate {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .wg-top {
+    padding: 8px calc(var(--wg-col) / 2);
+    gap: 10px;
+  }
+
+  /* O herói ancora embaixo na coluna da esquerda, como no desktop — a
+     identidade da mesa assentada sobre a arte, não flutuando no meio. */
+  .wg-mid {
+    align-items: flex-end;
+    padding: 0 calc(var(--wg-col) / 2) 10px;
+  }
+
+  .wg-roster-side {
+    padding: 8px calc(var(--wg-col) / 2) 10px;
+  }
+
+  .wg-form-side {
+    gap: 12px;
+    padding: 14px calc(var(--wg-col) / 2);
+  }
+
+  /* O gradiente de leitura original termina em 96% de preto (world-gate.css:71).
+     Numa tela de 375px de altura ele comprime todo o degradê nesse pouco espaço
+     e a arte do mundo some — a tela fica chapada. Aqui ele é mais suave: ainda
+     garante contraste para o texto, mas deixa a arte aparecer. */
+  .wg-art::after {
+    background: linear-gradient(
+      180deg,
+      rgba(6, 8, 13, 0.15) 0%,
+      rgba(6, 8, 13, 0.5) 55%,
+      rgba(6, 8, 13, 0.88) 100%
+    );
+  }
+
+  .wg-kicker {
+    margin: 0 0 4px;
+  }
+
+  /* Com a coluna da esquerda inteira à disposição, o nome da mesa pode ocupar
+     espaço de herói em vez de virar um rótulo miúdo. */
+  .wg-name {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 5.2vw, 44px);
+  }
+
+  /* O próprio world-gate.css chama isto de "ambiance, not mandatory content"
+     (comentário em .wg-desc). Num celular é a única coisa que ainda não cabe —
+     "sistema/próxima sessão" e o texto de ajuda voltaram com a composição nova. */
+  .wg-desc {
+    display: none;
+  }
+}
