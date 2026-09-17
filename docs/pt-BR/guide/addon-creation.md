@@ -42,6 +42,12 @@ Addons são pacotes que estendem o LoomVTT com funcionalidades adicionais.
   ],
   "dependencies": ["outro-addon"],
   "conflicts": [],
+  "systems": [],
+  "requiresApiKey": false,
+  "compendiums": [
+    "compendiums/meu-pack.sqlite",
+    { "type": "remote", "apiUrl": "https://meu-backend.exemplo.com/api" }
+  ],
   "settings": [
     {
       "key": "modoEscuro",
@@ -61,7 +67,7 @@ Addons são pacotes que estendem o LoomVTT com funcionalidades adicionais.
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Obrigatório**. Define que o pacote é para LoomVTT |
 | `type`         | `"addon"`      | **Obrigatório**. Define que é um addon      |
-| `engineVersion`| `string`       | Faixa de versão exigida (ex: `>=0.1.0`)     |
+| `engineVersion`| `string`       | Faixa de versão exigida — min e/ou max, ex: `>=0.1.0`, `<2.0.0`, ou `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Nome do autor                              |
 | `repository`   | `string`       | URL do repositório/código-fonte            |
 | `description`  | `string`       | Descrição do pacote                       |
@@ -78,7 +84,16 @@ Addons são pacotes que estendem o LoomVTT com funcionalidades adicionais.
 | `signals`      | `string[]`     | Nomes de Signals que este addon escuta      |
 | `dependencies` | `string[]`     | Addons/sistemas que devem estar ativos      |
 | `conflicts`    | `string[]`     | Addons/sistemas que NÃO podem estar ativos |
+| `systems`      | `string[]`     | Restringe o addon a mundos cujo `world.system` esteja nesta lista. Omitido/vazio = compatível com qualquer sistema. |
+| `requiresApiKey` | `boolean`   | Só relevante com `compendiums` do tipo `remote`. `true` exige uma licença resgatada por instalação (`/api/marketplace/redeem`) antes de qualquer requisição àquela fonte — ver [Fontes remotas de compêndio: modelo de segurança](system-creation.md#fontes-remotas-de-compendio-modelo-de-seguranca). |
+| `compendiums`  | `(string \| RemoteCompendiumSource)[]` | Fontes de compêndio deste addon, lidas em tempo real (nunca copiadas pro banco do mundo) — mesmo formato de [Criação de Sistemas](system-creation.md#manifest-rulesetjson). |
 | `settings`     | `SettingDef[]` | Configurações do addon                    |
+
+- `engineVersion` é informativo, não é portão rígido. Número inteiro sozinho funciona
+  (`"1"`, `">=2"`), e uma clausula mal formatada/typo é logada e ignorada em vez de
+  bloquear a instalação. Se a versão realmente cair fora da faixa declarada, a
+  instalação segue mesmo assim — o instalador só devolve uma string `warning` (mostrada
+  como toast) pra quem está instalando julgar se é seguro.
 
 ## Client-side
 
@@ -122,16 +137,65 @@ showConfirm('Tem certeza?').then(ok => {});
 
 ## Server-side
 
-O `core.js` (se especificado) é importado no servidor durante o boot. Tem acesso ao Signal system e ao banco:
+O `core.js` (se especificado) é importado no servidor durante o boot, uma
+vez, no mesmo processo Node do resto do app — acesso total ao banco e a
+todo módulo interno, sem sandbox. Dois pontos de extensão:
 
-```typescript
+**Sua própria tabela no banco.** LoomVTT é relacional de ponta a ponta
+(knex, sobre SQLite ou Postgres) — não tem cliente NoSQL nenhum plugado no
+app pra usar. `db` é uma instância knex apontada pro mundo atualmente ativo:
+
+```javascript
 // core.js — caminho relativo a partir de marketplace/addons/<seu-addon>/core.js
+import { db } from '../../../server/applications/database/db.js';
+
+async function ensureTable() {
+  if (!(await db.schema.hasTable('my_addon_notes'))) {
+    await db.schema.createTable('my_addon_notes', (t) => {
+      t.string('worldId').primary();
+      t.text('text').defaultTo('');
+    });
+  }
+}
+```
+
+Não existe hook pra "o banco do mundo acabou de ficar pronto" — cheque/crie
+sua tabela de forma lazy, na primeira vez que uma rota precisar dela.
+
+**Sua própria API REST.** O `app` Express principal nunca é exportado pro
+código de addon (dar acesso ao app cru deixaria um addon sobrescrever rota
+do core ou meter middleware antes da auth). `registerAddonRoutes()` monta
+seu router num namespace próprio, `/api/addons/<seu-addon>/*`, já com
+`requireAuth` aplicado:
+
+```javascript
+import { Router } from 'express';
+import { registerAddonRoutes } from '../../../server/applications/addons/addon-api.js';
+
+const router = Router();
+router.get('/notes', async (req, res) => {
+  const worldId = req.auth?.worldId;
+  res.json({ text: '...' });
+});
+registerAddonRoutes('meu-addon', router);
+```
+
+O client chama igual a qualquer endpoint do core: `api.get('/addons/meu-addon/notes')`.
+
+**Reagir ao que o core já dispara** — o outro ponto de extensão, sem rota
+nenhuma:
+
+```javascript
 import { Signal } from '../../../server/applications/signals/index.js';
 
 Signal.listen('cast.created', (data) => {
   console.log('Cast member criado:', data);
 });
 ```
+
+`Signal` é um `EventEmitter` puro do lado do servidor — nunca chega no
+navegador por conta própria; é pra reagir a outra coisa do servidor, não
+pra falar com o client (ver o [addon de exemplo completo](https://github.com/sammore2/loom-exemple-addon) com os três juntos).
 
 ## Ciclo de vida
 
@@ -143,7 +207,7 @@ Signal.listen('cast.created', (data) => {
 
 ## Instalação
 
-Via Setup Hub > Módulos ou API:
+Via Setup Hub > Addons ou API:
 
 ```bash
 curl -X POST http://localhost:3000/api/marketplace/install \

@@ -11,7 +11,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 └── templates/      ← templates de ficha, extensão `.hbs`
 ```
 
-> **Rulesets NÃO têm `core.js`.** Diferente de addons/módulos, sistemas de RPG rodam
+> **Rulesets NÃO têm `core.js`.** Diferente de addons, sistemas de RPG rodam
 > **100% client-side** — mesmo que você declare `"core": "core.js"` no manifesto, o
 > `AddonLoader` (`server/applications/addons/loader.ts`) detecta que é um `ruleset` e
 > ignora esse campo de propósito, só logando um aviso. Isso é um bloqueio de segurança
@@ -61,8 +61,11 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   ],
   "dependencies": [],
   "conflicts": [],
+  "systems": [],
+  "requiresApiKey": false,
   "compendiums": [
-    "compendiums/classes.json"
+    "compendiums/classes.sqlite",
+    { "type": "remote", "apiUrl": "https://meu-backend.exemplo.com/api" }
   ]
 }
 ```
@@ -74,7 +77,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Obrigatório**. Define que o pacote é para LoomVTT |
 | `type`         | `"ruleset"`    | **Obrigatório**. Define que é um sistema    |
-| `engineVersion`| `string`       | Faixa de versão exigida (ex: `>=0.1.0`)     |
+| `engineVersion`| `string`       | Faixa de versão exigida — min e/ou max, ex: `>=0.1.0`, `<2.0.0`, ou `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Nome do autor                              |
 | `repository`   | `string`       | URL do repositório/código-fonte            |
 | `description`  | `string`       | Descrição do pacote                       |
@@ -86,12 +89,18 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 | `client`       | `string`       | Entry point client-side (`.js`)           |
 | `core`         | `string`       | **NÃO UTILIZADO**. (Sistemas rodam apenas no client) |
 | `styles`       | `string[]`     | Array de paths para arquivos CSS          |
-| `compendiums`  | `string[]`     | Array de paths para compêndios JSON       |
+| `compendiums`  | `(string \| RemoteCompendiumSource)[]` | Paths de packs `.sqlite` locais, ou declarações de fonte remota |
 | `languages`    | `Array`        | Array de definições de idioma (`lang`, `name`, `path`) |
 | `signals`      | `string[]`     | Nomes de Signals que este sistema escuta      |
 | `dependencies` | `string[]`     | Addons/sistemas que devem estar ativos      |
 | `conflicts`    | `string[]`     | Addons/sistemas que NÃO podem estar ativos |
+| `systems`      | `string[]`     | Só pra `type: "addon"` — restringe o addon a mundos cujo `world.system` esteja nesta lista. Omitido/vazio = compatível com qualquer sistema. Um `ruleset` já é auto-escopado pelo próprio `name`, não usa este campo. |
+| `requiresApiKey` | `boolean`   | Só relevante se houver `compendiums` do tipo `remote`. Se `true`, o servidor exige uma licença resgatada (ver [Fontes remotas de compêndio](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo) antes de qualquer requisição àquela fonte. |
 
+- `engineVersion`: Informativo, não é portão rígido. Número inteiro sozinho funciona
+  (`"1"`, `">=2"`), e uma clausula mal formatada é logada e ignorada em vez de bloquear
+  a instalação. Uma versão realmente fora da faixa declarada ainda instala — o
+  instalador devolve uma string `warning` (mostrada como toast) em vez de recusar.
 - `itemTypes`: Array opcional com os tipos de item extras que este sistema usa (ex:
   `["force-power", "talent", "class", "species"]`). **Necessário mesmo já declarando
   `itemTypes` em `defineSystem({...})` no `client.js`** — rulesets nunca executam código no
@@ -99,7 +108,9 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   então a validação de tipo em `POST/PUT /api/items` só enxerga o que estiver aqui, neste
   JSON estático. Tipos fora da lista nativa (`weapon, spell, armor, equipment, consumable,
   tool, treasure, other`) e fora deste array são silenciosamente rebaixados pra `equipment`.
-- `compendiums`: Array opcional contendo caminhos (relativos à pasta do ruleset) de arquivos JSON representando pacotes de compêndio pré-prontos do sistema. Eles serão importados automaticamente e de forma idempotente quando um mundo for ativado/lançado com esse sistema ativo. (Formato do JSON: `{ "name": "...", "type": "Item", "entries": [...] }`).
+- `compendiums`: Array opcional de fontes de compêndio, lidas em tempo real e só pra navegação — **nunca** copiadas pro banco do mundo na ativação. Cada GM decide, entry por entry, se materializa aquilo no próprio mundo (drag-and-drop, ou a ação "salvar no meu compêndio"), o que grava só aquela entry, nunca o pack inteiro. Dois tipos de item:
+  - **Local** — uma string simples, o caminho (relativo à pasta do addon/ruleset) de um arquivo `.sqlite` com uma tabela `pack_meta` (1 linha: `name`, `type`) e uma tabela `entries` (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Monta um com `scripts/build-compendium-pack.mjs`.
+  - **Remota** — um objeto `{ "type": "remote", "apiUrl": "..." }`, pra conteúdo hospedado por terceiro (ex: um addon pago que uma editora mantém no próprio banco). `apiUrl` precisa ser um endpoint `https://` (`http://` é rejeitado direto) que fale um contrato **próprio, agnóstico de banco** — não PostgREST — com só três rotas: `GET {apiUrl}/meta` → `{ name, type }`, `GET {apiUrl}/entries` (aceita `?search=`/`?includeData=`) → array de entries, e `GET {apiUrl}/entries/:id` → uma entry específica. Qualquer backend serve, desde que responda essas rotas: Supabase/Postgres com uma Edge Function fina na frente, um servidor Express puro sobre MySQL, o que for — o core nunca fala com o banco da editora diretamente. Se o conteúdo for pago, some `"requiresApiKey": true` no manifest (fora do array `compendiums`) — ver [Fontes remotas de compêndio: modelo de segurança](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo antes de distribuir uma dessas.
 - `languages`: Array opcional com pacotes de idioma do sistema. O VTT carrega o JSON e faz o registro automático (usando *deep merge*) para popular o objeto `Loom.i18n`.
 - `styles`: Array opcional com os caminhos (relativos à pasta do ruleset) dos arquivos `.css`
   a injetar. **Ter os arquivos na pasta `styles/` não é suficiente** — só o que estiver
@@ -107,6 +118,52 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   [`addon-client-loader.ts`](../../client/core/addon-client-loader.ts) só injeta o que está
   neste array). Esquecer de declarar aqui é o motivo mais comum de "a ficha renderiza mas
   sem nenhum estilo aplicado".
+
+### Fontes remotas de compêndio: modelo de segurança
+
+Uma fonte remota de compêndio é acesso de rede real ao backend de um terceiro. Se o
+conteúdo for pago (`requiresApiKey: true`), o modelo de licenciamento é **por
+instalação do servidor, não por mundo** — um GM que roda vários mundos no mesmo
+servidor cola a key uma única vez (Setup Hub → editar addon → aba Compatibilidade →
+Licença), e ela vale pra todos os mundos daquele servidor.
+
+- **A key nunca é gerada por nós.** Ela é emitida pelo vendedor terceiro no momento da
+  compra, fora do LoomVTT. O GM cola essa key na tela de licença, que chama
+  `POST /api/marketplace/redeem` com `{ code, packageName }` — sem `worldId`. Essa rota,
+  pra um `packageName` de addon `requiresApiKey`, **não valida a key contra nada** (não
+  temos como saber se é válida) — só grava o que foi colado em
+  `ActivationCodesDocument` com `worldId: ''` (server-wide) e `used: true`. Se a key
+  estiver errada, a validação de verdade acontece no backend do vendedor, na primeira
+  requisição real — e aparece como erro ali, não no ato de salvar a licença.
+- **A key só viaja num header, nunca em query string.** `compendium-source.ts` monta
+  `Authorization: Bearer <key>` em toda requisição pra um `apiUrl` de addon
+  `requiresApiKey`; addon sem essa flag manda a requisição sem `Authorization` — quem
+  hospeda decide se isso basta ou se exige autenticação própria.
+- **`http://` é rejeitado.** `assertSecureApiUrl()` em `compendium-source.ts` bloqueia
+  qualquer `apiUrl` que não seja `https://`, pra chave não viajar em texto claro na rede.
+- **Navegar uma fonte remota exige `compendiumEdit` (GM), não só estar logado.** As rotas
+  `/api/compendium/sources*` exigem isso — senão qualquer conta de jogador no mundo
+  conseguiria usar a rota em loop e fazer o servidor devolver o pack pago inteiro em nome
+  dela, não só o que o GM licenciou. (As rotas `/api/compendium/browse/*`, usadas por
+  seletores voltados a jogador — como o wizard de personagem — ficam abertas pra
+  qualquer autenticado, mas só devolvem o que já está habilitado pro mundo daquele
+  jogador via `world_packages`/`world.system`, nunca o catálogo inteiro do servidor.)
+- **Conteúdo de fonte remota é escapado antes de renderizar.** `name`, `imgUrl` etc. vêm
+  como dado de terceiro não confiável e passam por escape de HTML (ver
+  `escapeHtml`/`safeImgUrl` em `client/windows/compendium-source-window.ts` e
+  `sidebar.ts`) antes de entrar em qualquer template via `innerHTML` — um endpoint de
+  editora comprometido não consegue injetar script no client do GM só devolvendo
+  `name`/`imgUrl` maliciosos.
+
+O que isso **não** cobre, porque não é responsabilidade nossa cobrir:
+- **A segurança do próprio banco/backend da editora** (quem mais tem acesso, rate limit,
+  log de auditoria, como ela decide se uma key é válida) é inteiramente dela. A
+  recomendação é emitir uma key escopada, só leitura, por comprador — nunca uma
+  credencial mestra do próprio backend — pra uma key vazada expor só o acesso daquele
+  comprador, não o catálogo inteiro.
+- **O código de um addon malicioso não é isolado** do resto do processo do servidor —
+  todo `core` de addon já roda com privilégio total do servidor (disco, banco, rede),
+  independente da feature de compêndio. Só instale addon de fonte confiável.
 
 ## Registro do Sistema
 

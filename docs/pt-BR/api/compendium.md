@@ -109,13 +109,105 @@ Recria todo documento empacotado numa entry Adventure como documento novo no mun
 
 ---
 
-### POST `/restore-from-system`
+## Fontes de addon/ruleset (só leitura, nunca copiado pro mundo)
 
-Restaura manualmente os compêndios que vêm com o sistema (ruleset) ativo do mundo — o
-mesmo processo rodado automaticamente ao ativar um mundo. **Auth:**
-`requirePermission('compendiumEdit')`
+Essas rotas navegam fontes de compêndio vivas declaradas por addons/rulesets ativos
+(`manifest.compendiums` — arquivos `.sqlite` locais ou APIs remotas, ver
+[system-creation.md](../guide/system-creation.md#fontes-remotas-de-compendio-modelo-de-seguranca)
+pro modelo de segurança da fonte remota). Navegar nunca escreve nada no banco do
+mundo — só `.../import` materializa uma entry específica.
+
+Toda listagem é escopada pelo mundo autenticado da request: só aparecem o ruleset do
+próprio `world.system`, addons habilitados pra aquele mundo (`world_packages`, não a
+antiga `world.packageIds` — nunca escrita por nenhum código vivo) e, dentre esses, só os
+que não restringem `systems` pra outro sistema. Uma fonte `remote` com
+`requiresApiKey: true` sem licença resgatada pra este servidor simplesmente não aparece
+na lista — não é 403, é omitida.
+
+**Auth em `/sources*` (GM):** `requirePermission('compendiumEdit')` — de propósito não
+aberto pra qualquer jogador autenticado, já que uma fonte remota faz proxy pelo servidor
+usando uma credencial que o servidor guarda; qualquer um que conseguisse chamar essas
+rotas poderia usá-las em loop pra fazer o servidor dumpar um pack pago de terceiro
+inteiro, não só o que o GM licenciou.
+
+### GET `/sources`
+
+Lista toda fonte viva escopada pro mundo do request (ver nota de escopo acima).
+
+**Response `200`:** `[{ sourceId, name, type, ownerName, ownerType, locked }]`
+
+---
+
+### GET `/sources/:sourceId/entries`
+
+Listagem leve de entries de uma fonte (sem payload `data`). `?search=`
+
+**Response `200`:** `{ sourceId, name, type, entries: [{ id, name, type, sortOrder, imgUrl }] }`
+**Response `404`:** fonte não encontrada
+
+---
+
+### GET `/sources/:sourceId/entries/:entryId`
+
+Entry completa, incluindo `data`.
+
+**Response `404`:** entry não encontrada
+
+---
+
+### POST `/sources/:sourceId/entries/:entryId/import`
+
+Materializa UMA entry no compêndio do próprio mundo (cria o pack de destino no primeiro
+uso, nomeado a partir da fonte). Nunca copia o resto do pack de origem.
 
 **Request body:** `{ "worldId": "..." }`
 
-**Response `200`:** `{ "success": true, "count": number }`
-**Response `400`:** `worldId` ausente
+**Response `201`:** `{ packId, entry }`
+**Response `403`:** `worldId` não bate com o mundo autenticado de quem chamou
+**Response `404`:** fonte ou entry não encontrada
+
+---
+
+## Fontes de addon/ruleset — leitura pro jogador (`/browse/*`)
+
+Mesmo escopo/dados de `/sources*` acima, mas **sem exigir `compendiumEdit`** — só
+autenticado no mundo. Existe pra seletores voltados a jogador (ex: o wizard de
+personagem escolhendo raça/classe) que precisam navegar compêndio sem serem GM. Nunca
+tem rota de escrita/import aqui.
+
+### GET `/browse/sources`
+
+Igual `/sources`, com filtro opcional `?type=`.
+
+**Response `200`:** `[{ sourceId, name, type }]`
+
+---
+
+### GET `/browse/sources/:sourceId/entries`
+
+Igual `/sources/:sourceId/entries`. `?search=`
+
+**Response `200`:** `{ sourceId, name, type, entries: [...] }`
+
+---
+
+### GET `/browse/sources/:sourceId/entries/:entryId`
+
+Igual `/sources/:sourceId/entries/:entryId`.
+
+---
+
+### GET `/browse/entries?entryType=X&search=Y`
+
+Busca em TODA fonte escopada pro mundo de uma vez, filtrado pelo `type` da própria
+entry (`class`/`race`/`feat`/`subclass`/`spell`/...) — não pelo `type` do pack (que é só
+um balde genérico Foundry-style: `Actor`/`Item`/`Journal`). Deixa um seletor perguntar
+"toda entry de classe chamada X, em qualquer pack" sem saber de antemão quais
+`sourceId`s existem.
+
+**Query:** `entryType` (obrigatório), `search`, `includeData` (`"true"` pra incluir o
+campo `data` de cada entry — necessário quando quem chama precisa filtrar client-side
+por um campo mecânico, ex: subclass picker por `classIdentifier`)
+
+**Response `200`:** `{ entries: [{ ...entry, sourceId, sourceName }] }`
+**Response `400`:** `entryType` ausente

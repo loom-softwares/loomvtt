@@ -42,6 +42,12 @@ Addons are packages that extend LoomVTT with additional functionality.
   ],
   "dependencies": ["another-addon"],
   "conflicts": [],
+  "systems": [],
+  "requiresApiKey": false,
+  "compendiums": [
+    "compendiums/my-pack.sqlite",
+    { "type": "remote", "apiUrl": "https://my-backend.example.com/api" }
+  ],
   "settings": [
     {
       "key": "darkMode",
@@ -61,7 +67,7 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Required**. Defines that the package is for LoomVTT |
 | `type`         | `"addon"`      | **Required**. Defines that it is an addon      |
-| `engineVersion`| `string`       | Required version range (e.g., `>=0.1.0`)     |
+| `engineVersion`| `string`       | Required version range — min and/or max, e.g. `>=0.1.0`, `<2.0.0`, or `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Author name                              |
 | `repository`   | `string`       | Repository/source code URL            |
 | `description`  | `string`       | Package description                       |
@@ -78,7 +84,16 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `signals`      | `string[]`     | Signal names that this addon listens to      |
 | `dependencies` | `string[]`     | Addons/systems that must be active      |
 | `conflicts`    | `string[]`     | Addons/systems that MUST NOT be active |
+| `systems`      | `string[]`     | Restricts the addon to worlds whose `world.system` is in this list. Omitted/empty = compatible with any system. |
+| `requiresApiKey` | `boolean`   | Only relevant with a `remote`-type `compendiums` entry. `true` requires a redeemed license per installation (`/api/marketplace/redeem`) before any request to that source — see [Remote compendium sources: security model](system-creation.md#remote-compendium-sources-security-model). |
+| `compendiums`  | `(string \| RemoteCompendiumSource)[]` | This addon's compendium sources, read live (never copied into the world's database) — same shape as [System Creation](system-creation.md#manifest-rulesetjson). |
 | `settings`     | `SettingDef[]` | Addon settings                    |
+
+- `engineVersion` is informational, not a hard gate. Bare integers work (`"1"`, `">=2"`), as
+  does a plain typo or unparseable clause — those get logged and ignored rather than
+  blocking the install. If the version genuinely falls outside the declared range, the
+  install still proceeds; the installer just returns a non-fatal `warning` string (shown
+  as a toast) so whoever's installing can judge for themselves whether it's safe.
 
 ## Client-side
 
@@ -122,16 +137,65 @@ showConfirm('Are you sure?').then(ok => {});
 
 ## Server-side
 
-The `core.js` (if specified) is imported on the server during boot. It has access to the Signal system and the database:
+The `core.js` (if specified) is imported on the server during boot, once, in
+the same Node process as the rest of the app — full access to the database
+and every internal module, no sandbox. Two extension points:
 
-```typescript
+**Your own database table.** LoomVTT is relational end to end (knex, over
+SQLite or Postgres) — there's no NoSQL client wired in to reach for. `db` is
+a knex instance pointed at whichever world is currently active:
+
+```javascript
 // core.js — relative path starting from marketplace/addons/<your-addon>/core.js
+import { db } from '../../../server/applications/database/db.js';
+
+async function ensureTable() {
+  if (!(await db.schema.hasTable('my_addon_notes'))) {
+    await db.schema.createTable('my_addon_notes', (t) => {
+      t.string('worldId').primary();
+      t.text('text').defaultTo('');
+    });
+  }
+}
+```
+
+No hook fires for "the world's DB just became ready" — check/create your
+table lazily, the first time a route needs it.
+
+**Your own REST API.** The main Express `app` is never exported to addon
+code (handing it out would let an addon override core routes or slip
+middleware in ahead of auth). `registerAddonRoutes()` mounts your router
+under `/api/addons/<your-addon-name>/*` instead, with `requireAuth` already
+applied:
+
+```javascript
+import { Router } from 'express';
+import { registerAddonRoutes } from '../../../server/applications/addons/addon-api.js';
+
+const router = Router();
+router.get('/notes', async (req, res) => {
+  const worldId = req.auth?.worldId;
+  res.json({ text: '...' });
+});
+registerAddonRoutes('my-addon', router);
+```
+
+The client calls it like any core endpoint: `api.get('/addons/my-addon/notes')`.
+
+**Reacting to what the core already broadcasts** — the other extension
+point, no route needed:
+
+```javascript
 import { Signal } from '../../../server/applications/signals/index.js';
 
 Signal.listen('cast.created', (data) => {
   console.log('Cast member created:', data);
 });
 ```
+
+`Signal` is a plain server-side `EventEmitter` — it never reaches the
+browser by itself; it's for reacting to something else on the server, not
+for talking to the client (see the [full example addon](https://github.com/sammore2/loom-exemple-addon) for all three together).
 
 ## Lifecycle
 
@@ -143,7 +207,7 @@ Signal.listen('cast.created', (data) => {
 
 ## Installation
 
-Via Setup Hub > Modules or API:
+Via Setup Hub > Addons or API:
 
 ```bash
 curl -X POST http://localhost:3000/api/marketplace/install \
