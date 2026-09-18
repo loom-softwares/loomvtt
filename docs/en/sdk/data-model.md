@@ -68,3 +68,20 @@ class CreatureModel extends TypeDataModel {
 const model = new CreatureModel({ hp: 20 });
 console.log(model.name, model.hp); // 'No name' 20
 ```
+
+## How this feeds `actor.system` / `item.system`
+
+Once a system registers a `TypeDataModel` subclass per type (`Loom.config.Actor.dataModels[type] = MyModel`,
+same for `Loom.config.Item.dataModels`), every live `Actor`/`Item` instance's `.system` getter
+runs the raw stored data through that model on **every access** (not cached — see `globals.md`),
+so `initial` values declared in `defineSchema()` always fill in fields missing from what's
+actually saved.
+
+> **Gotcha:** if your system also does its own `.system`-aliasing for raw, non-instance
+> documents (e.g. a "give plain DB rows a `.system` getter too" compatibility shim), guard it
+> with `'system' in document` — which checks the **whole prototype chain** — not
+> `Object.getOwnPropertyDescriptor(document, 'system')`, which only sees **own** properties.
+> A real `Actor`/`Item` instance already has `.system` as an *inherited* getter from its
+> prototype; an own-property-only check won't see it and will install a second, shadowing
+> getter that returns the raw data verbatim — silently dropping every `initial` your schema
+> declares for that instance.

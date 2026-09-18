@@ -68,3 +68,20 @@ class CreatureModel extends TypeDataModel {
 const model = new CreatureModel({ hp: 20 });
 console.log(model.name, model.hp); // 'Sem nome' 20
 ```
+
+## Como isso alimenta `actor.system` / `item.system`
+
+Depois que um sistema registra uma subclasse de `TypeDataModel` por tipo (`Loom.config.Actor.dataModels[type] = MeuModel`,
+o mesmo vale pra `Loom.config.Item.dataModels`), toda instância viva de `Actor`/`Item` passa os
+dados crus salvos por esse model no getter `.system` **a cada acesso** (não é cacheado — ver
+`globals.md`), então os valores `initial` declarados em `defineSchema()` sempre preenchem campos
+que faltarem no que foi realmente salvo.
+
+> **Pegadinha:** se seu sistema também expõe um `.system` de compatibilidade pra documentos
+> crus sem instância (ex.: um shim tipo "dar `.system` também pra linhas cruas do banco"),
+> proteja com `'system' in document` — que checa a **cadeia de protótipo inteira** — não com
+> `Object.getOwnPropertyDescriptor(document, 'system')`, que só vê propriedades **próprias**.
+> Uma instância real de `Actor`/`Item` já tem `.system` como getter *herdado* do protótipo; um
+> check que só olha propriedade própria não vê esse getter e instala um segundo, por cima,
+> que devolve o dado cru direto — descartando silenciosamente todo `initial` que seu schema
+> declara pra aquela instância.

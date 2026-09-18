@@ -16,10 +16,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Paid remote compendium content**: addons can now ship compendium content hosted on a third-party backend (Supabase, Postgres, or any server speaking a small REST contract of ours) instead of a bundled `.sqlite` file. If the content is paid, the addon declares `requiresApiKey: true` and the license you purchase is entered once per server install (Setup Hub → edit addon → Compatibility tab) — not re-entered per world.
 - **System-specific addons**: an addon's manifest can now declare `systems: [...]` to restrict it to worlds running a specific ruleset, so a piece of content built for one game system never shows up for an unrelated one.
 - **Addon manifest editor redesign**: dependencies, conflicts, and compatible systems are now picked from what's actually installed (dropdown + removable tags) instead of typed as a comma-separated list.
+- **Actor creation now asks for a name**: creating a new actor prompts for its name alongside its type in one step, instead of always auto-naming it "New Actor (N)" with no way to set the real name until after creation.
 
 ### Fixed
 - **A world could see another system's compendium content** in some admin-session setups — fixed at the source.
 - **wod5e: "Reroll" (without spending Willpower) did nothing** — it now actually updates the roll in place, matching the Willpower reroll.
+- **A freshly created actor's sheet could open with some data not yet reflecting its real values**, requiring a reload to display correctly — the sheet now opens with the same data a reload would show.
+- **Creating an actor while the active system's actor types were still loading could silently create it with an invalid type** instead of showing the type picker.
+- **The world's pause icon could show the generic default icon instead of the active system's own** if the pause banner rendered before the system finished loading. Worlds now also always start paused when (re)activated.
+- **Compendium browser: opening a journal entry or roll table did nothing** — they now open with their real sheet, like actors and items already did.
+- **The floating chat toast (shown when the sidebar is collapsed) now also appears when the sidebar is expanded but a non-chat tab is active**, matching Foundry's behavior — previously it only ever showed while fully collapsed.
+- **Chat/roll cards and the floating chat toast could have their right edge clipped** depending on window size.
 
 ---
 
