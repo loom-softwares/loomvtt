@@ -189,7 +189,7 @@ Se uma janela com o mesmo ID já estiver aberta, `open` foca ela em vez de criar
 
 ## Janelas Disponíveis (37)
 
-ActorSheetWindow, AppConfigWindow, BugReportWindow, CompendiumPackWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalWindow, KeybindConfigWindow, LightConfigWindow, MacroEditorWindow, ModuleManagementWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PlaylistConfigWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, WallConfigWindow, WorldConfigLiteWindow
+ActorSheetWindow, AppConfigWindow, BugReportWindow, CompendiumPackWindow, CompendiumSourceWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalWindow, KeybindConfigWindow, LightConfigWindow, MacroEditorWindow, ModuleManagementWindow, ModuleManifestWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PlaylistConfigWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, WallConfigWindow, WorldConfigLiteWindow
 
 > `showSelectDialog()`/`showColorDialog()`/`showRangeDialog()` (em `client/components/
 > dialog.ts`) não têm classe própria de janela registrada — são funções de conveniência

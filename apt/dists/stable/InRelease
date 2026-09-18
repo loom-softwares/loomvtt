@@ -1,0 +1,28 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: LoomVTT
+Label: LoomVTT
+Suite: stable
+Codename: stable
+Version: 1.0
+Architectures: amd64
+Components: main
+Description: LoomVTT APT repository
+Date: Mon, 14 Sep 2026 20:35:45 GMT
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE3aw7wXV7QdAz2Up547JYwW4GHuAFAmqoWqEACgkQ47JYwW4G
+HuCGpxAAr6ffqkdn/pnd8gfKUKriIvSeNss9wOleE4TBbxdlHUMaPy7TvLUFfPQo
+aCnHPPlisCTLMd2ch2cSlfwDVG7vtXzqJg5vorIBG7R//yFZDDLU/abq/tMsBtcI
+55VrScWFnLDNKDTDzfrGH2Vv+OWviJe8sqfDj6amk9E+3qpJVacAuXK9JolPX1Wr
+1l4d11uI6BZYKjNQ52q1artFcbKFi2zTOLknx3MBb9nCSsTT2gKYaYk8lI4KCaZC
+3noGXX+EFS3zFjMNn4T9Hc1wTSTn2llBqV14NqIMIpDicq8eqNI3SE++pinMDyDi
+17TrMgRi3q/b4ICViT3C61dYKw4qKwXqdaBcaB8xIwPfrRAP4MgZx/Ee+tpRuFat
+BVm+dXWglDPKSD2GaSlXg3h4s8gsIXgHlfBWD8MPJHQzgZUoNrO+txGj97pzYI/P
+xtpT7eSk+Y6Zd3dt9WC7rea3RDoSfsIK6gbojyIn+i2wK2VyHj+6R99tqhlnIknd
+nvfaV4wXx5yVrh/W86xXd4wo16mjddEdN//cXWwq5m9uQ3nGcNP3/Nr0lxmQP5qD
+3lghgoaNAvNPlugBU727oMNeb/jx8D5zp5Mi3KhdswE2Uv2x28Gg0j0bvBWn9rjC
+P+9dg+nUPz4RuhqB/36Su55BgmQtbNvri4/VdSDl90TKX1JCKSo=
+=pZCq
+-----END PGP SIGNATURE-----
