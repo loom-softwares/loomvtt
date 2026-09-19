@@ -129,6 +129,7 @@ um nome singular.
 | `compendium_packs.updated` | Compendium pack completo | Pacote atualizado |
 | `compendium_packs.deleted` | `{ id }` | Pacote removido |
 | `compendium.entry.updated` | `{ packId, entry }` | Entrada de compendium atualizada |
+| `compendium.sourceEntryUpdated` | `{ sourceId, entryId }` | Entry de uma fonte de addon/ruleset atualizada; recarregue a entry pela rota da fonte |
 | `template.created` | Template completo | Template de área criado |
 | `template.updated` | Template completo | Template de área atualizado |
 | `template.deleted` | `{ id }` | Template de área removido |

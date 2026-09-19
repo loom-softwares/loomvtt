@@ -155,6 +155,22 @@ Entry completa, incluindo `data`.
 
 ---
 
+### Sheets de entries de fonte
+
+`/entries/:entryId` devolve o formato bruto usado por drag-and-drop. Sheets usam o contrato separado `entries-sheet`.
+
+### GET/PUT `/sources/:sourceId/entries-sheet/:entryId`
+
+Lê ou atualiza a entry no formato de documento. Para journals, inclui páginas, categorias, flags e `locked`. Escrita exige GM e fonte desbloqueada; campos não enviados são preservados.
+
+### CRUD de páginas e categorias de Journal
+
+`POST`, `PUT` e `DELETE` em `/sources/:sourceId/entries-sheet/:entryId/:collection/:childId?`, com `collection` igual a `pages` ou `categories`. Exige `compendiumEdit`, GM e fonte desbloqueada.
+
+**Evento WS:** `compendium.sourceEntryUpdated` com `{ sourceId, entryId }`.
+
+---
+
 ### POST `/sources/:sourceId/entries/:entryId/import`
 
 Materializa UMA entry no compêndio do próprio mundo (cria o pack de destino no primeiro
