@@ -1,0 +1,22 @@
+name: 🔒 Lock Closed Issues
+
+on:
+  issues:
+    types: [closed]
+  schedule:
+    # Also runs daily to catch any that were missed
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: dessant/lock-threads@v5
+        with:
+          issue-inactive-days: '30'
+          issue-lock-reason: 'resolved'
+          issue-comment: ''
+          log-output: true
