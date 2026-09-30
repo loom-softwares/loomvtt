@@ -52,6 +52,16 @@ node app/index.js --dataPath="/caminho/para/pasta"   # Windows, via terminal
 
 (diretamente via `npm start`, o npm requer um `--` extra para repassar a flag: `npm start -- --dataPath="/caminho/para/pasta"`)
 
+Por padrão, `loom.config.json` fica em `Config/loom.config.json` dentro da pasta de dados do usuário. Para usar um arquivo de configuração em outro local, informe o caminho completo ao iniciar:
+
+```powershell
+$env:LOOM_CONFIG = 'D:\LoomVTT\Config\loom.config.json'
+npm run dev # desenvolvimento
+# ou npm start para o build compilado
+```
+
+Ou, em execução direta do servidor, use `--configPath="D:\LoomVTT\Config\loom.config.json"`. O arquivo indicado precisa existir; se não existir ou estiver inválido, o servidor para com erro em vez de criar outra configuração silenciosamente. O `dataPath` dentro desse arquivo, quando preenchido, indica a pasta exata dos dados (`worlds`, `assets`, banco e backups).
+
 O atalho `start.command` de clique duplo não recebe argumentos dessa forma — para definir um caminho de dados personalizado, execute via terminal.
 
 A mesma configuração também funciona através de uma variável de ambiente, ideal para serviços e containers Docker:
