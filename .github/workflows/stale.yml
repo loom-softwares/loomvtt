@@ -1,0 +1,36 @@
+name: 🕰️ Stale Issues
+
+on:
+  schedule:
+    # Runs every day at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # --- Stale config ---
+          days-before-stale: 30
+          stale-issue-label: 'stale'
+          stale-issue-message: |
+            👋 This issue has been automatically marked as **stale** because it has not had any activity in the past 30 days.
+
+            If this issue is still relevant, please leave a comment or provide additional information. Otherwise, it will be closed in **14 days**.
+
+            Thank you for contributing to LoomVTT! 🧵
+
+          # --- Close config ---
+          days-before-close: 14
+          close-issue-message: |
+            🔒 This issue has been automatically **closed** due to inactivity (30 days stale + 14 days without response).
+
+            If you believe this issue is still valid, feel free to reopen it with updated information.
+
+          # --- Exemptions ---
+          exempt-issue-labels: 'bug,pinned,security,in-progress'
+          exempt-all-issue-assignees: true

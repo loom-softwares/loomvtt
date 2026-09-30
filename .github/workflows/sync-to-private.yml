@@ -1,0 +1,34 @@
+name: Sync Issue to Private Repo
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue in private repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.SYNC_TOKEN }}
+          script: |
+            const publicIssue = context.payload.issue;
+            
+            const body = [
+              `### 📥 Issue repassada do repositório público (${context.payload.repository.full_name})`,
+              '',
+              `**Autor original:** @${publicIssue.user.login}`,
+              `**Issue original:** ${publicIssue.html_url}`,
+              '',
+              '---',
+              '',
+              publicIssue.body || 'Sem descrição fornecida.'
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: 'loom-softwares',
+              repo: 'LoomVTT-CodeBase',
+              title: `[Público #${publicIssue.number}] ${publicIssue.title}`,
+              body: body
+            });

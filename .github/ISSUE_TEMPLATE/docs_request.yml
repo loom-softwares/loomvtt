@@ -1,0 +1,51 @@
+name: 📚 Documentation Request
+description: Report missing, incorrect, or unclear documentation.
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good documentation is as important as the software itself. Help us improve it!
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Type
+      options:
+        - SDK / Addon developer docs
+        - Ruleset / System developer docs
+        - User guide / How-to
+        - API reference
+        - Changelog / Release notes
+        - README / Setup instructions
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Where is the documentation? (if it exists)
+      description: Link to the page, section, or file with the issue. Leave blank if it's completely missing.
+      placeholder: "e.g. https://docs.loomvtt.com/sdk/hooks or docs/hooks.md"
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong or missing?
+      description: Describe the issue clearly — what's missing, what's incorrect, or what's confusing.
+      placeholder: "e.g. The `Hooks.on()` documentation doesn't explain the arguments passed to the callback, making it hard to know what data is available."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: What should the documentation say or include?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
