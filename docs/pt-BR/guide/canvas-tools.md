@@ -31,7 +31,7 @@ A ferramenta de tokens permite controlar aventureiros, monstros e NPCs na cena a
 * **Ctrl + Clique (durante movimento):** Adiciona waypoints (pontos intermediários de caminho) para calcular rotas ao redor de cantos ou armadilhas.
 * **Delete / Backspace:** Remove o token da cena ativa (o Ator original na barra lateral permanece intacto).
 
-As ferramentas de seleção de luzes, sons, notas, desenhos e tiles também desenham uma **caixa de arrastar** (segure Shift para somar ao grupo): arraste qualquer elemento do grupo para movê-los todos juntos e use **Delete** para removê-los. O Delete também remove uma luz, som, desenho ou tile selecionado sozinho.
+As ferramentas de seleção de luzes, sons, notas, desenhos e tiles também desenham uma **caixa de arrastar** (segure Shift para somar ao grupo): arraste qualquer elemento do grupo para movê-los todos juntos (a seleção de paredes faz o mesmo com várias paredes) e use **Delete** para removê-los. O Delete também remove uma luz, som, desenho ou tile selecionado sozinho.
 
 ---
 

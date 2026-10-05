@@ -31,7 +31,7 @@ The Token Tool lets you select, position, and command player characters, monster
 * **Ctrl + Click (during drag):** Add waypoints to chart complex movement paths around obstacles or hazards.
 * **Delete / Backspace:** Remove token from active scene (the source Actor in the sidebar remains untouched).
 
-The select tools of lights, sounds, notes, drawings and tiles also draw a **drag box** (hold Shift to add to the group): drag any element of the group to move them all together, and press **Delete** to remove them. Delete also removes a single selected light, sound, drawing or tile.
+The select tools of lights, sounds, notes, drawings and tiles also draw a **drag box** (hold Shift to add to the group): drag any element of the group to move them all together (the wall select tool does the same with several walls), and press **Delete** to remove them. Delete also removes a single selected light, sound, drawing or tile.
 
 ---
 
