@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Path In The File Browser**: the file browser shows the path of the selected file (or of the folder being browsed) above the upload bar, selectable, with a button that copies it.
+- **Item Folder Into A Compendium**: dragging a folder of the items tab into the window of an Item compendium copies the folder, its sub-folders and every item in them into the pack, keeping the structure (the world's items are not changed).
 - **Select Tools Pick Several**: the select tools of lights, sounds, notes, drawings and tiles draw a drag box (Shift adds to the group). Dragging any element of the group moves them all together (several selected walls too), and **Delete** removes them. Delete also works on a single selected light, sound, drawing or tile (it used to exist only for walls and notes).
 - **Light On Every Floor Option**: each light has a "Shared by every floor" option in its sheet (off by default, migration 066, `allLevels` in the lights API).
 - **Theater Art Tool**: a new tool for the scene's theater screen. With theater mode on, the GM's toolbar shows only "Theater art" (select and move, add a picture, add a text, clear the screen) and the map tools return when it is turned off. Pictures and texts belong to the scene (`flags.theaterItems`), so each map scene has its own entry screen. Click to select, drag to move, drag a corner to resize (a picture keeps its proportions, a text grows with its font), double click opens the item sheet (text, font, size, colour, alignment, bold, italic, shadow, opacity, rotation, forward/back, delete) and Delete removes the selected item. Everyone sees the changes live; only the GM edits. Sizes are relative to the screen width, so the screen looks the same on any monitor.
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **File Browser Inside A World**: the browser opened on the shared `uploads` folder because most windows did not say which world they were in. Inside a world the world tab now starts in the world's own assets and can browse every folder of that world (its root is the world's folder and it cannot climb above it); outside a world (the setup hub) it still browses from the data root. A world session now reaches only its own folder (the id has to match whole: `world-1` no longer reaches `world-10`), and the loose files at the root of a world (database, manifest, backups) are never listed to it.
 - **Fog Per Floor**: only the tokens and lights of the floor on screen reveal the fog (the vision of a token on an upper floor used to reveal the others), and what a player explored is saved and loaded per floor (migration 065, `levelId` in the fog-reveals API). Records saved before it belong to no floor, so each floor starts unexplored.
 - **Lights Stay On Their Floor**: a light only shines on the floor it belongs to, in the picture and in the fog.
 - **Remembered Area Darker**: the part of the map that was explored but is not in sight is kept darker, so lights are what bring it back.

@@ -8,6 +8,8 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Adicionado
 
+- **Caminho no navegador de arquivos**: o navegador de arquivos mostra o caminho do arquivo selecionado (ou da pasta que está sendo navegada) acima da barra de envio, selecionável, com um botão que copia.
+- **Pasta de itens para um compêndio**: arrastar uma pasta da aba de itens para a janela de um compêndio de Item copia a pasta, as subpastas e todos os itens delas para o compêndio, mantendo a estrutura (os itens do mundo não mudam).
 - **Seleção de vários nas ferramentas de seleção**: as ferramentas de seleção de luzes, sons, notas, desenhos e tiles desenham uma caixa de arrastar (Shift soma ao grupo). Arrastar qualquer elemento do grupo move todos juntos (várias paredes selecionadas também), e **Delete** remove todos. O Delete também funciona numa luz, som, desenho ou tile selecionado sozinho (antes só existia para paredes e notas).
 - **Opção de luz em todos os andares**: cada luz tem a opção "Compartilhada entre andares" na ficha (desligada por padrão, migração 066, `allLevels` na API de luzes).
 - **Ferramenta de arte do teatro**: nova ferramenta para a tela de teatro da cena. Com o modo teatro ligado, a barra do GM mostra só "Arte do teatro" (selecionar e mover, adicionar imagem, adicionar texto, limpar a tela) e as ferramentas do mapa voltam quando ele desliga. Imagens e textos pertencem à cena (`flags.theaterItems`), então cada cena de mapa tem a sua tela de entrada. Clique seleciona, arrastar move, arrastar um canto redimensiona (a imagem mantém a proporção, o texto cresce com a fonte), duplo clique abre a ficha do item (texto, fonte, tamanho, cor, alinhamento, negrito, itálico, sombra, opacidade, rotação, para frente/para trás, excluir) e Delete remove o item selecionado. Todos veem as mudanças ao vivo; só o GM edita. Os tamanhos são relativos à largura da tela, então ela fica igual em qualquer monitor.
@@ -20,6 +22,7 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Corrigido
 
+- **Navegador de arquivos dentro do mundo**: o navegador abria na pasta compartilhada `uploads` porque a maioria das janelas não dizia em que mundo estava. Dentro de um mundo, a aba do mundo agora começa nos assets do próprio mundo e navega por todas as pastas dele (a raiz é a pasta do mundo e não dá para subir além dela); fora de um mundo (o setup hub) continua navegando a partir da raiz dos dados. Uma sessão de mundo agora alcança só a pasta do próprio mundo (o id precisa bater inteiro: `world-1` não alcança mais `world-10`), e os arquivos soltos na raiz do mundo (banco, manifesto, backups) nunca são listados para ela.
 - **Névoa por andar**: só os tokens e as luzes do andar na tela revelam a névoa (a visão de um token num andar de cima revelava os outros), e o que o jogador explorou é salvo e carregado por andar (migração 065, `levelId` na API de fog-reveals). Os registros salvos antes não pertencem a nenhum andar, então cada andar começa inexplorado.
 - **Luzes ficam no próprio andar**: uma luz só brilha no andar a que pertence, na imagem e na névoa.
 - **Área lembrada mais escura**: a parte do mapa que foi explorada mas não está à vista fica mais escura, e as luzes é que a trazem de volta.
