@@ -8,6 +8,7 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Adicionado
 
+- **Macros em compêndios**: abrir uma macro de um compêndio (do mundo, de um addon ou de um sistema) abre o editor de macro na própria entrada, em vez de dizer que não há editor específico; salvar grava nome, imagem e comando de volta na entrada (um compêndio travado continua recusando o salvamento).
 - **Caminho no navegador de arquivos**: o navegador de arquivos mostra o caminho do arquivo selecionado (ou da pasta que está sendo navegada) acima da barra de envio, selecionável, com um botão que copia.
 - **Pasta de itens para um compêndio**: arrastar uma pasta da aba de itens para a janela de um compêndio de Item copia a pasta, as subpastas e todos os itens delas para o compêndio, mantendo a estrutura (os itens do mundo não mudam).
 - **Seleção de vários nas ferramentas de seleção**: as ferramentas de seleção de luzes, sons, notas, desenhos e tiles desenham uma caixa de arrastar (Shift soma ao grupo). Arrastar qualquer elemento do grupo move todos juntos (várias paredes selecionadas também), e **Delete** remove todos. O Delete também funciona numa luz, som, desenho ou tile selecionado sozinho (antes só existia para paredes e notas).
@@ -22,6 +23,9 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Corrigido
 
+- **Lista do compêndio depois de editar**: a janela de um compêndio de addon ou sistema atualiza a lista quando uma entrada é editada na ficha (o nome ou a imagem antigos ficavam lá até reabrir a janela).
+- **Compêndios em pastas**: um compêndio do mundo colocado numa pasta continua nela depois de recarregar (a lista de compêndios não devolvia a pasta, então a barra lateral mostrava todos no nível de cima). Renomear um compêndio aparece na hora na barra lateral (ela não escutava as mudanças de compêndio), e renomear deixou de reescrever todas as entradas do compêndio, o que deixava a ação lenta.
+- **Pastas na janela do compêndio**: depois de soltar uma pasta de itens num compêndio as pastas aparecem na hora, com a pasta que entrou aberta (antes só apareciam depois de fechar e reabrir a janela, e os itens ficavam soltos nesse meio-tempo); pastas, subpastas e entradas ficam em ordem alfabética em que número conta como número ("2" antes de "10").
 - **Navegador de arquivos dentro do mundo**: o navegador abria na pasta compartilhada `uploads` porque a maioria das janelas não dizia em que mundo estava. Dentro de um mundo, a aba do mundo agora começa nos assets do próprio mundo e navega por todas as pastas dele (a raiz é a pasta do mundo e não dá para subir além dela); fora de um mundo (o setup hub) continua navegando a partir da raiz dos dados. Uma sessão de mundo agora alcança só a pasta do próprio mundo (o id precisa bater inteiro: `world-1` não alcança mais `world-10`), e os arquivos soltos na raiz do mundo (banco, manifesto, backups) nunca são listados para ela.
 - **Névoa por andar**: só os tokens e as luzes do andar na tela revelam a névoa (a visão de um token num andar de cima revelava os outros), e o que o jogador explorou é salvo e carregado por andar (migração 065, `levelId` na API de fog-reveals). Os registros salvos antes não pertencem a nenhum andar, então cada andar começa inexplorado.
 - **Luzes ficam no próprio andar**: uma luz só brilha no andar a que pertence, na imagem e na névoa.

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Macros In Compendiums**: opening a macro of a compendium (of the world or of an addon or ruleset) opens the macro editor on that entry instead of saying there is no specific editor; saving writes the name, picture and command back to the entry (a locked compendium still refuses the save).
 - **Path In The File Browser**: the file browser shows the path of the selected file (or of the folder being browsed) above the upload bar, selectable, with a button that copies it.
 - **Item Folder Into A Compendium**: dragging a folder of the items tab into the window of an Item compendium copies the folder, its sub-folders and every item in them into the pack, keeping the structure (the world's items are not changed).
 - **Select Tools Pick Several**: the select tools of lights, sounds, notes, drawings and tiles draw a drag box (Shift adds to the group). Dragging any element of the group moves them all together (several selected walls too), and **Delete** removes them. Delete also works on a single selected light, sound, drawing or tile (it used to exist only for walls and notes).
@@ -27,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Compendium List After An Edit**: the window of an addon or ruleset compendium refreshes its list when an entry is edited in its sheet (the old name or picture stayed there until the window was reopened).
+- **Compendiums In Folders**: a world compendium put in a folder stays there after a reload (the list of compendiums did not return the folder, so the sidebar showed every pack at the top level). Renaming a compendium shows in the sidebar at once (the sidebar did not listen to compendium changes), and renaming no longer rewrites every entry of the pack, which made it slow.
+- **Compendium Window Folders**: after dropping a folder of items into a compendium the folders show up at once, with the dropped one open (they used to appear only after closing and reopening the window, with the items loose meanwhile); folders, sub-folders and entries are listed in alphabetical order where numbers count as numbers ("2" before "10").
 - **File Browser Inside A World**: the browser opened on the shared `uploads` folder because most windows did not say which world they were in. Inside a world the world tab now starts in the world's own assets and can browse every folder of that world (its root is the world's folder and it cannot climb above it); outside a world (the setup hub) it still browses from the data root. A world session now reaches only its own folder (the id has to match whole: `world-1` no longer reaches `world-10`), and the loose files at the root of a world (database, manifest, backups) are never listed to it.
 - **Fog Per Floor**: only the tokens and lights of the floor on screen reveal the fog (the vision of a token on an upper floor used to reveal the others), and what a player explored is saved and loaded per floor (migration 065, `levelId` in the fog-reveals API). Records saved before it belong to no floor, so each floor starts unexplored.
 - **Lights Stay On Their Floor**: a light only shines on the floor it belongs to, in the picture and in the fog.

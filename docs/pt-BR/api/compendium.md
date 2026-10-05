@@ -11,7 +11,7 @@
 
 Lista packs. `?worldId=`
 
-**Response `200`:** `[{ id, name, type, entryCount }]`
+**Response `200`:** `[{ id, worldId, name, type, folderId, entryCount }]`
 
 ---
 
