@@ -136,3 +136,19 @@ from the base level (lowest `bottomElevation`) of the stage.
 - [`/api/stages/:stageId/levels`](./levels.md) — Levels
 - `/api/stages/:stageId/lights` — Ambient lights
 - `/api/stages/:stageId/templates` — Area templates
+
+---
+
+### GET `/:id/music-sync`
+
+Which track of the scene music the table is on and when it started, so a client that reloads or joins late starts on the same track at the same point.
+
+**Response `200`:** `{ "sync": { "key": "...", "trackId": "...", "startedAt": 1700000000000 } | null, "now": 1700000000500 }` — `startedAt` and `now` are the server clock. `sync` is `null` when nothing has been reported for the current music (it just started, or the server restarted).
+
+---
+
+### POST `/:id/music-track`
+
+A client reports the track it just started: `{ "key", "trackId", "prevTrackId" }`. The first report for a music, and the first one that moves on from the stored track, set the timeline; the same report from the other clients changes nothing. The timeline is dropped when the scene's music changes.
+
+**Response `200`:** `{ "sync": ..., "changed": true | false, "now": ... }`

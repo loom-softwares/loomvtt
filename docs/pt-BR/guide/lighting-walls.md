@@ -14,6 +14,7 @@ As ferramentas de parede definem como a luz, a visão dos personagens e a movime
 
 * **Paredes Padrão:** Bloqueiam completamente a passagem física de tokens, a visão dos personagens e a propagação da luz.
 * **Portas Interativas:** Podem ser abertas ou trancadas com um clique pelo Mestre (ou jogadores autorizados), revelando dinamicamente a área oculta além dela.
+  Cada porta pode definir uma **distância de abertura** (um token do próprio jogador precisa estar perto; o Mestre sempre abre) e **sons próprios de abrir e fechar**.
 * **Janelas e Frestas:** Bloqueiam o movimento de tokens, mas permitem a passagem de luz e visão.
 * **Portas Secretas:** Ficam completamente invisíveis aos jogadores até que o Mestre decida revelá-las ou abri-las.
 * **Paredes de Terreno:** Permitem enxergar o primeiro obstáculo (como um muro baixo ou penhasco), mas bloqueiam o que está atrás.

@@ -39,6 +39,7 @@ In addition to the HTTP client, the SDK exports:
 | `wrap`                | `(fn) => Wrappable`                                   | Create wrapping point                                          |
 | `getWraps`            | `() => wraps`                                         | Existing wrap points                                        |
 | `statusEffects`       | `StatusEffectRegistryAPI`                             | Status effects / conditions registry                           |
+| `actorSheetMenu`      | `ActorSheetMenuAPI`                                   | Add entries to the dots menu of every actor sheet (`register(id, provider)`) |
 | `loadThree`           | `() => Promise<typeof import('three')>`               | Loads Three.js on demand                                     |
 | `loadCannon`          | `() => Promise<typeof import('cannon-es')>`           | Loads cannon-es on demand                                    |
 | `showToast`           | `(msg, type?) => void`                                | Toast                                                            |

@@ -19,6 +19,9 @@
 | `wallType` | `string` | `'normal'` | Tipo de parede (`normal`, etc.) |
 | `door` | `number` | `0` | Tipo de porta |
 | `doorState` | `number` | `0` | Estado da porta |
+| `doorDistance` | `number` | `0` | Quão perto um token do próprio jogador precisa estar para abrir a porta, em quadrados da grade (`0` = sem limite; o Mestre é isento) |
+| `doorSoundOpen` | `string` | `''` | Som tocado quando a porta abre |
+| `doorSoundClose` | `string` | `''` | Som tocado quando a porta fecha |
 
 ## Endpoints
 

@@ -2,6 +2,170 @@
 
 All notable changes to LoomVTT will be documented in this file.
 
+## [1.0.4-alpha] - 2026-10-04
+
+> Build: `0006`
+
+### Adicionado
+
+- **Ferramenta de arte do teatro**: nova ferramenta para a tela de teatro da cena. Com o modo teatro ligado, a barra do GM mostra só "Arte do teatro" (selecionar e mover, adicionar imagem, adicionar texto, limpar a tela) e as ferramentas do mapa voltam quando ele desliga. Imagens e textos pertencem à cena (`flags.theaterItems`), então cada cena de mapa tem a sua tela de entrada. Clique seleciona, arrastar move, arrastar um canto redimensiona (a imagem mantém a proporção, o texto cresce com a fonte), duplo clique abre a ficha do item (texto, fonte, tamanho, cor, alinhamento, negrito, itálico, sombra, opacidade, rotação, para frente/para trás, excluir) e Delete remove o item selecionado. Todos veem as mudanças ao vivo; só o GM edita. Os tamanhos são relativos à largura da tela, então ela fica igual em qualquer monitor.
+- **Música da cena em sincronia**: recarregar ou entrar atrasado leva à faixa em que a mesa está, no ponto em que ela chegou, em vez do início da playlist (`GET/POST /api/stages/:id/music-sync`; o primeiro relato vale e a linha do tempo fica na memória do servidor).
+- **Estilo de texto nos desenhos**: o texto de um desenho (a ferramenta de texto e os rótulos das formas) tem alinhamento, negrito, itálico e sombra na aba Texto da ficha (migração 064).
+
+### Segurança
+
+- **A arte do teatro é validada no servidor**: a lista é reconstruída campo a campo antes de ser gravada (no máximo 80 itens, imagens só de arquivos deste servidor ou de páginas https, sem marcação nem outros esquemas, texto exibido como texto), e só o GM pode enviá-la (`stage.theaterItems`).
+
+### Corrigido
+
+- **Tiles**: voltam a poder ser movidos, redimensionados (pelas bordas e cantos) e abertos com duplo clique, também depois do primeiro uso; um tile de imagem nasce no tamanho da própria imagem e no centro da visão; um tile novo não mostra mais "Novo tile" como texto e nasce ativado; o quadradinho de cor e o campo hex ficam iguais (o último usado vencia, então uma cor nova era salva como nenhuma); o cabeçalho da ficha dos desenhos não cobre mais as abas. Tiles salvos com gatilhos ou ações codificados duas vezes não geram mais erro a cada clique ou movimento do mouse.
+- **Exploração da névoa**: o salvamento envia só os polígonos novos, em partes abaixo do limite do corpo (a lista inteira passava de 1 MB num mapa grande e o servidor respondia 500 para sempre); um corpo acima do limite recebe 413 em vez de um 500 às cegas.
+- **Controles de volume**: Geral é tudo, **Música** é toda playlist (a da barra lateral e a da própria cena) e **Ambiente** são só os sons colocados no mapa com a ferramenta de áudio; cada controle diz o que controla.
+
+## [1.0.3-alpha] - 2026-10-03
+
+> Build: `0005`
+
+### Adicionado
+
+- **Faixa da Música da Cena**: a música da cena agora pode ser uma faixa específica da playlist (novo campo "Faixa" abaixo da playlist na configuração da cena; vazio mantém a playlist inteira). A faixa escolhida toca sozinha e repete. A troca feita pelo GM chega a todos os jogadores pela atualização da cena, e o modo aleatório usa uma semente fixa, então todos ouvem a mesma ordem em vez de uma aleatória própria. Iniciar a música da cena também para o que a barra lateral estava tocando.
+- **Barra "Música da cena" com Parar**: a aba de música mostra o que a cena está tocando (playlist e faixa) e um botão de parar: "Parar para todos" para o GM (limpa a música da cena) e "Parar no meu lado" para jogadores (local, fica desligado até a música da cena mudar).
+- **Ordem e Controles da Playlist**: as faixas têm ordem de verdade (subir e descer para o GM, salvo com `PUT /api/playlists/:id/sounds-order`) e a lista ganhou anterior / tocar / próxima / repetir playlist / sequencial ou aleatório. Tocar uma faixa agora segue a playlist em ordem.
+- **Seletor de Vínculos da Nota**: os campos de diário e de waypoint (cena) da configuração da nota agora são um seletor com busca cada (a lista abre ao focar e filtra enquanto você digita; setas, Enter e Esc funcionam). As cenas aparecem em árvore, com as cenas pai primeiro e as filhas indentadas logo abaixo. O componente reutilizável é `components/search-select.ts`.
+- **Janelas Sempre na Tela**: as janelas abrem com no máximo 85% da altura da tela, nunca são maiores que a tela e voltam para dentro dela sempre que o tamanho muda (conteúdo que carrega depois não empurra mais a barra de título ou os botões para fora).
+- **Dados do Sistema no Chat**: `/r 1dv`, `/r 2dg+1dv` e os outros dados que o sistema nomeia por letra (wod5e) rolam como o pool de d10 que são (`1dv` vira `1d10cs>5`, modificadores digitados são mantidos). Uma fórmula que o roller não entende agora mostra um aviso em vez de não fazer nada.
+- **Permissão para Controlar Playlists**: os jogadores só escutam a música, a menos que o cargo deles tenha "Controlar playlists" na janela de permissões dos usuários. Com ela (ou como GM) eles tocam, pulam, param e mudam loop/ordem para a mesa toda, e tocar uma faixa da lista toca para todos. A música da cena tem rota própria (`PUT /api/stages/:id/music`) e mudanças de loop/ordem/volume são conferidas no servidor.
+- **Barra do Que Está Tocando com Tags do MP3**: a barra da música da cena mostra título, artista, álbum e capa do MP3 quando o arquivo tem (lidos só dos primeiros bytes), tem um botão de parar redondo em vez de botão de texto, e todos recebem um aviso "Tocando agora" quando a faixa muda, em qualquer aba.
+- **Exportar Personagem pela Ficha**: o menu da ficha tem "Exportar para o Loom Connect", então fica claro qual personagem é salvo (antes estava preso ao personagem principal). O endereço padrão do site agora é `loomvtt.com`, e o popup de conexão mostra uma tela de aceitar própria em vez da caixa de confirmação do navegador.
+- **Câmera Inicial nas Cenas de Mapa**: as cenas de mapa (destino de waypoint) não têm a aba Andares, onde ficavam a câmera inicial (x, y, zoom) e o botão de capturar a visão atual; agora elas têm isso em Básicos.
+- **Modelo Mantém o Seu Texto**: aplicar um modelo de diário numa página que já tem texto pergunta se deve manter. O texto mantido vai para a área de corpo do modelo (o primeiro título vira a manchete) e perde o visual do tema antigo.
+- **Inserir > Imagem Troca o Espaço do Modelo**: com o cursor no bloco de espaço de um modelo (por exemplo a foto da gazeta), a imagem substitui o bloco inteiro, na largura toda, em vez de cair dentro da moldura escura.
+- **Iframe Seguro nas Páginas do Diário**: as páginas podem embutir uma página externa com `<iframe>`: só https, nunca uma página deste servidor ou de endereço local/privado, com sandbox imposto pelo LoomVTT (sem navegar a janela principal, sem downloads, sem câmera nem microfone, sem acesso aos nossos cookies), sem referer e sem recursos do navegador. Sites que recusam ser embutidos ficam em branco.
+- **Detalhes na Janela de Addons**: cada linha mostra o autor em badge, um link do repositório (ícone do GitHub quando for GitHub) e a versão.
+- **Link de Convite com IP Público**: sem túnel, a janela de links de convite oferece o IP público e a porta quando o endereço é alcançável de fora (faixas privadas e CGNAT são ignoradas), com o aviso de que a porta precisa estar liberada no roteador.
+
+- **Loom Connect nas Configurações**: conecte uma vez na aba da conta (o vínculo dura cerca de uma hora e só o token de acesso de curta duração fica no navegador; desconecte com `DELETE /api/worlds/:worldId/connect-account`). O menu da ficha mostra "Exportar para o Loom Connect" só enquanto estiver conectado, e um vínculo recusado mostra o motivo do site em vez de recarregar a página.
+- **Importar Personagem**: a aba de Atores importa de um slot do Loom Connect ou de um arquivo `.json` salvo na ficha ("Salvar em arquivo" no menu da ficha). Imagens e token vão dentro do arquivo e são restaurados nos arquivos do mundo. O seletor de slots mostra o retrato, o sistema e se serve no mundo atual, e slots vazios aparecem como vazios.
+- **Aprovação do Mestre**: um personagem importado por um jogador fica esperando o Mestre (invisível para os demais, com selo e a entrada "Aprovar" no menu de contexto). O Mestre define quem pode importar na janela de permissões ("Importar personagens", ligado para jogadores por padrão).
+- **Distância e Sons de Porta**: a porta tem distância de abertura (jogadores precisam estar perto; o Mestre é isento) e sons próprios de abrir e fechar, com alguns livres de direitos em `public/sounds/doors`. Os três são salvos com a parede (migração 063).
+- **Vários Arquivos de Uma Vez**: o seletor de arquivos envia e seleciona vários, áudio, vídeo e PDF têm ícone próprio e a playlist recebe várias faixas de uma vez.
+- **Barra de Progresso na Aba de Música**: mostra o tempo e permite avançar; com a barra lateral recolhida, um cartão "tocando agora" fica no canto superior direito.
+- **Seleção de Tokens com Caixa**: a ferramenta de seleção da grade de tokens desenha uma caixa de arrasto que seleciona vários tokens.
+- **Editor de Retrato e Token**: redesenhado em colunas planas. Cada camada é uma linha com miniatura, olho, ordem e excluir; uma caixa de ajuste por camada controla opacidade, brilho, contraste e saturação, além de espelhar, centralizar e clonar. Um token novo começa com cor, figura, máscara circular e anel, e as prévias ficam fixas enquanto a lista de camadas rola.
+
+### Segurança
+
+- **Arquivos Exigem Sessão**: imagens, sons e PDFs do mundo (`/worlds/:id/assets`, `/uploads`, `/thumb`) só são entregues a uma sessão logada daquele mundo (jogador, Mestre, display, stream ou admin). As imagens da tela de login (capa, fundo e avatares) continuam públicas. `LOOM_OPEN_ASSETS=1` desliga a barreira.
+- **Envio por Extensão**: o servidor decide pela extensão antes de gravar qualquer coisa (só imagens, áudio, vídeo e PDF; nada de scripts, executáveis ou marcação), além da checagem dos bytes iniciais.
+- **Imagens Importadas Sem Marcação**: endereços de imagem dentro de um pacote de personagem importado são limpos antes de chegar ao banco.
+- **Frames de Diário Longe de Hosts Internos**: iframes em páginas de diário não podem apontar para endereços locais ou privados.
+- **Uma Sessão por Conta**: um segundo login é recusado enquanto a conta estiver conectada em outro lugar.
+- **Popup do Loom Connect**: mostra o endereço para onde vai enviar o token e não desconecta mais o visitante do site.
+
+### Corrigido
+
+- **Playlist Não Tocava em Sequência**: a barra lateral ordenava as faixas por nome enquanto a ordem de tocar usava `sortOrder`, que era sempre 0; tocar uma faixa tocava só ela; e o loop da própria faixa repetia a playlist inteira. Faixas novas vão para o fim, a ordem de criação desempata, e o loop da faixa repete a faixa enquanto o loop da playlist repete a sequência (também no player da cena).
+- **Ficha Limitada para o Dono Depois de Editar**: quatro lugares liam o dono do documento pelo id do usuário sem tratar a forma de texto JSON guardada, então depois de uma edição voltar do servidor o dono passava a ler como "sem acesso" e a ficha do wod5e caía na visão limitada. O dono agora é lido por um único leitor (`parseOwnership`) que aceita as duas formas.
+- **Compartilhar Arte com Espaço ou Acento no Nome**: a verificação do compartilhamento recusava nomes de arquivo com espaço ou acento e qualquer coisa depois do `?` que não fosse versão; os caminhos agora vão codificados, outros parâmetros de cache são aceitos e o aviso diz por que o compartilhamento falhou.
+- **Janela de Permissões Perdia Donos**: abrir a partir de uma lista com o texto JSON guardado espalhava o texto em caracteres, todas as linhas liam "Nenhum" e salvar gravava zero por cima dos donos reais. Agora ela lê os níveis reais do documento e salva só as linhas que foram alteradas.
+- **Menu da Hotbar Fora da Tela**: o menu do clique direito num slot da hotbar abria abaixo da borda da tela; agora é trazido de volta para dentro.
+- **Página Mostrada pelo GM Ficava em "Carregando"**: a página agora viaja junto com o envio (só para os jogadores escolhidos), então abre mesmo para quem não tem acesso ao diário; se ainda assim não carregar, a janela avisa.
+- **Tema Carta Virava uma Tira**: páginas com os temas carta/pergaminho encolhiam para uma letra por linha no visualizador; agora ocupam a largura toda.
+- **Tabela de Rolagem Nova Mostrava a Fórmula**: uma tabela criada pela barra lateral não tinha o padrão "mostrar fórmula" e postava "rolou 1d20" junto com o resultado; agora posta só o resultado.
+- **Inserir > Imagem do Editor Não Fazia Nada**: o aviso padrão era anexado fora do editor e nunca funcionava; o menu agora abre o seletor de arquivos e coloca a imagem no cursor.
+- **GM Não Conseguia Trocar a Própria Senha**: as rotas tratavam qualquer campo de cargo/personagem na requisição como mudança numa conta de Gamemaster. Agora só valores que realmente mudam contam; promover, rebaixar e trocar a senha de outro GM continuam exigindo o administrador do Setup Hub.
+- **Jogador Não Conseguia Trocar o Próprio Avatar**: o formulário do perfil mandava cargo e personagem principal junto, e um personagem principal que o jogador não possui era lido como "atribuir personagem". Agora o jogador manda só nome, cor, avatar e pronomes.
+- **Item Arrastado para a Ficha Precisava de Duas Tentativas**: um item criado pela barra lateral não entrava na coleção de itens (o aviso dele voltava cedo), então o sistema não o encontrava no drop e não fazia nada até o item ser editado. Agora ele entra primeiro, e `Loom.fromUuid` (assíncrono) busca um item que a coleção ainda não tem.
+- **Imagem do Cabeçalho por Cima das Abas**: nas janelas com abas (configuração da cena e parecidas) a imagem do cabeçalho continuava por trás da barra de abas e do formulário; agora ela para nas abas.
+- **Dados 3D Não Iniciavam Quando o Mapa de Ambiente Falhava**: o carregador do HDR não avisava nem dava erro com arquivo inválido, e os dados nunca iniciavam. O addon agora lê o arquivo por conta própria e cai no cubemap, registrando o que o servidor entregou.
+- **Trocar a Própria Senha Derrubava a Sessão**: as sessões da conta eram revogadas com "revoked" até para quem fez a troca. Esse navegador agora recebe uma sessão da nova versão e continua conectado; outros aparelhos ainda perdem a deles.
+- **Linha "undefined" na Janela de Atalhos**: um sistema convertido registrava o atalho no formato original `register(namespace, nome, dados)` e o gerenciador guardava uma entrada sem nome. Esse formato agora é adaptado (nome, dica, tecla e modificadores).
+- **Tela de Atualização**: um canal sem nada publicado deixa de ser erro (aparece em verde como "nada mais novo"), e a opção "forçar atualização" tem linha própria em vez de uma coluna espremida.
+- **Visualizador de Página do Diário**: o nome da página aparece só no cabeçalho da janela e a página ocupa a janela toda; a linha de ferramentas só aparece quando há setas de página ou "mostrar aos jogadores".
+- **Páginas de PDF**: PDFs podem ser enviados e escolhidos (o servidor só aceitava imagem, áudio e vídeo e o campo de envio do seletor não tinha PDF); o rótulo do tipo mostrava a chave crua "journal.pageTypePdf" e a dica falava de áudio e vídeo.
+- **Clique Direito na Barra de Jogadores**: os avatares da barra não abriam menu (só as linhas da lista aberta abriam); agora abrem "Configurar usuário" e "Alterar senha" (o GM para qualquer um, o jogador para si).
+- **Links de Convite Recarregavam a Página para o GM**: a janela pedia o túnel a uma rota só de admin e o 401 fazia o cliente recarregar; o endereço do túnel agora vem junto dos links de convite, e o bloco do túnel só aparece quando há túnel rodando.
+- **Volume da Música Oscilando em Níveis Baixos**: os sons do mapa e a música da cena brigavam pelo volume (uma entrada gradual rodando junto com a atualização por posição, saídas graduais acumulando, uma entrada gradual com alvo de volume antigo), e uma checagem "volume acima de 0,01" se comportava diferente com o volume geral baixo. Cada som agora tem um fade por vez e a entrada gradual acompanha os controles.
+- **Prévias do Editor de Retrato Ficavam Ovais**: o quadro da prévia perdia a forma quadrada com a janela larga e esticava o canvas, então a máscara de círculo parecia um oval. Os quadros são sempre quadrados, menores, e a janela foi organizada em cartões.
+- **Título da Tabela de Rolagem**: o título editável não ganha mais o contorno em caixa sobre o banner; um sublinhado fino marca o campo.
+- **Delete Remove Sons do Mapa**: a tecla Delete remove um som do mapa selecionado, com desfazer.
+- **Ficha de Porta Perdida**: salvar as configurações da parede descartava o nível dela, e a distância e os sons da porta sumiam após recarregar.
+- **Título de Faixa Longo**: não empurra mais o botão de parar para fora do cartão de música.
+- **Rodapé do Seletor de Arquivos**: os botões do rodapé usam o tamanho pequeno e não cortam nem esticam mais.
+- **Vínculo do Loom Connect**: o popup de login não revoga mais o token antes de o servidor conferir, o endereço do site é `loomvtt.com` e imagens SVG são codificadas nas exportações em vez de falhar.
+- **Exportar Ficha de Outro Dono**: um personagem que a conta possui ou recebeu exporta mesmo sem ser o principal.
+- **Erro de Sessão Após Login**: entrar de novo não encerra mais a sessão já aberta (substituído pela recusa acima).
+
+## [1.0.2-alpha] - 2026-10-01
+
+> Build: `0004`
+
+### Adicionado
+
+- **Editor de Retrato e Token**: editor em camadas para a arte da ficha e a arte do token (imagens, anéis, máscaras, camadas de cor, exporta em WebP na pasta `tokens` do mundo). Clicar no retrato da ficha abre o editor; o lado do token começa totalmente transparente, sem círculo automático. Exposto como `Loom.openPortraitEditor(actor)`.
+- **Visualizador e Compartilhamento de Mídia**: veja a arte do personagem ou do token pelo menu da ficha, pela barra lateral e pelo HUD do token; o mestre pode compartilhar com todos ou com jogadores escolhidos (`Loom.openMediaViewer`).
+- **Registro de Menu da Ficha**: o menu dos três pontos de toda ficha agora traz o básico (ver arte, editor, permissões, protótipo do token) e rulesets/addons adicionam itens próprios com `Loom.actorSheetMenu.register(id, provider)`.
+- **Formato de Token Livre**: novo formato "Nenhum" (sem disco de fundo, recorte ou borda padrão) para artes transparentes; tokens feitos no editor usam esse formato, e "aplicar imagem do token em todos os palcos" também o define.
+- **Importação de Mapas (.dd2vtt / .df2vtt / .uvtt)**: importe mapas Universal VTT (por exemplo do Dungeon Alchemist) pela aba Cenas como nova cena ou novo andar: imagem, paredes, portas e luzes, com prévia, aviso acima de 200 segmentos de parede e limite de 1000. Cena sem luzes no arquivo começa com iluminação global ligada.
+- **Cone de Visão do Token**: ângulo de visão abaixo de 360 agora mostra uma fatia de verdade à frente do token (a frente é para cima com rotação 0), e a luz que o token carrega a acompanha. Darkvision e Monocromático agora tingem o que o token enxerga. Novo botão "Resetar exploração" nas configurações de névoa da cena.
+- **Canvas dos Tokens**: tokens ocupam o quadrado inteiro da grade, quadrado de seleção fino, barras de recurso e números maiores (opção de "mostrar números" por token) e ícones de status/movimento desenhados com Font Awesome ou os ícones do próprio app.
+- **Girar com Ctrl + Roda do Mouse**: gira os tokens selecionados (ou o que está sob o cursor) de forma suave e salva quando a roda para; Q/E continuam girando de 45 em 45 graus.
+- **Zoom Até a Cena Caber**: o canvas sempre pode afastar o zoom até a cena inteira caber na tela, por maior que seja o mapa.
+- **Token Vira Para Onde o Mouse Puxou**: puxar um token com o mouse agora o vira para onde foi solto (a frente é para cima com rotação 0) e o cone de visão acompanha. Setas do teclado e Ctrl + roda não mudam, puxões menores que meia célula não fazem nada e um token com `lockRotation` nunca vira. O ângulo é salvo na mesma chamada com espera da roda.
+- **Destaque do Botão Dia/Noite**: os botões de sol e lua da toolbox de luz mostram o modo atual da cena (escuridão abaixo de 0,5 é dia).
+- **Exploração Ao Longo do Caminho**: a exploração da névoa grava o que a visão toca enquanto o token anda (a cada meia célula) e quando gira (15 graus), não só onde ele para. Só os polígonos novos são enviados ao servidor e aos outros clientes.
+- **Exploração Compartilhada da Névoa**: o modo "Compartilhado" da cena agora funciona (uma área explorada para a mesa toda, unida no servidor e ao vivo para todos); "Individual" continua privado por jogador e "Nenhum" não grava nada. O servidor lê o modo da cena em vez de confiar no cliente. Nova rota `DELETE /api/fog-reveals/stage/:stageId/mine` reseta só a exploração de quem pediu.
+- **Reconexão do WebSocket**: depois de uma queda (soluço do tunnel, notebook dormindo) o cliente se identifica de novo, volta às salas do mundo e da cena, recupera chat e rolagens perdidos (`GET /api/chat-messages`) e envia os movimentos e rolagens guardados offline (até 50, só o último movimento por token). Chat, movimento, relays e arrasto têm limites separados e uma rolagem recusada avisa quem rolou (`chat.roll.rejected`).
+- **Passada de Localização**: cerca de 1.850 textos fixos da interface no HUD, janelas, componentes e núcleo passaram para `t()` (3.030 chaves, EN e PT-BR em paridade). O `npm run verify` agora falha com chaves divergentes, chaves duplicadas e novos toasts ou fallbacks fixos (`scripts/i18n-inventory.mjs`, `scripts/i18n-classify.mjs`, `scripts/check-i18n-gate.mjs`).
+
+### Corrigido
+
+- **Console do Servidor Legível em Produção**: o servidor standalone é instalado com `npm install --omit=dev`, que pulava o `pino-pretty`, então o `npm start` imprimia linhas de log em JSON cru. O `pino-pretty` agora é dependência de runtime (colorido, um bloco por linha). Linhas de debug continuam só para desenvolvimento (`npm run dev*` ou `LOOM_LOG_LEVEL=debug`), então o `npm start` mostra info e acima.
+- **Exploração Nunca Salva Nem Restaurada**: o canvas nunca recebia o ID do usuário que a névoa precisa, então a exploração pulava em silêncio tanto o salvar quanto o carregar desde o primeiro commit; `setUserId` agora é chamado com o usuário da sessão.
+- **Ferramentas Dia/Noite Desligavam a Visão do Token**: os botões de sol e lua ligavam e desligavam a visão sozinhos, o que matava a iluminação global e deixava só escuridão; agora seguem o `tokenVision` da cena.
+- **Iluminação Global Nunca Apagava à Noite**: ela ficava ligada com escuridão menor ou igual ao limite (padrão 1), então a noite total ainda contava como acesa. Agora fica ligada de dia e abaixo do limite, e desliga no limite ou acima; o texto de ajuda do limite diz isso.
+- **Portas Visíveis Pelo Mapa Todo**: com iluminação global ligada, toda porta aparecia em todo lugar. Agora as portas só aparecem dentro da visão do token (a sala em que ele está, limitada pelas paredes) ou em áreas exploradas; o GM continua vendo todas, a não ser que esteja no modo de visão de um token.
+- **Resetar Névoa no Modo Individual**: o botão só limpava a tela. Agora apaga a exploração guardada de quem pediu e avisa só os clientes daquele jogador.
+- **Névoa Vazava Entre Jogadores**: as atualizações de exploração do modo individual agora vão só para aquele jogador e para o GM.
+- **Jogadores Sem Token Selecionado**: passam a enxergar por todos os tokens que possuem (inclusive o dono herdado do ator vinculado); selecionar um foca a visão nele.
+- **Ícones de Porta Cortados por Paredes e Sombras**: os ícones de porta são desenhados acima da névoa e da iluminação, então a parede onde ficam não esconde mais metade deles. Em cenas escuras (noite ou iluminação global desligada) eles só aparecem dentro do que o token enxerga e nas áreas já exploradas.
+- **Formato do Cone de Visão**: cones abaixo de 180 graus saíam como segmentos de círculo e raios dos cantos da cena alargavam todo cone quase até um círculo completo; o polígono agora é uma fatia de verdade, com a ponta no token.
+- **Área Explorada com Iluminação Global**: a névoa lembra o que a iluminação global deixou o token ver, e não só o alcance de visão no escuro.
+- **Aviso de Back Buffer do Pixi**: o canvas liga o back buffer que o tom do Darkvision e do Monocromático precisa.
+
+## [1.0.1-alpha] - 2026-09-30
+
+> Build: `0003`
+
+### Adicionado
+
+- **Marketplace de Pacotes e Instalador de Addons**:
+  - Expansão do marketplace integrado e do instalador de addons com suporte a descoberta dinâmica de pacotes, barra de progresso e tratamento aprimorado de erros.
+  - Aprimoramento das abas de módulos e sistemas no Setup Hub, com novos cards de exibição e indicadores de status.
+  - Atualização completa de localização e traduções em Português do Brasil (`pt-BR.json`) e Inglês (`en.json`).
+- **Melhorias no Canvas e API de Paredes (Walls)**:
+  - Expansão do gerenciador de canvas e camada de névoa de guerra (Fog of War) no PixiJS v8.
+  - Nova API dedicada para gestão de paredes (`/api/walls`) e melhorias no pipeline de renderização de cenas.
+- **Incorporação de Mídias Externas em Diários**:
+  - Suporte à exibição de vídeos e PDFs externos em páginas de diário, incluindo embeds de vídeos do YouTube e Vimeo.
+- **Atualização Dentro do App Instalado (Windows)**: Ajustes > Atualizações agora baixa e instala novas versões automaticamente (hash verificado, instalação silenciosa, o app reabre). Instalações a partir do código-fonte mantêm o `git pull`.
+- **Macros de Ruleset**: novo tipo de macro de hotbar `ruleset-macro`, que roda na página uma macro embutida no ruleset ativo com a API completa do Loom, mais `Loom.canvas.getControlledActors()` para macros que agem nos tokens selecionados.
+
+### Corrigido
+
+- **Compatibilidade de CSP e Canvas no PixiJS v8**:
+  - Importação do polyfill `pixi.js/unsafe-eval` para corrigir travamento imediato na inicialização do canvas e shaders sob políticas restritas de CSP.
+  - Ajuste nas diretivas de CSP (`script-src`, `frame-src`, `media-src`) para permitir compilação de fichas Handlebars, execução de macros de script e incorporação de mídias externas.
+- **Auto-recuperação de Registros de Migrações (.ts vs .js)**:
+  - Implementada correção automática na inicialização (`fixupMigrationRecordExtensions`) para curar divergências de extensão de migrações gravadas no Knex ao alternar entre ambiente de desenvolvimento (`.ts`) e produção (`.js`).
+- **Migração e Backfill de Usuários Legados**:
+  - Nova migração `060_backfill_central_users_from_worlds` que resgata contas de usuários presas em bancos SQLite de mundos legados, copiando-as automaticamente para o banco central do servidor.
+- **Interface e Responsividade Mobile**:
+  - Aperfeiçoamento das regras responsivas em `responsive.css` encapsuladas em `@media (pointer: coarse)`, garantindo toques precisos em dispositivos móveis sem afetar o desktop.
+  - Melhorias no posicionamento de menus de contexto e telas de login e seleção de mundos.
+- **Banners do Catálogo sob CSP Estrita**: os banners do catálogo de pacotes agora passam pelo servidor local e voltam a aparecer no app empacotado.
+- **Nome Neutro no Auxiliar de Atualização**: auxiliar interno de expansão de updates `system.*` renomeado (`expandSystemUpdate`); comportamento inalterado.
+
 ## [1.0.0-alpha] - 2026-09-28
 
 > Primeiro release alpha público. Os builds internos `1.0.1`–`1.0.4-alpha`

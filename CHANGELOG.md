@@ -7,6 +7,170 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > For historical release notes prior to Alpha 05 in Portuguese, see [`CHANGELOG.pt-BR.md`](./CHANGELOG.pt-BR.md).
 
+## [1.0.4-alpha] - 2026-10-04
+
+> Build: `0006`
+
+### Added
+
+- **Theater Art Tool**: a new tool for the scene's theater screen. With theater mode on, the GM's toolbar shows only "Theater art" (select and move, add a picture, add a text, clear the screen) and the map tools return when it is turned off. Pictures and texts belong to the scene (`flags.theaterItems`), so each map scene has its own entry screen. Click to select, drag to move, drag a corner to resize (a picture keeps its proportions, a text grows with its font), double click opens the item sheet (text, font, size, colour, alignment, bold, italic, shadow, opacity, rotation, forward/back, delete) and Delete removes the selected item. Everyone sees the changes live; only the GM edits. Sizes are relative to the screen width, so the screen looks the same on any monitor.
+- **Scene Music Stays In Step**: a reload or a late join goes to the track the table is on, at the point it has reached, instead of the start of the playlist (`GET/POST /api/stages/:id/music-sync`; the first report wins and the timeline is kept in memory on the server).
+- **Text Style On Drawings**: the text of a drawing (the text tool and the labels of shapes) has alignment, bold, italic and shadow in the Text tab of its sheet (migration 064).
+
+### Security
+
+- **Theater art is validated on the server**: the list is rebuilt field by field before it is stored (80 items at most, pictures only from this server's files or https pages, no markup or other schemes, text shown as text), and only the GM can send it (`stage.theaterItems`).
+
+### Fixed
+
+- **Tiles**: they can be moved, resized (from the edges and corners) and opened with a double click again, also after the first use; a picture tile starts at the picture's own size and in the centre of the view; a new tile no longer shows "New tile" as its text and starts enabled; the colour swatch and the hex field stay in step (the last one used to win, so a new colour was saved as none); the drawings sheet header no longer overlaps the tabs. Tiles saved with double-encoded triggers or actions no longer raise errors on every click or mouse move.
+- **Fog Exploration**: saving sends only the new polygons, in pieces under the body limit (the full list outgrew 1 MB on a big map and the server answered 500 forever); a body over the limit is answered 413 instead of a blind 500.
+- **Volume Sliders**: Master is everything, **Music** is every playlist (the sidebar's and the scene's own) and **Ambient** is only the sounds placed on the map with the audio tool; each slider says what it controls.
+
+## [1.0.3-alpha] - 2026-10-03
+
+> Build: `0005`
+
+### Added
+
+- **Scene Music Track**: the scene's music can now be one specific track of its playlist (new "Track" select under the playlist in the scene config; empty keeps the whole playlist). A chosen track plays alone and repeats. The change a GM makes reaches every player through the scene update, and shuffle uses a fixed seed so every player hears the same order instead of their own random one. Starting the scene music also stops what the sidebar was playing.
+- **"Scene music" Bar With Stop**: the music tab shows what the scene is playing (playlist and track) and a stop button: "Stop for everyone" for the GM (clears the scene's music), "Stop on my side" for players (local, stays off until the scene's music changes).
+- **Playlist Order And Transport**: tracks have a real order (move up/down for the GM, saved with `PUT /api/playlists/:id/sounds-order`) and the list has previous / play / next / repeat-playlist / sequential-or-shuffle controls. Play on a track now continues through the playlist in order.
+- **Note Link Picker**: the journal and waypoint (scene) fields in the note config are now one type-to-search picker each (the list opens on focus and narrows as you type; arrows, Enter and Esc work). Scenes are listed as a tree, parent scenes first with their children indented below. The reusable component is `components/search-select.ts`.
+- **Windows Stay On Screen**: windows open no taller than 85% of the screen, are never larger than the screen, and are moved back inside it whenever their size changes (content that loads late no longer pushes the title bar or the buttons out of view).
+- **System Dice In The Chat**: `/r 1dv`, `/r 2dg+1dv` and the other dice a system names by letter (wod5e) roll as the d10 success pool they are (`1dv` is `1d10cs>5`, typed modifiers kept). A formula the roller cannot read now shows a message instead of doing nothing.
+- **Playlist Control Permission**: players only listen to the music unless their role is granted "Control playlists" in the user permissions window. With it (or as GM) they play, skip, stop and change loop/order for the whole table, and playing a track from the list plays it for everyone. The scene music has its own endpoint (`PUT /api/stages/:id/music`) and loop/order/volume changes are checked on the server.
+- **Now-Playing Bar With MP3 Tags**: the scene music bar shows the MP3 title, artist, album and cover when the file has them (read from the first bytes of the file only), has a round stop button instead of a text button, and everyone gets a "Now playing" notice when the track changes, on whichever tab they are.
+- **Export A Character From Its Sheet**: the sheet's menu has "Export to Loom Connect", so it is always clear which character is saved (it used to be tied to the main character). The default site address is now `loomvtt.com`, and the connect popup shows an in-page accept screen instead of the browser's confirm box.
+- **Starting Camera For Map Scenes**: map scenes (the waypoint destinations) have no Levels tab, where the starting camera (x, y, zoom) and its "capture current view" button lived; they now have them in Basics.
+- **Template Keeps Your Text**: applying a journal template to a page that already has text asks whether to keep it. Kept text goes into the template's body area (the first heading becomes the headline) and loses the old theme's look.
+- **Insert > Image Replaces A Template Placeholder**: with the cursor in a template's placeholder block (e.g. the gazette photo), the picture replaces the whole block at full width instead of landing inside its dark frame.
+- **Safe Iframes In Journal Pages**: pages can embed an external page with `<iframe>`: https only, never a page from this server or a local/private address, with a sandbox imposed by LoomVTT (no top-level navigation, no downloads, no camera or microphone, no access to our cookies), no referrer and no browser features. Sites that refuse to be embedded stay blank.
+- **Addon Window Details**: each addon row shows its author as a badge, a repository link (GitHub icon for GitHub) and its version.
+- **Public IP Invite Link**: without a tunnel, the invite links window offers the public IP and port when the address is reachable from outside (private and carrier-grade NAT ranges are skipped), with a note that the port must be open on the router.
+
+- **Loom Connect From The Settings**: connect once from the account tab (the link lasts about an hour and only the short-lived access token stays in the browser; disconnect with `DELETE /api/worlds/:worldId/connect-account`). The sheet menu shows "Export to Loom Connect" only while connected, and a rejected link shows the site's reason instead of reloading the page.
+- **Import A Character**: the Actors tab can import from a Loom Connect slot or from a `.json` file saved from a sheet ("Save to file" in the sheet menu). Pictures and tokens come inside the file and are restored into the world's assets. The slot picker shows the portrait, the system and whether it fits the current world, and empty slots are shown as empty.
+- **GM Approval Of Imports**: a character imported by a player waits for the GM (hidden from everyone else, with a badge and an "Approve" entry in the context menu). The GM decides who may import in the user permissions window ("Import characters", on for players by default).
+- **Door Distance And Sounds**: a door has an opening distance (players must stand near it; the GM is exempt) and its own open and close sounds, with a few royalty-free ones bundled in `public/sounds/doors`. All three are saved with the wall (migration 063).
+- **Several Files At Once**: the file picker uploads and selects many files, audio, video and PDF files have their own icons, and a playlist takes many tracks in one go.
+- **Progress Bar In The Music Tab**: shows elapsed time and seeks; while the sidebar is collapsed a now-playing card stays at the top right.
+- **Token Select Box**: the select tool of the token grid draws a drag box that selects several tokens.
+- **Portrait And Token Editor**: redesigned as flat columns. Each layer is one line with a thumbnail, eye, order and delete; an adjust box per layer controls opacity, brightness, contrast and saturation plus flip, center and clone. A new token starts as colour, figure, circle mask and ring, and the previews stay fixed while the layer list scrolls.
+
+### Security
+
+- **Assets Need A Session**: world pictures, sounds and PDFs (`/worlds/:id/assets`, `/uploads`, `/thumb`) are served only to a signed-in session of that world (player, GM, display, stream or admin). The login screen's pictures (world cover, background, user avatars) stay public. `LOOM_OPEN_ASSETS=1` turns the gate off.
+- **Uploads By Extension**: the server decides from the extension before writing anything (images, audio, video and PDF only; no scripts, executables or markup), on top of the magic-byte check.
+- **Imported Pictures Cannot Carry Markup**: picture addresses inside an imported character package are sanitized before they reach the database.
+- **Journal Frames Stay Off Internal Hosts**: iframes in journal pages cannot point at local or private addresses.
+- **One Session Per Account**: a second login is refused while the account is connected somewhere else.
+- **Loom Connect Popup**: shows the address it will send the token to, and no longer signs the visitor out of the site.
+
+### Fixed
+
+- **Playlist Did Not Play In Sequence**: the sidebar sorted tracks by name while play order used `sortOrder`, which was always 0; play on a track played only that track; and a track's own loop repeated the whole playlist. New tracks now go to the end, creation time breaks ties, and a track's loop repeats that track while the playlist's loop repeats the sequence (also in the scene player).
+- **Limited Sheet For The Owner After Editing**: four places read a document's ownership by user id without handling the stored JSON text form, so after an edit came back from the server the owner read as "no access" and the wod5e sheet dropped to the limited view. Ownership is now read through one parser (`parseOwnership`) that accepts both forms.
+- **Share Art With Spaces Or Accents In The Name**: the share check rejected file names with spaces or accents and anything after `?` other than a version; paths are now sent encoded, other cache parameters are accepted, and the toast says why a share failed.
+- **Ownership Window Lost Owners**: opening it from a list that held the stored JSON text spread the text into characters, every row read "None" and saving wrote zeros over the real owners. It now reads the document's real levels and saves only the rows that were changed.
+- **Macro Hotbar Menu Off Screen**: the right-click menu on a hotbar slot opened below the bottom of the screen; it is now moved back inside the viewport.
+- **Journal Page Shown By The GM Stayed On "Loading"**: the page now travels with the push (only to the chosen players), so it opens even for a player with no access to the journal; if it still cannot load, the window says so.
+- **Letter Theme Collapsed Into A Strip**: pages with the letter/parchment themes shrank to one letter per line in the viewer; they now fill the width.
+- **New Roll Table Posted The Formula**: a table created from the sidebar had no "show formula" default and posted "rolled 1d20" with the result; it now posts only the result.
+- **Editor Insert > Image Did Nothing**: the stock prompt was appended outside the editor and never worked; the menu now opens the file picker and puts the picture at the cursor.
+- **GM Could Not Change Their Own Password**: the routes treated any role/character field in the request as a change to a Gamemaster account. Only values that actually differ count now; promoting, demoting and changing another GM's password still need the Setup Hub administrator.
+- **Player Could Not Change Their Own Avatar**: the profile form sent role and main character along with the rest, and a main character the player does not own read as "assign a character". Players now send only name, color, avatar and pronouns.
+- **Item Dropped On A Sheet Needed Two Tries**: an item created from the sidebar was not registered in the items collection (its echo returned early), so the system could not resolve it on drop and did nothing until the item was edited. It is registered first now, and `Loom.fromUuid` (async) fetches an item the collection does not have yet.
+- **Banner Image Over The Tabs**: in windows with tabs (scene config and similar) the header picture faded on behind the tab bar and the form; it now stops at the tabs.
+- **3D Dice Never Started When The Environment Map Failed**: the HDR loader neither reported nor raised an error on a bad file, so the dice never initialised. The addon now reads the file itself and falls back to its cubemap, logging what the server delivered.
+- **Changing Your Own Password Logged You Out**: the account's sessions were revoked with "revoked" even for the person who made the change. That browser now gets a token for the new session version and stays connected; other devices still lose theirs.
+- **"undefined" Row In The Shortcuts Window**: a converted system registered its shortcut in the original `register(namespace, name, data)` form and the manager stored a nameless entry. That form is now adapted (name, hint, key and modifiers).
+- **Update Screen**: a channel with nothing published is no longer an error (it is shown in green as "nothing newer"), and the "force update" option has its own row instead of a squeezed column.
+- **Journal Page Viewer**: the page name appears only in the window header and the page fills the window; the toolbar row shows only when there are page arrows or "show to players".
+- **PDF Pages**: PDFs can be uploaded and picked (the server only accepted images, audio and video and the file picker's upload field had no PDF); the page type label showed the raw key "journal.pageTypePdf" and the hint talked about audio and video.
+- **Right Click On The Player Bar**: the avatars on the bar opened no menu (only the rows of the open list did); they now open "Configure user" and "Change password" (the GM for anyone, a player for themselves).
+- **Invite Links Reloaded The Page For The GM**: the window asked an admin-only route for the tunnel and the 401 made the client reload; the tunnel address now comes with the invite links, and the tunnel block shows only when a tunnel is running.
+- **Music Volume Jumping At Low Levels**: map sounds and scene music fought over the volume (a fade-in running at the same time as the position update, fade-outs piling up, a fade-in aimed at a stale volume), and a "volume above 0.01" check behaved differently with the master volume low. Each sound now has one fade at a time and the fade-in follows the sliders.
+- **Portrait Editor Previews Were Oval**: the preview frame lost its square shape when the window was wide and stretched the canvas, so the circle mask looked like an oval. The frames are always square, smaller, and the window is laid out in cards.
+- **Roll Table Title**: the editable title no longer gets a boxed outline over the banner; a thin underline marks it.
+- **Delete Removes Map Sounds**: the Delete key removes a selected map sound, with undo.
+- **Door Settings Were Lost**: saving the wall settings dropped the wall's level, and the door's distance and sounds disappeared after a reload.
+- **Long Track Title**: no longer pushes the stop button out of the music card.
+- **File Picker Footer**: the footer buttons use the small size and no longer clip or stretch.
+- **Loom Connect Link**: the sign-in popup no longer revokes the token before the server checks it, the site address is `loomvtt.com`, and SVG pictures are encoded in exports instead of failing.
+- **Export Of Another Owner's Sheet**: a character the account owns or is assigned to exports even when it is not the main character.
+- **Session Error After Login**: signing in again no longer ends the session already open (replaced by the refusal above).
+
+## [1.0.2-alpha] - 2026-10-01
+
+> Build: `0004`
+
+### Added
+
+- **Portrait & Token Editor**: layered editor for an actor's sheet art and token art (images, rings, masks, color layers, WebP export to the world's `tokens` folder). Clicking the sheet portrait opens it; the token side starts fully transparent with no automatic circle. Exposed as `Loom.openPortraitEditor(actor)`.
+- **Media Viewer & Share**: view the character art or token art from the actor sheet menu, the sidebar and the token HUD; the GM can share it with everyone or chosen players (`Loom.openMediaViewer`).
+- **Actor Sheet Menu Registry**: every sheet's dots menu now has the basics (view art, editor, ownership, token prototype) and rulesets/addons add their own entries with `Loom.actorSheetMenu.register(id, provider)`.
+- **Free-form Token Shape**: new "None" token shape (no backing disc, clip or default border) for transparent art; tokens made with the editor use it, and "apply token image to all stages" sets it.
+- **Map Import (.dd2vtt / .df2vtt / .uvtt)**: import Universal VTT maps (e.g. Dungeon Alchemist) from the Stages tab as a new stage or a new level: image, walls, doors and lights, with a preview, warning above 200 wall segments and a hard limit of 1000. A stage without lights in the file starts with global illumination on.
+- **Token Vision Cone**: a vision angle below 360 now shows a real slice in front of the token (front is up at rotation 0), and the light the token carries follows it. Darkvision and Monochrome now tint what the token sees. New "Reset exploration" button in the stage's fog settings.
+- **Token Canvas**: tokens fill their whole grid square, thin selection square, larger resource bars and numbers (per-token "show numbers" option), and status/movement badges drawn with Font Awesome or the app's own icons.
+- **Rotate With Ctrl + Mouse Wheel**: turns the selected (or hovered) tokens smoothly, saved when the wheel stops; Q/E keep the 45 degree steps.
+- **Zoom Out To Fit**: the canvas can always zoom out until the whole scene fits in the view, however large the map.
+- **Token Turns Toward A Mouse Pull**: pulling a token with the mouse now turns it toward where it was dropped (its front is up at rotation 0), and the vision cone follows. Keyboard steps and Ctrl + wheel are untouched, pulls under half a cell do nothing, and a token flagged `lockRotation` never turns. The angle is saved with the same debounced call as the wheel.
+- **Day/Night Button Highlight**: the sun/moon transition buttons in the light toolbox show the scene's current mode (below 0.5 darkness is day).
+- **Exploration Along The Path**: fog exploration records what the vision touches while the token moves (every half cell) and when it turns (15 degrees), not only where it stops. Only the new polygons are sent to the server and to other clients.
+- **Shared Fog Exploration**: the scene's "Shared" exploration mode now works (one explored area for the whole table, merged on the server, live to everyone); "Individual" stays private per player and "None" records nothing. The server reads the mode from the scene instead of trusting the client. New `DELETE /api/fog-reveals/stage/:stageId/mine` resets only the caller's exploration.
+- **WebSocket Reconnection**: after a dropped connection (tunnel hiccup, sleeping laptop) the client re-identifies and rejoins the world and stage rooms, catches up on missed chat and rolls (`GET /api/chat-messages`), and flushes the moves and rolls queued while offline (up to 50, newest move per token). Chat, move, relay and drag now have separate rate-limit buckets and a refused roll tells the roller (`chat.roll.rejected`).
+- **Localization Pass**: about 1,850 hardcoded UI strings across the HUD, windows, components and core moved to `t()` (3,030 keys, EN and PT-BR in parity). `npm run verify` now fails on key mismatches, duplicate keys and new hardcoded toast/fallback text (`scripts/i18n-inventory.mjs`, `scripts/i18n-classify.mjs`, `scripts/check-i18n-gate.mjs`).
+
+### Fixed
+
+- **Readable Server Console In Production**: the standalone server is installed with `npm install --omit=dev`, which skipped `pino-pretty`, so `npm start` printed raw JSON log lines. `pino-pretty` is now a runtime dependency (colored, one block per line). Debug lines stay dev-only (`npm run dev*` or `LOOM_LOG_LEVEL=debug`), so `npm start` logs info and above.
+- **Exploration Never Saved Or Restored**: the canvas never received the user id the fog layer needs, so exploration silently skipped both saving and loading since the first commit; `setUserId` is now called with the session user.
+- **Day/Night Tools Turned Token Vision Off**: the sun/moon transition tools switched vision on and off by themselves, which killed global illumination and left only darkness; they now follow the scene's `tokenVision`.
+- **Global Illumination Never Turned Off At Night**: it stayed on while darkness was at or below the threshold (default 1), so full night still counted as lit. It is now on in daylight and below the threshold, and off at or above it; the threshold help text says so.
+- **Doors Visible Across The Whole Map**: with global illumination on, every door showed everywhere. Doors now only show inside the token's vision (the room it is in, bounded by walls) or in explored areas; the GM still sees all unless previewing a token.
+- **Reset Fog In Individual Mode**: the reset button only cleared the screen. It now deletes the caller's stored exploration and tells only that player's clients.
+- **Fog Leaked Between Players**: individual-mode exploration updates are now sent only to that player and the GM.
+- **Players Without A Selected Token**: they now see through all the tokens they own (including ownership inherited from the linked actor); selecting one focuses the vision on it.
+- **Door Icons Cut By Walls And Shadows**: door icons are drawn above the fog and lighting so the wall they sit on no longer hides half of them. In dark scenes (night, or global illumination off) they only show inside what the token sees and the areas already explored.
+- **Vision Cone Shape**: cones under 180 degrees were circular segments and scene-corner rays widened every cone almost to a full circle; the polygon is now a proper slice with its apex at the token.
+- **Explored Area Under Global Illumination**: the fog remembers what global illumination let the token see, not just its dark sight range.
+- **Pixi Back Buffer Warning**: the canvas enables the back buffer that the Darkvision and Monochrome tint needs.
+
+## [1.0.1-alpha] - 2026-09-30
+
+> Build: `0003`
+
+### Added
+
+- **Package Marketplace & Addon Installer Expansion**:
+  - Enhanced package marketplace integration and addon installer supporting dynamic package discovery, progress tracking, and robust error handling.
+  - Setup Hub UI enhancements for modules and systems management tabs with updated grid cards and status indicators.
+  - Comprehensive localization support updates across English (`en.json`) and Brazilian Portuguese (`pt-BR.json`).
+- **Canvas & Wall API Enhancements**:
+  - Expanded canvas management and fog of war layer handling in PixiJS v8.
+  - Integrated dedicated wall management endpoints (`/api/walls`) and improved stage rendering pipelines.
+- **Journal Rich Media Embeds**:
+  - Support for external video and PDF embeds in journal pages, including YouTube and Vimeo links.
+- **In-App Updates for the Installed Windows App**: Settings > Updates now downloads and installs new releases automatically (signed-hash verified, silent install, app reopens). Source installs keep the `git pull` flow.
+- **Ruleset Macros**: new `ruleset-macro` hotbar type that runs a macro shipped by the active ruleset in the page with the full Loom API, plus `Loom.canvas.getControlledActors()` for macros that act on the selected tokens.
+
+### Fixed
+
+- **CSP & Canvas Rendering Under Strict Security Policies**:
+  - Imported `pixi.js/unsafe-eval` polyfill to prevent WebGLRenderer shaders and particle codegen crashes under strict Content Security Policies.
+  - Adjusted CSP directives (`script-src`, `frame-src`, `media-src`) to permit Handlebars template compilation, script macros, and external journal media embeds without compromising security.
+- **Database Migrations Auto-Healing**:
+  - Added runtime migration record auto-healing (`fixupMigrationRecordExtensions`) to prevent boot crashes caused by `.ts` vs `.js` filename extension discrepancies between development and production builds.
+- **Central User Table Backfill**:
+  - Added migration `060_backfill_central_users_from_worlds` to automatically migrate user accounts stranded in legacy per-world SQLite databases into the central server database.
+- **UI & Mobile Responsiveness**:
+  - Improved responsive layout gates in `responsive.css` behind `pointer: coarse`, keeping desktop views untouched while refining mobile touch interaction.
+  - Enhanced context menu positioning and responsive styles for world login and setup screens.
+- **Catalog Banners Under Strict CSP**: package catalog banners are now proxied through the local server, so they render again in the packaged app.
+- **Neutral Naming in the Update Helper**: internal `system.*` update expansion helper renamed (`expandSystemUpdate`); behavior unchanged.
+
 ## [1.0.0-alpha] - 2026-09-28
 
 > Build: `0001`

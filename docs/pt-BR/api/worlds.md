@@ -308,6 +308,23 @@ Setup Hub. **Auth:** `requireAuth, requireGM`
 
 ---
 
+---
+
+### POST `/:worldId/connect-account`
+
+Vincula o usuário local logado a uma identidade verificada do Loom Connect. O navegador pega um token de acesso no popup do site e envia aqui; o servidor confirma com o site. Nunca responde `401`, para que um vínculo recusado não recarregue a página.
+
+**Response `400`:** o site recusou o código (a mensagem diz o motivo) · **`502`:** o site não pôde ser alcançado
+**Response `409`:** a conta já está vinculada a outro usuário do mundo
+
+---
+
+### DELETE `/:worldId/connect-account`
+
+Remove o vínculo do Loom Connect do usuário local logado.
+
+**Response `403`:** sem login com uma conta local deste mundo
+
 ## Sessão de jogo
 
 ### POST `/:worldId/join`

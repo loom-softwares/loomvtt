@@ -137,3 +137,18 @@ do level base (menor `bottomElevation`) da stage.
 - `/api/stages/:stageId/lights` — Luzes ambiente
 - `/api/stages/:stageId/templates` — Templates de área
 
+---
+
+### GET `/:id/music-sync`
+
+Em qual faixa da música da cena a mesa está e quando ela começou, para que um cliente que recarrega ou entra depois comece na mesma faixa, no mesmo ponto.
+
+**Response `200`:** `{ "sync": { "key": "...", "trackId": "...", "startedAt": 1700000000000 } | null, "now": 1700000000500 }` — `startedAt` e `now` são o relógio do servidor. `sync` é `null` quando nada foi reportado para a música atual (acabou de começar, ou o servidor reiniciou).
+
+---
+
+### POST `/:id/music-track`
+
+Um cliente informa a faixa que acabou de começar: `{ "key", "trackId", "prevTrackId" }`. O primeiro relato de uma música, e o primeiro que avança a partir da faixa guardada, definem a linha do tempo; o mesmo relato dos outros clientes não muda nada. A linha do tempo é descartada quando a música da cena muda.
+
+**Response `200`:** `{ "sync": ..., "changed": true | false, "now": ... }`

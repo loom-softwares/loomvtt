@@ -232,6 +232,19 @@ Atualiza só a posição do token (usado em drag em tempo real — mais leve que
 
 ---
 
+### POST `/:actorId/apply-token-image`
+
+Só o mestre. Copia a arte de token do ator (a imagem do token protótipo, senão o retrato da ficha) para **todos** os casts desse
+ator em todas as cenas, vinculados ou não, e define o formato deles como `none` (arte livre). Só `avatarUrl` e `shape` são alterados; o restante dos dados de cada cast continua.
+
+**Response `200`:** `{ "success": true, "count": 3, "image": "/worlds/my-world/assets/tokens/hero-1a2b3c4d.Token.webp" }`
+**Response `400`:** `{ "error": "The actor has no image to apply." }`
+**Response `403`:** `{ "error": "Only the GM can apply the token image to the stages." }`
+**Response `404`:** `{ "error": "Actor not found." }`
+**WS Event:** `cast.updated` para cada cast
+
+---
+
 ### DELETE `/:id`
 
 Remove um token.

@@ -26,6 +26,7 @@ um nome singular.
 | `stages.updated` | Stage completa | Stage atualizada |
 | `stages.deleted` | `{ id }` | Stage removida |
 | `stage.darkness` | `{ stageId, darknessLevel, duration }` | Escuridão alterada |
+| `stage.theaterItemsChanged` | `{ stageId, items }` | As imagens e textos da tela de teatro de uma cena mudaram (`items` é a lista inteira) |
 | `levels.created` | Level completo | Level criado |
 | `levels.updated` | Level completo | Level atualizado |
 | `levels.deleted` | `{ id }` | Level removido |
@@ -157,6 +158,7 @@ Mandados embrulhados num único evento Socket.IO chamado `'message'`: `socket.em
 | `chat.message` | `{ content, speaker? }` | Envia mensagem |
 | `chat.roll` | `{ formula, mode?, actorId?, speaker? }` | Rola dado |
 | `stage.activate` | `{ stageId, worldId }` | Ativa stage (só GM) |
+| `stage.theaterItems` | `{ stageId, items, worldId }` | Define as imagens e textos da tela de teatro (só GM). O servidor reconstrói a lista campo a campo (máx. 80 itens; o endereço de uma imagem precisa ser um arquivo deste servidor ou uma página https), grava em `flags.theaterItems` da cena e transmite `stage.theaterItemsChanged` |
 | `ping` | `{ timestamp? }` | Mede latência — servidor responde `pong` pro remetente e rebroadcasta `ping` pra sala do world |
 | `canvas.ping` | `{ ...dados do marcador }` | Ping visual compartilhado (Ctrl+click) |
 | `user.cursor` | `{ ...dados do cursor }` | Posição de cursor de alta frequência — relayado pra sala da stage, excluindo o remetente, nunca persistido |

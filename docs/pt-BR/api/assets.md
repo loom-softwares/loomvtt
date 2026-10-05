@@ -7,6 +7,8 @@ Upload e gerenciamento de arquivos.
 **Base:** `/api/assets`
 **Auth:** `requireAuth, requireWorldMatch`
 
+**Leitura de arquivos:** `/uploads`, `/thumb` e `/worlds/<worldId>/assets` só são entregues a uma sessão logada daquele mundo (jogador, Mestre, display, stream ou admin). As imagens da tela de login (capa, fundo, avatares) continuam públicas. Use `LOOM_OPEN_ASSETS=1` para desligar a barreira.
+
 ---
 
 ### POST `/upload`
@@ -15,7 +17,7 @@ Upload de arquivo. Multipart form-data com campo `file`.
 
 - Limite: **100MB**
 - Validação: magic bytes (rejeita um arquivo cujo conteúdo não bate com o tipo declarado — ex: SVG, HTML, exe renomeado pra `.png`)
-- Tipos permitidos: `jpeg, jpg, png, webp, gif, mp3, ogg, wav, mp4, webm, mov`
+- Tipos permitidos: `png, jpg, jpeg, webp, gif, mp3, ogg, wav, mp4, webm, mov, pdf` — decididos pela extensão antes de gravar qualquer coisa; scripts, executáveis e marcação são recusados
 
 **Query:**
 - `?worldId=`: se presente e válido, salva em `/worlds/<worldId>/assets/`; senão vai pra `/uploads/`

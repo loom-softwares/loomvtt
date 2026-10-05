@@ -19,6 +19,9 @@
 | `wallType` | `string` | `'normal'` | Wall type (`normal`, etc.) |
 | `door` | `number` | `0` | Door type |
 | `doorState` | `number` | `0` | Door state |
+| `doorDistance` | `number` | `0` | How close a token owned by the player must be to open the door, in grid squares (`0` = no limit; the GM is exempt) |
+| `doorSoundOpen` | `string` | `''` | Sound played when the door opens |
+| `doorSoundClose` | `string` | `''` | Sound played when the door closes |
 
 ## Endpoints
 

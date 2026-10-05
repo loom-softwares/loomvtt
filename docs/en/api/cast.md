@@ -174,6 +174,19 @@ WS broadcast of its own beyond what `CastsDocument.update` triggers).
 
 ---
 
+### POST `/:actorId/apply-token-image`
+
+GM only. Copies the actor's token art (the prototype token image, otherwise the sheet portrait) onto **every** cast of that
+actor on all stages, linked or not, and sets their shape to `none` (free-form art). Only `avatarUrl` and `shape` are touched; the rest of each cast's data stays.
+
+**Response `200`:** `{ "success": true, "count": 3, "image": "/worlds/my-world/assets/tokens/hero-1a2b3c4d.Token.webp" }`
+**Response `400`:** `{ "error": "The actor has no image to apply." }`
+**Response `403`:** `{ "error": "Only the GM can apply the token image to the stages." }`
+**Response `404`:** `{ "error": "Actor not found." }`
+**WS Event:** `cast.updated` for each cast
+
+---
+
 ### DELETE `/:id`
 
 Removes a token.

@@ -51,7 +51,7 @@ Os **Tiles** são imagens independentes que você pode sobrepor ao mapa da cena:
 Permite que o Mestre e os jogadores façam anotações e ilustrações visuais na cena em tempo real:
 * **Desenho Livre:** Linhas e esboços rápidos com espessura e cor ajustáveis.
 * **Formas Geométricas:** Retângulos, círculos, elipses e polígonos fechados.
-* **Texto no Tabuleiro:** Adiciona legendas ou nomes de locais visíveis aos jogadores.
+* **Texto no Tabuleiro:** Adiciona legendas ou nomes de locais visíveis aos jogadores. A aba Texto da ficha do desenho define fonte, tamanho, alinhamento, negrito, itálico e sombra.
 
 ---
 
@@ -84,3 +84,15 @@ O Loom VTT possui um sistema nativo de armadilhas interativas:
 * Permite arrastar páginas de Diário da barra lateral diretamente para a cena, criando pins interativos no mapa.
 * Com duplo clique sobre o pin, a página de anotações ou imagem correspondente se abre na tela.
 * É possível configurar visibilidade pública ou secreta (apenas para o Mestre).
+
+---
+
+## 🎭 Arte do Teatro (tela de teatro)
+
+A tela de teatro (a sobreposição cinematográfica que o Mestre liga no botão das máscaras) tem uma ferramenta própria. Com o teatro ligado, a barra mostra só a **Arte do teatro**; as ferramentas do mapa voltam quando ele é desligado.
+
+* **Adicionar imagem** escolhe um arquivo de imagem e coloca no meio da tela, nas proporções dele. **Adicionar texto** coloca um texto ali e abre a ficha dele.
+* **Selecionar e mover**: clique num item, arraste para mover, arraste um canto para redimensionar (a imagem mantém a proporção; o texto cresce junto com a fonte). Duplo clique abre a ficha (texto, fonte, tamanho, cor, alinhamento, negrito, itálico, sombra, opacidade, rotação, para frente/trás, excluir). **Delete** remove o item selecionado.
+* **Limpar a tela** remove tudo da tela de teatro desta cena.
+* A arte pertence à **cena**, não ao mapa: outra cena tem a sua própria tela de teatro, então cada cena de mapa pode abrir com uma tela de entrada diferente. Combine com a opção "abrir em modo teatro" da cena para montar uma tela de entrada para a mesa.
+* Todos veem ao vivo; só o Mestre edita. Os tamanhos são relativos à largura da tela, então ela fica igual em qualquer monitor.

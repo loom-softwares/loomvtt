@@ -28,6 +28,7 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 * **Criação Rápida:** Botão **Criar Ator** com suporte a importação ou criação manual.
 * **Arrastar para o Mapa:** Arraste qualquer ator para o canvas para gerar um token pronto para o combate.
 * **Busca Instantânea:** Filtre atores pelo nome ou tipo com a barra de busca em tempo real.
+* **Importar e Exportar:** importe um personagem de um slot do Loom Connect ou de um arquivo `.json`, e salve um pelo menu da ficha ("Salvar em arquivo" ou "Exportar para o Loom Connect" depois de conectar nas configurações da conta). Um personagem importado por jogador aguarda a aprovação do Mestre.
 
 ---
 
@@ -98,8 +99,11 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 
 ![Aba de Playlists](/assets/screenshots/sidebar/sidebar-playlists.png)
 
-* Controles de volume dedicados para **Geral**, **Música** e som de **Ambiente**.
+* Três controles de volume: **Geral** é o volume de tudo no VTT, **Música** é toda playlist (as tocadas pela barra lateral e a playlist da própria cena) e **Ambiente** são só os sons colocados no mapa com a ferramenta de áudio. O Geral multiplica os outros dois.
+* A música da cena fica em sincronia na mesa: quem recarrega a página ou entra depois (jogador ou Mestre) vai para a faixa em que a mesa está, no ponto em que ela chegou, e não para o início da playlist.
+
 * Organize faixas em listas de reprodução para batalhas épicas, tavernas relaxantes ou momentos de tensão.
+* Escolha várias faixas de uma vez para a playlist; a aba de música tem uma barra de progresso com avanço e, com a barra lateral recolhida, um cartão "tocando agora" fica no canto superior direito.
 
 ---
 

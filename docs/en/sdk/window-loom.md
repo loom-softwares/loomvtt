@@ -57,7 +57,12 @@ Global API exposed to addons and systems on the client side.
   canvas: {
     get active() { return CanvasManager.activeInstance; },
     showFloatingText(target, text, color?, options?),
+    getControlledActors(),
+    resetFogExploration(),
   },
+  openPortraitEditor(actorOrId),
+  openMediaViewer({ src, title?, readOnly? }),
+  actorSheetMenu: { register(id, provider), unregister(id) },
   get three() { return import('three'); },
   get cannon() { return import('cannon-es'); },
 };
@@ -105,7 +110,10 @@ Global API exposed to addons and systems on the client side.
 | `transitions`                 | `TransitionEffectRegistry`                     | Scene transition effects registry (see `transitions.md`)          |
 | `three`                      | `Promise<typeof import('three')>` (getter)     | Loads Three.js on demand — only downloads the chunk if an addon accesses it  |
 | `cannon`                     | `Promise<typeof import('cannon-es')>` (getter) | Loads cannon-es on demand, same logic                           |
-| `canvas`                     | `{ active, showFloatingText }`                 | Access to active CanvasManager and universal floating text/damage API |
+| `canvas`                     | `{ active, showFloatingText, getControlledActors, resetFogExploration }` | Access to active CanvasManager, universal floating text/damage API, the actors behind the selected tokens (linked casts only, with a count of skipped unlinked ones) and the reset of the current user's fog exploration on the stage |
+| `openPortraitEditor`          | `(actorOrId) => Promise<void>`                | Opens the layered portrait and token editor for an actor           |
+| `openMediaViewer`             | `({ src, title?, readOnly? }) => void`        | Opens an image/video viewer; the GM gets a share button (`POST /api/media/push`) |
+| `actorSheetMenu`             | `{ register, unregister }`                    | Adds entries to the dots menu of every actor sheet (see `api.md`) |
 | `user`                       | `{ id, name, color, role, isGM, targets }` (getter) | Current user session + `targets` (own getter): cast members currently targeted by them — see example below |
 
 ## Usage example in addon

@@ -128,3 +128,34 @@ Updates actor's item.
 Removes actor's item.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
+
+---
+
+### POST `/import-package`
+
+Creates a character from a `loom-character-backup` package (a Loom Connect slot or a saved `.json`). The importer owns it. Allowed for the GM and for roles listed in the world's `importCharacter` permission (players by default). When the importer is not the GM the character waits for approval and nobody else sees it.
+
+**Request body:** `{ "package": { "format": "loom-character-backup", "version": 1, "character": { ... } } }`
+
+**Response `403`:** not signed in to a world, or the GM has not allowed imports for this role
+**Response `400`:** not a Loom character package, or the character has no name
+
+---
+
+### POST `/:id/approve-import`
+
+GM only. Accepts a character imported by a player; it becomes visible according to its ownership.
+
+**Response `400`:** the character is not waiting for approval
+
+---
+
+### POST `/:id/export-package`
+
+Builds the same package for saving as a `.json` file. Needs a local account that owns the character, is assigned to it, or can edit it (the GM can export any).
+
+---
+
+### POST `/:id/backup-package`
+
+Same package, used by "Export to Loom Connect" (the browser then sends it to the site with the Loom Connect token).

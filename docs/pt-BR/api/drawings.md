@@ -19,6 +19,10 @@
 | `text` | `string` | `''` |
 | `fontFamily` | `string` | `'Arial'` |
 | `fontSize` | `number` | `16` |
+| `textBold` | `boolean` | `false` |
+| `textItalic` | `boolean` | `false` |
+| `textShadow` | `boolean` | `false` |
+| `textAlign` | `string` (`left`, `center`, `right`) | `'center'` |
 | `points` | `array` | `[]` |
 | `imgUrl` | `string` | `''` |
 | `isHidden` | `boolean` | `false` |
@@ -62,7 +66,7 @@ Cria desenho.
 difere do default `'#000000'` do próprio schema), `fillOpacity` (0.5 — difere do default
 0.3 do schema), `strokeColor` (`'#000000'` — difere do default `'#ffffff'` do schema),
 `strokeWidth` (1), `text` (''), `fontFamily` (`'Signika'` — difere do default `'Arial'` do
-schema), `fontSize` (32 — difere do default 16 do schema), `z` (0), `isHidden` (false),
+schema), `fontSize` (32 — difere do default 16 do schema), `textBold`, `textItalic` e `textShadow` (false), `textAlign` (`'center'`; qualquer valor que não seja `left`/`right` vira `center`), `z` (0), `isHidden` (false),
 `isLocked` (false), `levelId` ('').
 
 **Response `201`:** Desenho criado

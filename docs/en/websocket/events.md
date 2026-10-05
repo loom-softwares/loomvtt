@@ -24,6 +24,7 @@ routes that call `Signal.broadcast` manually instead often chose a singular name
 | `stages.updated` | Full Stage | Stage updated |
 | `stages.deleted` | `{ id }` | Stage removed |
 | `stage.darkness` | `{ stageId, darknessLevel, duration }` | Darkness changed |
+| `stage.theaterItemsChanged` | `{ stageId, items }` | The pictures and texts of a scene's theater screen changed (`items` is the whole list) |
 | `levels.created` | Full Level | Level created |
 | `levels.updated` | Full Level | Level updated |
 | `levels.deleted` | `{ id }` | Level removed |
@@ -154,6 +155,7 @@ type, data })`. `wsClient.send(type, data)` does this wrapping for you.
 | `chat.message` | `{ content, speaker? }` | Send message |
 | `chat.roll` | `{ formula, mode?, actorId?, speaker? }` | Roll dice |
 | `stage.activate` | `{ stageId, worldId }` | Activate stage (GM only) |
+| `stage.theaterItems` | `{ stageId, items, worldId }` | Set the theater screen's pictures and texts (GM only). The server rebuilds the list field by field (max 80 items, picture addresses must be a file of this server or an https page), saves it in the scene's `flags.theaterItems` and broadcasts `stage.theaterItemsChanged` |
 | `ping` | `{ timestamp? }` | Measure latency — server replies `pong` to sender and rebroadcasts `ping` to the world room |
 | `canvas.ping` | `{ ...marker data }` | Shared visual ping (Ctrl+click) |
 | `user.cursor` | `{ ...cursor data }` | High-frequency cursor position — relayed to the stage room, excluding the sender, never persisted |

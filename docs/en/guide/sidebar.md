@@ -28,6 +28,7 @@ The chat panel is where narrative storytelling meets automated rules execution:
 * **Instant Creation:** Quick **Create Actor** button with support for imported or custom templates.
 * **Drag-to-Canvas:** Drag any actor directly onto the map to spawn an encounter-ready token.
 * **Live Search:** Instant filter by name or actor type.
+* **Import & Export:** import a character from a Loom Connect slot or from a `.json` file, and save one from its sheet menu ("Save to file" or "Export to Loom Connect" once connected in the account settings). A character imported by a player waits for the GM's approval.
 
 ---
 
@@ -98,8 +99,11 @@ The chat panel is where narrative storytelling meets automated rules execution:
 
 ![Playlists Tab](/assets/screenshots/sidebar/sidebar-playlists.png)
 
-* Dedicated volume sliders for **Master**, **Music**, and **Ambient** audio.
+* Three volume sliders: **Master** is the volume of everything in the VTT, **Music** is every playlist (the ones played from the sidebar and the scene's own playlist), and **Ambient** is only the sounds placed on the map with the audio tool. Master multiplies the other two.
+* The scene's music stays in step across the table: a player or the GM who reloads or joins late goes to the track the table is on, at the point it has reached, instead of the start of the playlist.
+
 * Curate soundscapes for combat, atmospheric exploration, or dialogue.
+* Pick several tracks at once for a playlist; the music tab has a progress bar you can seek, and a now-playing card stays at the top right while the sidebar is collapsed.
 
 ---
 

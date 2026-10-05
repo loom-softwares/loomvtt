@@ -51,7 +51,7 @@ The Token Tool lets you select, position, and command player characters, monster
 Allows GMs and authorized players to sketch visual annotations on the fly:
 * **Freehand:** Rapid sketching with adjustable stroke width and color.
 * **Geometric Shapes:** Rectangles, circles, ellipses, and closed polygons.
-* **Text on Canvas:** Add readable labels and tactical markers.
+* **Text on Canvas:** Add readable labels and tactical markers. The Text tab of the drawing sheet sets the font, size, alignment, bold, italic and shadow.
 
 ---
 
@@ -84,3 +84,15 @@ Loom VTT includes a native trap and trigger zone engine:
 * Drag Journal pages from the right sidebar directly onto the canvas to place interactive map pins.
 * Double-clicking a pin opens the linked journal entry, secret notes, or player handout.
 * Supports GM-only visibility or public player discovery.
+
+---
+
+## 🎭 Theater Art (theater screen)
+
+The theater screen (the cinematic overlay the GM turns on with the masks button) has its own tool. While the theater is on, the toolbar shows only **Theater art**; the map tools come back when it is turned off.
+
+* **Add a picture** picks an image file and puts it in the middle of the screen at its own proportions. **Add a text** puts a text there and opens its sheet.
+* **Select and move**: click an item, drag it to move it, drag a corner to resize it (the picture keeps its proportions; a text grows with its font). Double click opens the sheet (text, font, size, colour, alignment, bold, italic, shadow, opacity, rotation, forward/back, delete). **Delete** removes the selected item.
+* **Clear the screen** removes everything from this scene's theater screen.
+* The art belongs to the **scene**, not to the map: another scene has its own theater screen, so each map scene can open on a different entry screen. Combine it with the scene's "open in theater mode" option to make an entry screen for the table.
+* Everyone sees it live; only the GM edits it. Sizes are relative to the screen width, so it looks the same on any monitor.

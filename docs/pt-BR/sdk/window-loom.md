@@ -57,7 +57,12 @@ API global exposta para addons e sistemas no lado do cliente.
   canvas: {
     get active() { return CanvasManager.activeInstance; },
     showFloatingText(target, text, color?, options?),
+    getControlledActors(),
+    resetFogExploration(),
   },
+  openPortraitEditor(actorOrId),
+  openMediaViewer({ src, title?, readOnly? }),
+  actorSheetMenu: { register(id, provider), unregister(id) },
   get three() { return import('three'); },
   get cannon() { return import('cannon-es'); },
 };
@@ -105,7 +110,10 @@ API global exposta para addons e sistemas no lado do cliente.
 | `transitions`                 | `TransitionEffectRegistry`                     | Registro de efeitos de transição de cena (ver `transitions.md`)   |
 | `three`                      | `Promise<typeof import('three')>` (getter)     | Carrega Three.js sob demanda — só baixa o chunk se um addon acessar  |
 | `cannon`                     | `Promise<typeof import('cannon-es')>` (getter) | Carrega cannon-es sob demanda, mesma lógica                           |
-| `canvas`                     | `{ active, showFloatingText }`                 | Acesso ao CanvasManager ativo e API universal de texto/dano flutuante |
+| `canvas`                     | `{ active, showFloatingText, getControlledActors, resetFogExploration }` | Acesso ao CanvasManager ativo, API universal de texto/dano flutuante, os atores por trás dos tokens selecionados (só casts vinculados, com a contagem dos não vinculados ignorados) e o reset da exploração de névoa do usuário atual na cena |
+| `openPortraitEditor`          | `(actorOrId) => Promise<void>`                | Abre o editor de retrato e token em camadas para um ator           |
+| `openMediaViewer`             | `({ src, title?, readOnly? }) => void`        | Abre um visualizador de imagem/vídeo; o mestre ganha botão de compartilhar (`POST /api/media/push`) |
+| `actorSheetMenu`             | `{ register, unregister }`                    | Adiciona itens ao menu dos três pontos de toda ficha (veja `api.md`) |
 | `user`                       | `{ id, name, color, role, isGM, targets }` (getter) | Sessão do usuário atual + `targets` (getter próprio): cast members atualmente mirados por ele — ver exemplo abaixo |
 
 ## Exemplo de uso em addon

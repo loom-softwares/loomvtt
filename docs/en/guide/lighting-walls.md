@@ -14,6 +14,7 @@ Wall tools dictate how lighting, character perception, and token movement intera
 
 * **Standard Walls:** Completely block physical token movement, character sight, and light propagation.
 * **Interactive Doors:** Can be toggled open or locked with a click by the GM (or authorized players), dynamically revealing hidden rooms.
+  Each door can set an **opening distance** (a token owned by the player must be that close; the GM can always open it) and its own **open and close sounds**.
 * **Windows & Grates:** Restrict token movement while allowing light and vision to pass through.
 * **Secret Doors:** Rendered invisibly to players until revealed or unlocked by the GM.
 * **Terrain Walls:** Let tokens see past the first barrier (such as a low parapet or cliff edge) while blocking what lies behind.

@@ -21,6 +21,10 @@
 | `text` | `string` | `''` |
 | `fontFamily` | `string` | `'Arial'` |
 | `fontSize` | `number` | `16` |
+| `textBold` | `boolean` | `false` |
+| `textItalic` | `boolean` | `false` |
+| `textShadow` | `boolean` | `false` |
+| `textAlign` | `string` (`left`, `center`, `right`) | `'center'` |
 | `points` | `array` | `[]` |
 | `imgUrl` | `string` | `''` |
 | `isHidden` | `boolean` | `false` |
@@ -64,7 +68,7 @@ Creates drawing.
 differs from the schema's own default of `'#000000'`), `fillOpacity` (0.5 — differs from the
 schema default of 0.3), `strokeColor` (`'#000000'` — differs from the schema default of
 `'#ffffff'`), `strokeWidth` (1), `text` (''), `fontFamily` (`'Signika'` — differs from the
-schema default of `'Arial'`), `fontSize` (32 — differs from the schema default of 16), `z`
+schema default of `'Arial'`), `fontSize` (32 — differs from the schema default of 16), `textBold`, `textItalic` and `textShadow` (false), `textAlign` (`'center'`; anything but `left`/`right` becomes `center`), `z`
 (0), `isHidden` (false), `isLocked` (false), `levelId` ('').
 
 **Response `201`:** Created drawing
