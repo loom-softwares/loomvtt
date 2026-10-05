@@ -39,6 +39,7 @@ Crie atmosferas deslumbrantes posicionando fontes de iluminação coloridas e an
 * **Cores Customizadas:** Defina o matiz exato da luz (luz suave amarelada de fogo, brilho azulado místico, verde venenoso, etc.).
 * **Raio Claro e Escuro:** Configure a distância de iluminação plena (Bright Light) e o raio de penumbra (Dim Light).
 * **Duplo Clique:** Abre a janela de propriedades da fonte luminosa para ajustar cor, intensidade e animação.
+* **Por Andar:** a luz brilha só no próprio andar. Ligue "Compartilhada entre andares" na ficha dela para iluminar todos os andares da cena. A névoa funciona igual: só os tokens e as luzes do andar na tela a revelam, e o que foi explorado é lembrado por andar.
 * **Sombras em Tempo Real:** Conforme os tokens se movem, suas linhas de visão interagem com as fontes de luz e as paredes calculando a névoa de guerra progressiva.
 
 ---

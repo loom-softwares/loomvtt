@@ -9,7 +9,7 @@
 
 ### GET `/stage/:stageId/user/:userId`
 
-Busca áreas exploradas de um usuário numa stage.
+Busca áreas exploradas de um usuário numa stage, de um andar (query `?levelId=`, vazio para cena sem andares).
 
 **Response `200`:** Fog reveal record ou `{ "explored": [] }`
 
@@ -24,6 +24,7 @@ Cria ou atualiza as áreas exploradas do usuário autenticado numa stage (upsert
 |-------|------|-------------|-------|
 | `stageId` | `string` | **sim** | |
 | `explored` | `array` | não (default `[]`) | |
+| `levelId` | `string` | não (default vazio) | O andar onde os polígonos foram explorados: cada andar guarda o seu registro. |
 | `userId` | — | ignorado | Vem do token de auth em vez disso — um `userId` mandado pelo cliente permitiria um jogador sobrescrever a névoa de outro, então o valor do body nunca é usado. |
 
 **Response `201`:** Registro criado (primeira revelação desse usuário/stage)

@@ -39,6 +39,7 @@ Enrich your scenes with vibrant, animated light sources:
 * **Custom Color & Hue:** Set precise lighting tones (warm fire orange, eerie eldritch purple, bioluminescent green).
 * **Bright & Dim Radii:** Configure exact distances for full illumination and shadowy dim light falloff.
 * **Double Click:** Open the light configuration dialog to tweak intensity, color, and pulse animations.
+* **Per Floor:** a light shines only on its own floor. Turn on "Shared by every floor" in its sheet to light every floor of the scene. The fog works the same way: only the tokens and lights of the floor on screen reveal it, and what was explored is remembered per floor.
 * **Dynamic Shadows:** As tokens navigate corridors, their line-of-sight casts realistic shadows against walls, updating fog of war dynamically.
 
 ---

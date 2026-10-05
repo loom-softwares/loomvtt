@@ -8,6 +8,8 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Adicionado
 
+- **Seleção de vários nas ferramentas de seleção**: as ferramentas de seleção de luzes, sons, notas, desenhos e tiles desenham uma caixa de arrastar (Shift soma ao grupo). Arrastar qualquer elemento do grupo move todos juntos, e **Delete** remove todos. O Delete também funciona numa luz, som, desenho ou tile selecionado sozinho (antes só existia para paredes e notas).
+- **Opção de luz em todos os andares**: cada luz tem a opção "Compartilhada entre andares" na ficha (desligada por padrão, migração 066, `allLevels` na API de luzes).
 - **Ferramenta de arte do teatro**: nova ferramenta para a tela de teatro da cena. Com o modo teatro ligado, a barra do GM mostra só "Arte do teatro" (selecionar e mover, adicionar imagem, adicionar texto, limpar a tela) e as ferramentas do mapa voltam quando ele desliga. Imagens e textos pertencem à cena (`flags.theaterItems`), então cada cena de mapa tem a sua tela de entrada. Clique seleciona, arrastar move, arrastar um canto redimensiona (a imagem mantém a proporção, o texto cresce com a fonte), duplo clique abre a ficha do item (texto, fonte, tamanho, cor, alinhamento, negrito, itálico, sombra, opacidade, rotação, para frente/para trás, excluir) e Delete remove o item selecionado. Todos veem as mudanças ao vivo; só o GM edita. Os tamanhos são relativos à largura da tela, então ela fica igual em qualquer monitor.
 - **Música da cena em sincronia**: recarregar ou entrar atrasado leva à faixa em que a mesa está, no ponto em que ela chegou, em vez do início da playlist (`GET/POST /api/stages/:id/music-sync`; o primeiro relato vale e a linha do tempo fica na memória do servidor).
 - **Estilo de texto nos desenhos**: o texto de um desenho (a ferramenta de texto e os rótulos das formas) tem alinhamento, negrito, itálico e sombra na aba Texto da ficha (migração 064).
@@ -18,6 +20,9 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Corrigido
 
+- **Névoa por andar**: só os tokens e as luzes do andar na tela revelam a névoa (a visão de um token num andar de cima revelava os outros), e o que o jogador explorou é salvo e carregado por andar (migração 065, `levelId` na API de fog-reveals). Os registros salvos antes não pertencem a nenhum andar, então cada andar começa inexplorado.
+- **Luzes ficam no próprio andar**: uma luz só brilha no andar a que pertence, na imagem e na névoa.
+- **Área lembrada mais escura**: a parte do mapa que foi explorada mas não está à vista fica mais escura, e as luzes é que a trazem de volta.
 - **Tiles**: voltam a poder ser movidos, redimensionados (pelas bordas e cantos) e abertos com duplo clique, também depois do primeiro uso; um tile de imagem nasce no tamanho da própria imagem e no centro da visão; um tile novo não mostra mais "Novo tile" como texto e nasce ativado; o quadradinho de cor e o campo hex ficam iguais (o último usado vencia, então uma cor nova era salva como nenhuma); o cabeçalho da ficha dos desenhos não cobre mais as abas. Tiles salvos com gatilhos ou ações codificados duas vezes não geram mais erro a cada clique ou movimento do mouse.
 - **Exploração da névoa**: o salvamento envia só os polígonos novos, em partes abaixo do limite do corpo (a lista inteira passava de 1 MB num mapa grande e o servidor respondia 500 para sempre); um corpo acima do limite recebe 413 em vez de um 500 às cegas.
 - **Controles de volume**: Geral é tudo, **Música** é toda playlist (a da barra lateral e a da própria cena) e **Ambiente** são só os sons colocados no mapa com a ferramenta de áudio; cada controle diz o que controla.

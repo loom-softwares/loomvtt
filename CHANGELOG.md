@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Select Tools Pick Several**: the select tools of lights, sounds, notes, drawings and tiles draw a drag box (Shift adds to the group). Dragging any element of the group moves them all together, and **Delete** removes them. Delete also works on a single selected light, sound, drawing or tile (it used to exist only for walls and notes).
+- **Light On Every Floor Option**: each light has a "Shared by every floor" option in its sheet (off by default, migration 066, `allLevels` in the lights API).
 - **Theater Art Tool**: a new tool for the scene's theater screen. With theater mode on, the GM's toolbar shows only "Theater art" (select and move, add a picture, add a text, clear the screen) and the map tools return when it is turned off. Pictures and texts belong to the scene (`flags.theaterItems`), so each map scene has its own entry screen. Click to select, drag to move, drag a corner to resize (a picture keeps its proportions, a text grows with its font), double click opens the item sheet (text, font, size, colour, alignment, bold, italic, shadow, opacity, rotation, forward/back, delete) and Delete removes the selected item. Everyone sees the changes live; only the GM edits. Sizes are relative to the screen width, so the screen looks the same on any monitor.
 - **Scene Music Stays In Step**: a reload or a late join goes to the track the table is on, at the point it has reached, instead of the start of the playlist (`GET/POST /api/stages/:id/music-sync`; the first report wins and the timeline is kept in memory on the server).
 - **Text Style On Drawings**: the text of a drawing (the text tool and the labels of shapes) has alignment, bold, italic and shadow in the Text tab of its sheet (migration 064).
@@ -23,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Fog Per Floor**: only the tokens and lights of the floor on screen reveal the fog (the vision of a token on an upper floor used to reveal the others), and what a player explored is saved and loaded per floor (migration 065, `levelId` in the fog-reveals API). Records saved before it belong to no floor, so each floor starts unexplored.
+- **Lights Stay On Their Floor**: a light only shines on the floor it belongs to, in the picture and in the fog.
+- **Remembered Area Darker**: the part of the map that was explored but is not in sight is kept darker, so lights are what bring it back.
 - **Tiles**: they can be moved, resized (from the edges and corners) and opened with a double click again, also after the first use; a picture tile starts at the picture's own size and in the centre of the view; a new tile no longer shows "New tile" as its text and starts enabled; the colour swatch and the hex field stay in step (the last one used to win, so a new colour was saved as none); the drawings sheet header no longer overlaps the tabs. Tiles saved with double-encoded triggers or actions no longer raise errors on every click or mouse move.
 - **Fog Exploration**: saving sends only the new polygons, in pieces under the body limit (the full list outgrew 1 MB on a big map and the server answered 500 forever); a body over the limit is answered 413 instead of a blind 500.
 - **Volume Sliders**: Master is everything, **Music** is every playlist (the sidebar's and the scene's own) and **Ambient** is only the sounds placed on the map with the audio tool; each slider says what it controls.

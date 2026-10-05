@@ -9,7 +9,7 @@
 
 ### GET `/stage/:stageId/user/:userId`
 
-Fetches explored areas of a user in a stage.
+Fetches explored areas of a user in a stage, for one floor (query `?levelId=`, empty for a scene without floors).
 
 **Response `200`:** Fog reveal record or `{ "explored": [] }`
 
@@ -24,6 +24,7 @@ Creates or updates the authenticated user's explored areas for a stage (upsert, 
 |-------|------|-------------|-------|
 | `stageId` | `string` | **yes** | |
 | `explored` | `array` | no (default `[]`) | |
+| `levelId` | `string` | no (default empty) | The floor the polygons were explored on: each floor keeps its own record. |
 | `userId` | — | ignored | Taken from the auth token instead — a client-supplied `userId` would let a player overwrite another player's fog, so the body value is never used. |
 
 **Response `201`:** Created record (first reveal for this user/stage)

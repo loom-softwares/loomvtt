@@ -12,6 +12,7 @@ Ambient lights of a stage.
 | `color` | `string` | `'#ffdd88'` | Color |
 | `intensity` | `number` | `0.5` | Intensity |
 | `levelId` | `string` | `''` | Level ID |
+| `allLevels` | `boolean` | `false` | Shared by every floor of the scene (off: the light shines only on its own floor) |
 | `animation` | `string` | `'none'` | Animation |
 | `darknessMin` | `number` | `0` | Minimum darkness |
 | `darknessMax` | `number` | `1` | Maximum darkness |

@@ -12,6 +12,7 @@ Luzes ambiente de uma stage.
 | `color` | `string` | `'#ffdd88'` | Cor |
 | `intensity` | `number` | `0.5` | Intensidade |
 | `levelId` | `string` | `''` | ID do Andar (nível) |
+| `allLevels` | `boolean` | `false` | Compartilhada por todos os andares da cena (desligado: a luz brilha só no próprio andar) |
 | `animation` | `string` | `'none'` | Animação |
 | `darknessMin` | `number` | `0` | Escuridão mínima |
 | `darknessMax` | `number` | `1` | Escuridão máxima |
