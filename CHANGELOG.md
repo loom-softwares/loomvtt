@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Update Indicator**: the update button of the Setup Hub turns yellow and gets a red dot when a newer version of the program exists on the channel you follow; with no update it stays as it was. A pre-release build (alpha, beta) follows **Preview** by default (Stable only has final releases), and the channel chosen in the updates screen is remembered.
+- **Node Edition Updates Itself**: the update button now works on the Node edition (the folder with `start.sh`): the server downloads the release's Node zip, checks it against the release's `SHA256SUMS`, unpacks it, and the supervisor swaps `app`, `client`, `packages`, `shared` and the scripts while the server is stopped, then restarts it; the page shows the download progress and reloads by itself. Your data folder and `node_modules` are not touched, `npm install` runs only when the dependencies changed, and the previous files are put back if anything fails. (An install that is neither the installed app, the Node edition nor a source checkout now says to download the new version instead of showing a raw `git` error.)
 - **Connection Notice**: when the connection to the server is lost for more than 5 seconds a toast says so ("Reconnecting…"), and another one says when it is back. A drop that mends itself in a few seconds shows nothing.
 - **Disconnect Log**: the server records why each socket disconnected (tunnel closed, ping timeout...) and warns when its event loop was blocked, to find the cause of connection drops.
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Node Edition Runs As Production**: the Node edition and `npm start` start the server with `NODE_ENV=production` (the log said `development` because nothing set it).
 - **Doors Are Instant**: a door changes on screen at once and only that wall is updated, instead of waiting for the server and reloading every wall of the stage on every client (three round trips through a tunnel). If the server refuses, the door goes back. The door event also stays inside its own world.
 - **Owner Of A Sheet Moves The Token**: the owner of an actor can move the token a GM placed from it; the canvas only looked at the ownership of the token itself, which is empty for a token placed by the GM, so the drag was blocked even though the server accepts it.
 - **Tokens After A Dropped Connection**: after a reconnection the server sends the tokens again (moves, additions and removals made during the drop were never delivered and needed a reload), and a connection a tunnel killed silently is noticed in at most about 10 seconds instead of 45.

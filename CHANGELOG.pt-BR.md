@@ -9,6 +9,7 @@ All notable changes to LoomVTT will be documented in this file.
 ### Adicionado
 
 - **Indicador de atualização**: o botão de atualização do Setup Hub fica amarelo e ganha um ponto vermelho quando existe uma versão mais nova do programa no canal que você acompanha; sem atualização ele fica como estava. Um build de pré-lançamento (alpha, beta) acompanha o **Preview** por padrão (o Stable só tem versões finais), e o canal escolhido na tela de atualização é lembrado.
+- **Edição Node se atualiza sozinha**: o botão de atualização agora funciona na edição Node (a pasta com `start.sh`): o servidor baixa o zip Node da release, confere com o `SHA256SUMS` dela, descompacta, e o supervisor troca `app`, `client`, `packages`, `shared` e os scripts com o servidor parado, depois reinicia; a página mostra o andamento do download e recarrega sozinha. A pasta de dados e o `node_modules` não são tocados, o `npm install` só roda se as dependências mudaram, e os arquivos anteriores voltam se algo falhar. (Uma instalação que não é o app instalado, a edição Node nem uma cópia do código agora diz para baixar a versão nova, em vez de mostrar um erro cru do `git`.)
 - **Aviso de conexão**: quando a conexão com o servidor cai por mais de 5 segundos, um aviso diz isso ("Reconectando…") e outro diz quando voltou. Uma queda que se resolve sozinha em poucos segundos não mostra nada.
 - **Registro de desconexões**: o servidor registra por que cada socket caiu (túnel fechou, ping sem resposta...) e avisa quando o laço de eventos ficou bloqueado, para achar a causa das quedas de conexão.
 
@@ -19,6 +20,7 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Corrigido
 
+- **Edição Node roda como produção**: a edição Node e o `npm start` iniciam o servidor com `NODE_ENV=production` (o log dizia `development` porque nada definia a variável).
 - **Portas instantâneas**: a porta muda na tela na hora e só aquela parede é atualizada, em vez de esperar o servidor e recarregar todas as paredes da cena em todos os clientes (três idas e voltas pelo túnel). Se o servidor recusar, a porta volta. O evento da porta também fica dentro do próprio mundo.
 - **Dono da ficha move o token**: o dono de um ator pode mover o token que o GM colocou a partir dele; o canvas só olhava o dono do próprio token, que é vazio num token colocado pelo GM, então o arrasto era bloqueado mesmo com o servidor aceitando.
 - **Tokens depois de uma queda de conexão**: ao reconectar, o servidor envia os tokens de novo (movimentos, adições e remoções feitos durante a queda nunca chegavam e exigiam reload), e uma conexão que o túnel matou em silêncio é percebida em no máximo uns 10 segundos em vez de 45.
