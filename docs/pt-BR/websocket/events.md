@@ -35,7 +35,7 @@ um nome singular.
 | `cast.updated` | Cast member completo (com `_socketId` pra exclusão do remetente) | Token atualizado |
 | `cast.deleted` | `{ id }` | Token removido |
 | `cast.resync` | `{ cast: [...] }` | Enviado só a um cliente que reconectou: todos os tokens de novo (mesma redação do `init`), porque os eventos durante a queda nunca foram entregues |
-| `token.moved` | `{ id, x, y, worldId, _socketId, movedAt }` | Token movido |
+| `token.moved` | `{ id, x, y, worldId, _socketId, movedAt, movePath? }` | Token movido (`movePath`: os pontos que quem moveu marcou, para as outras telas andarem com o token pela mesma linha) |
 | `token.target` | `{ castId, targetedBy }` | Token marcado como alvo |
 | `tiles.created` | Tile completo | Tile criado |
 | `tiles.updated` | Tile completo | Tile atualizado |
@@ -155,7 +155,8 @@ Mandados embrulhados num único evento Socket.IO chamado `'message'`: `socket.em
 |------|-------------------|-----------|
 | `user.identify` | `{ worldId }` | Identifica e inicia a sincronização; entra na sala `world:<id>` |
 | `context.update` | `{ worldId, stageId? }` | Reescopo de salas: (re)entra em `world:<id>`, sai de toda sala `stage:*`, entra em `stage:<id>` se informado |
-| `token.move` / `moveMember` | `{ id, x, y }` | Move token — dispara `cast.updated` e `token.moved` |
+| `token.move` / `moveMember` | `{ id, x, y, path? }` | Move token — dispara `cast.updated` e `token.moved`; `path` é a lista opcional de pontos marcados no caminho (repassada, não gravada) |
+| `token.drag` | `{ tokens: [{ id, x, y }], waypoints?, ended? }` | Prévia ao vivo de um arrasto (não gravada): os outros veem a linha que quem arrasta está traçando, com os pontos marcados; `ended: true` quando o arrasto foi cancelado |
 | `chat.message` | `{ content, speaker? }` | Envia mensagem |
 | `chat.roll` | `{ formula, mode?, actorId?, speaker? }` | Rola dado |
 | `stage.activate` | `{ stageId, worldId }` | Ativa stage (só GM) |

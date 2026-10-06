@@ -33,7 +33,7 @@ routes that call `Signal.broadcast` manually instead often chose a singular name
 | `cast.updated` | Full Cast member (with `_socketId` for sender exclusion) | Token updated |
 | `cast.deleted` | `{ id }` | Token removed |
 | `cast.resync` | `{ cast: [...] }` | Sent only to a client that reconnected: every token again (same redaction as `init`), because events during the drop were never delivered |
-| `token.moved` | `{ id, x, y, worldId, _socketId, movedAt }` | Token moved |
+| `token.moved` | `{ id, x, y, worldId, _socketId, movedAt, movePath? }` | Token moved (`movePath`: the points the mover marked, so other screens walk the token along the same line) |
 | `token.target` | `{ castId, targetedBy }` | Token targeted |
 | `tiles.created` | Full Tile | Tile created |
 | `tiles.updated` | Full Tile | Tile updated |
@@ -152,7 +152,8 @@ type, data })`. `wsClient.send(type, data)` does this wrapping for you.
 |------|-------------------|-----------|
 | `user.identify` | `{ worldId }` | Identify and start sync; joins the `world:<id>` room |
 | `context.update` | `{ worldId, stageId? }` | Re-scope rooms: (re)join `world:<id>`, leave all `stage:*` rooms, join `stage:<id>` if given |
-| `token.move` / `moveMember` | `{ id, x, y }` | Move token — broadcasts `cast.updated` and `token.moved` |
+| `token.move` / `moveMember` | `{ id, x, y, path? }` | Move token — broadcasts `cast.updated` and `token.moved`; `path` is the optional list of points marked on the way (relayed, not stored) |
+| `token.drag` | `{ tokens: [{ id, x, y }], waypoints?, ended? }` | Live preview of a drag (not stored): the others see the line the mover is drawing, with the marked points; `ended: true` when the drag was cancelled |
 | `chat.message` | `{ content, speaker? }` | Send message |
 | `chat.roll` | `{ formula, mode?, actorId?, speaker? }` | Roll dice |
 | `stage.activate` | `{ stageId, worldId }` | Activate stage (GM only) |
