@@ -32,6 +32,7 @@ routes that call `Signal.broadcast` manually instead often chose a singular name
 | `cast.created` | Full Cast member | Token created |
 | `cast.updated` | Full Cast member (with `_socketId` for sender exclusion) | Token updated |
 | `cast.deleted` | `{ id }` | Token removed |
+| `cast.resync` | `{ cast: [...] }` | Sent only to a client that reconnected: every token again (same redaction as `init`), because events during the drop were never delivered |
 | `token.moved` | `{ id, x, y, worldId, _socketId, movedAt }` | Token moved |
 | `token.target` | `{ castId, targetedBy }` | Token targeted |
 | `tiles.created` | Full Tile | Tile created |

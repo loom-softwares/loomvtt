@@ -2,6 +2,29 @@
 
 All notable changes to LoomVTT will be documented in this file.
 
+## [1.0.5-alpha] - 2026-10-06
+
+> Build: `0007`
+
+### Adicionado
+
+- **Indicador de atualização**: o botão de atualização do Setup Hub fica amarelo e ganha um ponto vermelho quando existe uma versão mais nova do programa no canal que você acompanha; sem atualização ele fica como estava. Um build de pré-lançamento (alpha, beta) acompanha o **Preview** por padrão (o Stable só tem versões finais), e o canal escolhido na tela de atualização é lembrado.
+- **Aviso de conexão**: quando a conexão com o servidor cai por mais de 5 segundos, um aviso diz isso ("Reconectando…") e outro diz quando voltou. Uma queda que se resolve sozinha em poucos segundos não mostra nada.
+- **Registro de desconexões**: o servidor registra por que cada socket caiu (túnel fechou, ping sem resposta...) e avisa quando o laço de eventos ficou bloqueado, para achar a causa das quedas de conexão.
+
+### Segurança
+
+- **Fim da sessão do mundo**: a sessão do mundo termina 30 minutos depois que a última aba fecha. Fechar o navegador sem sair deixava a sessão válida pelas 24 horas do token; agora a próxima visita volta para a tela de login (a sessão de admin do Setup Hub não muda).
+- **Envio de mídia exige sessão**: a rota que envia uma imagem ou vídeo aos jogadores agora exige login como o resto da API.
+
+### Corrigido
+
+- **Portas instantâneas**: a porta muda na tela na hora e só aquela parede é atualizada, em vez de esperar o servidor e recarregar todas as paredes da cena em todos os clientes (três idas e voltas pelo túnel). Se o servidor recusar, a porta volta. O evento da porta também fica dentro do próprio mundo.
+- **Dono da ficha move o token**: o dono de um ator pode mover o token que o GM colocou a partir dele; o canvas só olhava o dono do próprio token, que é vazio num token colocado pelo GM, então o arrasto era bloqueado mesmo com o servidor aceitando.
+- **Tokens depois de uma queda de conexão**: ao reconectar, o servidor envia os tokens de novo (movimentos, adições e remoções feitos durante a queda nunca chegavam e exigiam reload), e uma conexão que o túnel matou em silêncio é percebida em no máximo uns 10 segundos em vez de 45.
+- **Cena atualiza só o que mudou**: uma alteração na cena reaplica escuridão, neblina, música e andares só quando aquela parte mudou, em vez de refazer tudo a cada atualização (menos lag quando o GM edita uma cena durante a sessão).
+- **Visualizador de mídia por túnel**: imagens e vídeos dados como endereço completo deste mesmo servidor (o que o túnel produz) são abertos e enviados como caminho do próprio servidor.
+
 ## [1.0.4-alpha] - 2026-10-04
 
 > Build: `0006`
@@ -196,8 +219,19 @@ All notable changes to LoomVTT will be documented in this file.
 - Isolamento dos fluxos OAuth de jogadores e mestres, validações de propriedade e compatibilidade dos backups, e controles adicionais para reports e operações de licença.
 - Compressão de imagens antes do envio dos backups e identificação da versão do sistema usada pela ficha.
 
-### Adicionado (1.0.3-alpha)
+### Adicionado
 
+- **Reordenação e Hierarquia Visual na Barra Lateral (Sidebar)**:
+  - Indicadores visuais luminosos de inserção (`.drag-indicator-top` e `.drag-indicator-bottom`) com linha e ponto de ancoragem em todas as abas (Personagens, Itens, Diários, Cenas, Compêndios, Tabelas, Baralhos, Macros e Playlists).
+  - Movimentação nativa para a raiz simplesmente soltando entidades no espaço vazio da lista ou sobre itens da raiz, eliminando caixas e botões artificiais de soltura.
+  - Suporte a soltura sobre as bordas superior/inferior de pastas para manter o nível hierárquico da pasta pai, ou no centro do cabeçalho para inserir dentro da pasta.
+- **Importação e Drag-and-Drop Completo de Compêndios e Fichas**:
+  - Arraste e solte direto de itens e entidades de compêndios para a aba de Itens do mundo, fichas de personagens ou pastas.
+  - Importação desvinculada de itens a partir de fichas de atores para os itens do mundo via drag-and-drop.
+  - Suporte total a tipos de itens customizados definidos por manifestos de regras de sistemas ativos (ex: WoD5e, D&D5e).
+- **Tabelas de Rolagem (RollTables) e Coleções Reativas**:
+  - Nova coleção reativa `rollTablesCollection` no cliente com sincronização em tempo real via WebSocket (`roll-table.created`, `roll-table.updated`, `roll-table.deleted`).
+  - Menus de contexto completos para tabelas na barra lateral (criar, abrir, renomear, excluir).
 - **Áudio Ambiente Posicional & Paisagens Sonoras**:
   - Fontes de áudio ambiente posicionais no canvas PixiJS v8 (`AmbientAudio`) com raio de atenuação configurável, volume espacial e gatilhos ativados por proximidade do movimento dos tokens.
   - Sincronização completa em tempo real de playlists, faixas de áudio, estados de reprodução, volume e repetição contínua via WebSocket (`playlists.sync`).
@@ -240,6 +274,9 @@ All notable changes to LoomVTT will be documented in this file.
 
 ### Corrigido
 
+- **Compatibilidade de Drag-and-Drop no Chromium**: Alinhados `effectAllowed` e `dropEffect` no ciclo de eventos para evitar que o navegador rejeitasse o drop de itens de compêndios e janelas na sidebar.
+- **Parsing de UUIDs de Compêndios SQLite**: Corrigida a quebra de identificadores de pacotes locais que continham extensões de arquivo `.sqlite`.
+- **Validação de Tipos de Itens na Criação de Entidades**: A rota `POST /items` agora valida os tipos de itens permitidos cruzando os manifestos dos rulesets carregados em execução.
 - **Vazamento de Eventos de Drop do HUD para o Canvas**: Corrigido bug onde arrastar itens ou fichas da barra lateral ou de janelas abertas disparava eventos de drop indevidos no canvas PixiJS sob a interface.
 - **Artefatos de Troca de Cenas & Sombras Residuais**: Resolvidas inconsistências visuais e sonoras ao alternar rapidamente entre cenas ativas ou andares com iluminação dinâmica.
 - **Proteção de Segredos em Configurações de Addons**: Exigência de privilégios de GM para alteração de configurações de módulos e ocultação de campos confidenciais na API.

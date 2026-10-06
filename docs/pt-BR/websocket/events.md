@@ -34,6 +34,7 @@ um nome singular.
 | `cast.created` | Cast member completo | Token criado |
 | `cast.updated` | Cast member completo (com `_socketId` pra exclusão do remetente) | Token atualizado |
 | `cast.deleted` | `{ id }` | Token removido |
+| `cast.resync` | `{ cast: [...] }` | Enviado só a um cliente que reconectou: todos os tokens de novo (mesma redação do `init`), porque os eventos durante a queda nunca foram entregues |
 | `token.moved` | `{ id, x, y, worldId, _socketId, movedAt }` | Token movido |
 | `token.target` | `{ castId, targetedBy }` | Token marcado como alvo |
 | `tiles.created` | Tile completo | Tile criado |

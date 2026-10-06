@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > For historical release notes prior to Alpha 05 in Portuguese, see [`CHANGELOG.pt-BR.md`](./CHANGELOG.pt-BR.md).
 
+## [1.0.5-alpha] - 2026-10-06
+
+> Build: `0007`
+
+### Added
+
+- **Update Indicator**: the update button of the Setup Hub turns yellow and gets a red dot when a newer version of the program exists on the channel you follow; with no update it stays as it was. A pre-release build (alpha, beta) follows **Preview** by default (Stable only has final releases), and the channel chosen in the updates screen is remembered.
+- **Connection Notice**: when the connection to the server is lost for more than 5 seconds a toast says so ("Reconnecting…"), and another one says when it is back. A drop that mends itself in a few seconds shows nothing.
+- **Disconnect Log**: the server records why each socket disconnected (tunnel closed, ping timeout...) and warns when its event loop was blocked, to find the cause of connection drops.
+
+### Security
+
+- **World Session Timeout**: a world session ends 30 minutes after its last tab closes. Closing the browser without signing out used to leave the session valid for the 24 hours of its token; now the next visit goes back to the login screen (the Setup Hub admin session is unchanged).
+- **Media push needs a session**: the route that sends an image or video to the players now requires a login like the rest of the API.
+
+### Fixed
+
+- **Doors Are Instant**: a door changes on screen at once and only that wall is updated, instead of waiting for the server and reloading every wall of the stage on every client (three round trips through a tunnel). If the server refuses, the door goes back. The door event also stays inside its own world.
+- **Owner Of A Sheet Moves The Token**: the owner of an actor can move the token a GM placed from it; the canvas only looked at the ownership of the token itself, which is empty for a token placed by the GM, so the drag was blocked even though the server accepts it.
+- **Tokens After A Dropped Connection**: after a reconnection the server sends the tokens again (moves, additions and removals made during the drop were never delivered and needed a reload), and a connection a tunnel killed silently is noticed in at most about 10 seconds instead of 45.
+- **Stage Updates Apply Only What Changed**: a change to a stage re-applies darkness, fog, music and levels only when that part changed, instead of rebuilding everything on every update (less lag when a GM edits a scene during a session).
+- **Media Viewer Through A Tunnel**: images and videos given as full addresses of this same server (what a tunnel produces) are opened and pushed as same-origin paths.
+
 ## [1.0.4-alpha] - 2026-10-04
 
 > Build: `0006`
@@ -195,11 +218,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - **Removed an internal-only license activation shortcut**: a fixed developer key that should never have shipped in distributable builds has been removed entirely. Local/test activation now goes through the same site-issued license flow as a real key.
-- **Custom data location**: `--dataPath=<folder>` (or the `LOOM_ROOT` environment variable) now points the entire Config/Data/Logs location at a folder of your choosing, created automatically if missing and reused as-is if it already has data — with a prompt to restart Loom automatically when that path changes.
-- **Local account linking with Loom Connect**: link a local install to your Loom Connect account to export and send character backups, with OAuth flows for players and GMs kept isolated from each other, ownership/compatibility validation on backups, image compression before upload, and the originating system version recorded alongside each backup.
 
 ### Added
 
+- **Sidebar Tree Hierarchy & Visual Insertion Lines**:
+  - Distinct glowing insertion line indicators (`.drag-indicator-top` and `.drag-indicator-bottom`) with anchor dots across all sidebar tabs (Actors, Items, Journals, Stages, Compendiums, Tables, Decks, Macros, and Playlists).
+  - Effortless moving of entities and folders to root by dropping on root items or empty space in the list, removing artificial "Move to Root" drop zone buttons.
+  - Boundary-aware folder dropping: hovering folder top/bottom boundaries places items at the parent level, while hovering the folder body moves into the folder.
+- **Full Compendium & Sheet Drag-and-Drop Pipeline**:
+  - Direct drag-and-drop import of items and entities from compendiums into world items, actor sheets, or nested folders.
+  - Detached import of actor-owned items into world items by dragging from actor sheets into the sidebar.
+  - Full support for custom system item types defined in active ruleset manifests (e.g. WoD5e, D&D5e).
+- **Reactive Roll Tables (RollTables) Collection**:
+  - New reactive client-side collection `rollTablesCollection` synchronized over WebSocket (`roll-table.created`, `roll-table.updated`, `roll-table.deleted`).
+  - Full sidebar context menus for tables (create, open, rename, delete).
 - **Ambient Audio & Spatial Soundscapes**:
   - Positional ambient audio sources on the PixiJS canvas (`AmbientAudio`) with configurable radius, volume, distance attenuation, and proximity-based triggers on token movement.
   - Full real-time synchronization of audio playlists, tracks, playback states, volume, and looping over WebSocket (`playlists.sync`).
@@ -218,6 +250,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Conditional display of License and Compendiums tabs across addon and system manifest windows, showing only tabs actually declared in package manifests.
 - **Commercial Package Entitlements & Marketplace Verification**:
   - Installer package integrity validation, cryptographic entitlement verification (`GET /marketplace/entitlements`), and secure license registration via the global `activation_codes` table with SHA-256 hash storage.
+- **System Registry & Marketplace Package Browser**:
+  - Added the system registry, marketplace package browsing, entitlement-aware package installation, and Setup Hub integration for discovering and managing systems and commercial packages.
 - **Standalone Server Deployment Guide**:
   - Comprehensive Portuguese documentation for deploying standalone LoomVTT headless servers via Docker, systemd, reverse proxies (Nginx/Caddy), SSL, and persistent data paths (`docs/pt-BR/guide/running-standalone-server.md`).
 
@@ -242,6 +276,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Chromium Drag-and-Drop Event Alignment**: Harmonized `effectAllowed` and `dropEffect` throughout the drag-and-drop lifecycle, resolving dropped compendium items being cancelled by Chromium browsers.
+- **SQLite Compendium UUID Parsing**: Fixed parsing bugs when local compendium pack paths contain `.sqlite` extensions.
+- **API Item Type Manifest Validation**: `POST /items` now resolves valid item types dynamically against all loaded ruleset manifests.
 - **HUD Drop Leaks & Canvas Event Propagation**: Prevented drag-and-drop operations from the sidebar or windows from unintentionally leaking drop events into the underlying PixiJS canvas.
 - **Scene Reloading & Transition Artifacts**: Fixed edge cases where changing active stages or levels caused residual sound effects or desynced lighting states.
 - **Module Settings Secrets Protection**: Required GM authorization for all addon settings mutations and masked sensitive secret keys.
@@ -290,49 +327,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Switching worlds without closing the previous one**: `/worlds/:id/activate` and `/launch-gm` swapped the globally active world without ever tearing down the previous one — its sqlite connection stayed cached, old WS sessions kept a now-stale `bootId`, and any read depending on "the currently active world" (the compendium filter above, for one) could resolve to the WRONG world for anyone still logged into the old one. This is likely the root cause of an earlier incident ("session drops when activating an addon") that had only received a client-side patch. Now properly closes the previous world (connection, `bootId`, `world.deactivated` broadcast) before opening the new one.
 - **Saving an addon/ruleset manifest triggered a full page reload**: Vite's dev-mode addon watcher treated any changed file outside `.css`/`.sqlite*` as "reload everything" — including `addon.json`/`ruleset.json`, which the addon-edit screen rewrites on every "Save". The Modules tab already refreshes itself after saving; no F5 needed.
 - **wod5e: the plain reroll did nothing / duplicated the card**: the actual context-menu wrapper (`Loom.wraps.chatCardContextOptions`) never called wod5e's own implementation (`_onAnyReroll`) — the "Reroll" option shown was the core's generic one, which re-posts the roll as a BRAND NEW message (genuinely re-rolling server-side), but wod5e's card always renders the old message's pre-baked `meta.bodyHtml` whenever `meta.wod5e` is set — the new roll happened, it just stayed invisible behind the old copied HTML. Registered wod5e's own reroll on the correct wrapper, alongside the Willpower reroll (which also had a smaller bug: the roll callback never re-copied `basicDice`/`advancedDice`, prototype getters dropped by the `{...roll}` spread, so every reroll merged in zero new dice).
-
----
-
-## [1.0.0-alpha.0] — Alpha
-
-### Added
-- **Folders inside compendiums**: Both addon/ruleset-shipped compendium packs and per-world compendium packs now support organizing entries into folders (create, rename, recolor, nest), instead of one long flat list.
-- **Compendium permission management**: GMs can now right-click a compendium source to unlock it for editing or manage which roles can view it, directly from the sidebar context menu.
-- **Unified folder editor**: Every folder-edit dialog across the app (world folders, compendium folders, sidebar owner groups) now uses a single combined name + color dialog, instead of two separate steps.
-
-### Changed
-- **Standalone Node release**: No longer bundles `node_modules` or targets a specific platform/architecture at build time — the same release folder works on Windows, Linux, and macOS, installing its native dependency correctly for whichever machine runs it.
-- **Custom data location**: `--dataPath=<folder>` (or the `LOOM_ROOT` environment variable) now points the entire Config/Data/Logs location at a folder of your choosing, created automatically if missing and reused as-is if it already has data.
-
-### Fixed
-- **Compendium edits triggering a full page reload**: A dev-server watcher was treating compendium `.sqlite` writes the same as a source file change, reloading the whole client instead of just refreshing the compendium window.
-- **Folder assignment lost on every compendium save**: Editing and saving a world compendium pack was silently clearing every entry's folder assignment.
-- **Duplicate "Stream Links (OBS)" windows**: Clicking the stream-link button multiple times could stack several dialogs and mint a fresh one-time code each time.
-- **GM session replaced by opening an OBS stream link in a normal browser tab**: This is expected behavior for OBS's isolated Browser Source (a fresh session tied to a dedicated Streamer account), but the dialog now explicitly warns about it before it catches anyone off guard.
-
----
-
-## [0.5.x] — Alpha
-
-### Added
-- **Rich Text Editor in SDK** (`Loom.mountRichTextEditor`): The ProseMirror-based rich text editor used in core journals is now exposed via the `Loom` global, allowing addon and ruleset developers to embed real rich text editors in description/bio fields.
-- **Multi-floor / Level System**: Scenes can now have multiple floors (levels) with independent elevation ranges. Tokens, walls, lights, sounds, drawings, and notes are filtered per floor. Existing content is automatically migrated to the correct floor via database migrations.
-- **Spatial Audio**: `SoundManager` rewritten with `AudioContext` + `PannerNode` (HRTF). Distance attenuation, stereo panning relative to the controlled token, and listener sync via `CanvasManager.updateControlledTokens()`.
-- **Token Configuration Window — Form-based editing**: Replaced raw JSON textareas for `systemData`, `ownership`, and `detectionModes` with proper form controls. Ownership now shows a list of world players with a permission-level selector per row.
-- **Active Tiles — Visual action editor**: The "Active Tiles" tab now shows structured form fields per action type (teleport destination, sound file picker, dialog title/text/image) instead of a raw JSON textarea.
-- **Ambient Sound Window — Tab layout**: The noise configuration window now uses the unified `Tabs` architecture, matching the visual style of Token and Tile windows.
-- **Cloudflare Tunnel hardening**: `trust proxy` configured so rate limiting works correctly per real client IP when exposed via tunnel. Session cookies now derive `secure` flag from actual request protocol. `POST /worlds/:id/join` now has its own rate limit. Admin password minimum length raised from 4 to 8 characters.
-
-### Changed
-- **File upload sanitization**: Upload sanitization now only removes genuinely dangerous characters (path separators, Windows-forbidden chars, control characters). Accented characters, spaces, and parentheses are preserved. Disambiguation suffix is only added on actual filename conflicts, using `name (1).ext` format.
-- **Global compatibility alias renamed**: The `window.vtt` global (used by converted systems) is now generic. Installer error messages no longer reference specific VTT product names.
-
-### Fixed
-- **Tokens appearing on all floors**: Three independent bugs combined to show tokens/elements on every floor. Fixed by extracting `isOnCurrentLevel()` as a single shared rule applied at creation time, backfilling orphaned elements via migration `036`, and restacking overlapping floor elevation ranges via migration `037`.
-- **"Unexpected end of JSON input" when clicking a world**: `getWorldDb()` was returning from cache before checking the `checkOnly` option, causing circular reference errors when `res.json()` tried to serialize a Knex instance. Only failed on the second click (first click was a cache miss).
-- **World loading progress bar skipping**: Migration and backup steps — the slowest phases — ran with a frozen progress screen because `CardProgressTracker` was only triggered from "Activating World". Earlier phases now report progress; preload rescaled to 50–95% range.
-- **NoiseConfigWindow layout (`<details>`/`<summary>`)**: Replaced with the unified Tabs architecture.
-
----
-
-*Older entries will be added as the public changelog is backfilled.*
