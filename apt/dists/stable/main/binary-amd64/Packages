@@ -1,13 +1,13 @@
 Package: loomvtt
-Version: 1.0.9-alpha
+Version: 2.0.0-alpha
 Architecture: amd64
 Maintainer: Rob Oliveira
 Depends: nodejs (>= 18), npm
-Filename: https://github.com/loom-softwares/loomvtt/releases/download/v1.0.9-alpha/loomvtt_1.0.9-alpha_amd64.deb
-Size: 574567722
-MD5sum: c9c3a93fb9ac0c272920f2925976d3b7
-SHA1: f8143c4932658f2efc4e7c099ee869f2413c7ac3
-SHA256: 1c29a623f7fe054d9282949f49dcb6bafe7395a2d970e16a53548e0edd917451
+Filename: https://github.com/loom-softwares/loomvtt/releases/download/v2.0.0-alpha/loomvtt_2.0.0-alpha_amd64.deb
+Size: 574564912
+MD5sum: 88ff7369daa0ae6cee38832a7a1b0e6c
+SHA1: 1e35443b7bf381138ce22f23191ee5d8b6279d57
+SHA256: 92213ee69ad0e5066fc16da5aaff78c9e0604e8b437fbe2153e4d2ba5c0bfd8a
 Section: web
 Priority: optional
 Description: LoomVTT server
