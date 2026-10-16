@@ -15,21 +15,25 @@ Lists tables. `?worldId=`
 
 ### POST `/`
 
-Creates table.
+Creates table. `requireGM`. Returns `201` with the created table.
 
-| Field                  | Type        | Description                                        |
-| ---------------------- | ----------- | -------------------------------------------------- |
-| `id`                 | `string`  | Optional                                           |
-| `worldId`            | `string`  | World                                              |
-| `name`               | `string`  | Name                                               |
-| `description`        | `string`  | Description                                        |
-| `formula`            | `string`  | Roll formula                                       |
-| `sortMode`           | `string`  | Sorting mode                                       |
-| `imgUrl`             | `string`  | Image URL                                          |
-| `replacement`        | `boolean` | With replacement?                                  |
-| `displayRollFormula` | `boolean` | Show the roll formula alongside the result in chat |
+| Field                  | Type        | Default | Description                                        |
+| ---------------------- | ----------- | ------- | -------------------------------------------------- |
+| `id`                 | `string`  | auto    | Optional                                           |
+| `worldId`            | `string`  | —       | World                                              |
+| `name`               | `string`  | —       | Name                                               |
+| `description`        | `string`  | `''`    | Description (sanitized as rich text)               |
+| `formula`            | `string`  | `'1d20'` | Roll formula                                      |
+| `sortMode`           | `number`  | `0`     | Sorting mode                                       |
+| `imgUrl`             | `string`  | `''`    | Image URL                                          |
+| `replacement`        | `number`  | `1`     | With replacement? `0` = no replacement (`1` = yes)  |
+| `displayRollFormula` | `number`  | `0`     | Show the roll formula alongside the result in chat (`1` = yes) |
 
-**WS Event:** `roll_tables.created` (auto-broadcast by the document layer)
+An optional `entries` array creates the entries in the same request. Each item takes `text`, `imgUrl`, `weight`, `collectionId`, `type`, `documentCollection`, `documentId`, `description`, `rangeMin` and `rangeMax`. Entries always start with `drawn` = `'NONE'`. Their ranges are stored as sent (missing ranges become `1`, they are not computed from `weight`; see `POST /:id/normalize-results`).
+
+**Errors:** `400` with `{ "error": "..." }` when the Document layer rejects the table.
+
+**WS Event:** `roll-table.created` (the Document layer broadcasts `roll_tables.created`, which the server relays under this name)
 
 ---
 
@@ -41,54 +45,58 @@ Fetches table with `entries[]`.
 
 ### PUT `/:id`
 
-Updates table.
+Updates table. `requireGM`. Returns `{ "success": true }` (not the table). Only the sent fields change.
+`description` is sanitized as rich text.
 
-**WS Event:** `roll_tables.updated` (auto-broadcast)
+**WS Event:** `roll-table.updated`
 
 ---
 
 ### DELETE `/:id`
 
-Removes table + entries (cascade).
+Removes table and its entries (the controller deletes the entries explicitly). `requireGM`. Returns `{ "success": true }`.
 
-**WS Event:** `roll_tables.deleted` (auto-broadcast)
+**WS Event:** `roll-table.deleted`
 
 ---
 
 ### POST `/:id/entries`
 
-Adds entry. `rangeMin`/`rangeMax` are assigned automatically (contiguous with the last
+Adds entry. `requireGM`. Returns `201` with the created entry.
+`rangeMin`/`rangeMax` are assigned automatically (contiguous with the last
 entry's `rangeMax`, spanning `weight`) — pass them explicitly on `PUT` to override.
 
 | Field                  | Type                                     | Description                                                                                            |
 | ---------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `text`               | `string`                               | Result name/label. When`type` is `document` and left empty, filled from the linked document's name |
 | `imgUrl`             | `string`                               | Icon path. When`type` is `document` and left empty, filled from the linked document's image        |
-| `weight`             | `number`                               | Used only to auto-assign the initial range on create                                                   |
-| `drawn`              | `boolean`                              | Whether this result has already been drawn (no-replacement tables)                                     |
+| `weight`             | `number`                               | Used only to auto-assign the initial range on create (default `1`)                                     |
+| `collectionId`       | `string`                               | Optional collection id (default `''`)                                                                  |
+| `drawn`              | `string`                               | `'NONE'` (default) or `'true'` once drawn (no-replacement tables)                                      |
 | `type`               | `'text' \| 'document'`                  | `document` links the result to a world document instead of plain text                                |
 | `documentCollection` | `'actors'\|'items'\|'stages'\|'journals'` | Collection the linked document belongs to (`type: 'document'` only)                                  |
 | `documentId`         | `string`                               | Id of the linked document (`type: 'document'` only)                                                  |
 | `description`        | `string`                               | Rich-text body shown in the result's own editor window                                                 |
 
-**WS Event:** `roll_table_entries.created` (auto-broadcast)
+**WS Event:** `roll-table-entry.created`
 
 ---
 
 ### PUT `/entries/:entryId`
 
-Updates entry. Same fields as above, plus `rangeMin`/`rangeMax` (`number`) — editable
+Updates entry. `requireGM`. Returns `{ "success": true }`. Same fields as above (except `collectionId`), plus `rangeMin`/`rangeMax` (`number`) — editable
 directly here, independent of `weight`, same as `POST /:id/normalize-results` below.
+Unlike the table `description`, the entry `description` is stored as sent, not sanitized.
 
-**WS Event:** `roll_table_entries.updated` (auto-broadcast)
+**WS Event:** `roll-table-entry.updated`
 
 ---
 
 ### DELETE `/entries/:entryId`
 
-Removes entry.
+Removes entry. `requireGM`. Returns `{ "success": true }`.
 
-**WS Event:** `roll_table_entries.deleted` (auto-broadcast)
+**WS Event:** `roll-table-entry.deleted`
 
 ---
 
@@ -103,8 +111,12 @@ roll internally (up to 25 times) if it lands on a gap or an already-drawn range 
 giving up with `400`. Also returns `400` if no entry has a configured range yet, or once
 every entry has been drawn.
 
-**Response `200`:** `{ result, formula, total, label }` — `total` is the actual rolled number.
-**WS Event:** `roll-table.rolled`
+Any authenticated player can roll (no `requireGM`). Each roll also posts a chat message to the
+world (`chat.message`, with the table name, the formula and the total when `displayRollFormula` is set).
+
+**Response `200`:** `{ result, formula, total, label }` — `total` is the actual rolled number; `result` is the matched entry.
+**Errors:** `404` `{ "error": "Roll table not found." }`; `400` when the table has no entries, has no configured range, or no drawable entry matches after 25 attempts.
+**WS Event:** `roll-table.rolled` (`{ tableId, result, formula, total, label }`)
 
 ---
 
@@ -114,6 +126,7 @@ GM only. Clears the `drawn` mark on every entry, making them eligible for `/:id/
 again without recreating the table.
 
 **Response `200`:** `{ success: true }`
+**Response `404`:** `{ "error": "Roll table not found." }`
 
 ---
 

@@ -10,12 +10,10 @@ The chat panel is where narrative storytelling meets automated rules execution:
 
 ![Chat with Dice Rolls](/assets/screenshots/sidebar/sidebar-chat-rolls.png)
 
-* **Rich Roll Cards:** Displays actor name, test rolled, dice values with modifiers, Target Difficulty (DC) comparison, and highlighted **Critical Hits** and **Critical Fumbles**.
-* **Chat Commands:**
-  * `/roll 1d20 + 5` — Public roll visible to all.
-  * `/gmroll 1d20 + 2` — Secret roll visible only to you and the GM.
-  * `/blindroll 1d20` — Blind roll (only the GM sees).
-  * `/whisper [Player] message` — Send a private whisper.
+* **Roll Cards:** Show the formula, each die value, modifiers, the total, and a breakdown tooltip. A roll that is not public carries a tag (GM only, GM blind, Self only). Comparison with a difficulty (DC) and critical/fumble highlighting are left to the system's own cards.
+* **Roll Command:**
+  * `/r 1d20 + 5` — Rolls the formula. The roll-mode buttons in the chat panel (Public, GM only, GM blind, Self only) set who sees the next roll.
+  * `/roll`, `/gmroll`, `/blindroll` and `/whisper` are not interpreted by the client: the text is sent as a normal chat message.
 * **Rich Text Formatting:** Built-in formatting bar for bold, links, code blocks, and embedded media.
 
 ---
@@ -28,7 +26,7 @@ The chat panel is where narrative storytelling meets automated rules execution:
 * **Instant Creation:** Quick **Create Actor** button with support for imported or custom templates.
 * **Drag-to-Canvas:** Drag any actor directly onto the map to spawn an encounter-ready token.
 * **Live Search:** Instant filter by name or actor type.
-* **Import & Export:** import a character from a Loom Connect slot or from a `.json` file, and save one from its sheet menu ("Save to file" or "Export to Loom Connect" once connected in the account settings). A character imported by a player waits for the GM's approval.
+* **Import & Export:** import a character from a Loom Connect slot or from a `.json` file, and save one from its sheet menu ("Save character to a file (.json)" or "Export to Loom Connect" once connected in the account settings). A character imported by a player waits for the GM's approval.
 
 ---
 
@@ -46,7 +44,7 @@ The chat panel is where narrative storytelling meets automated rules execution:
 ![Scenes Tab](/assets/screenshots/sidebar/sidebar-scenes.png)
 
 * Lists all campaign maps with thumbnail visual previews.
-* **One-Click Activation:** Double-click to preview or click the activate button to pull all connected players to the new scene simultaneously.
+* **Activation:** Click a scene to open its configuration window. Right-click it and choose **Activate (All Players)** to pull all connected players to that scene at once. (A map scene expands to show its child scenes when clicked.)
 
 ---
 
@@ -73,7 +71,7 @@ The chat panel is where narrative storytelling meets automated rules execution:
 ![Card Decks Tab](/assets/screenshots/sidebar/sidebar-cards-decks.png)
 
 * Native support for standard playing decks (54 cards) or custom thematic decks (Tarot, critical injuries, inspiration, spell cards).
-* Shuffle, draw cards into player hands, or deal face-up onto the canvas.
+* Shuffle, draw cards, or deal them to other stacks in the world (hands or piles), and pass individual cards from one stack to another.
 
 ---
 
@@ -119,7 +117,7 @@ The chat panel is where narrative storytelling meets automated rules execution:
 
 ![Scene Directory](/assets/screenshots/sidebar/sidebar-scene-directory.png)
 
-* Quickly filter and select any placed entity on the active scene: tokens, lights, walls, drawings, or pins.
+* Quickly filter and select any placed entity on the active scene: tokens, lights, walls, tiles, drawings, or notes.
 
 ---
 

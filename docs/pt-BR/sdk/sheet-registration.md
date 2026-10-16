@@ -2,8 +2,8 @@
 
 Camada de compatibilidade que permite registrar fichas de ator/item no catálogo usando a
 API de registro de sistemas convertidos. É um **side-effect module**: só importar ele já
-expõe os globais `Actors`, `Items` e `DocumentSheetConfig` em `window` (não exporta nada
-pra importar direto).
+expõe os globais `Actors`, `Items` e `DocumentSheetConfig` em `window`. O módulo também tem exports
+nomeados dos mesmos objetos, mas o SDK (`/_loom/sdk/index.js`) não os reexporta, então use os globais.
 
 Fonte: `client/core/sheet-registration.ts`. Os registros feitos aqui vão parar no
 mesmo catálogo exposto em `Loom.sheets` (ver `sheets.md`) — não é um registro separado.
@@ -19,8 +19,8 @@ mesmo catálogo exposto em `Loom.sheets` (ver `sheets.md`) — não é um regist
 ```typescript
 interface RegisterSheetOptions {
   types?: string[];   // subtipos de documento; vazio/ausente = ['*']
-  makeDefault?: boolean;
-  label?: string;
+  makeDefault?: boolean; // aceito, mas ignorado (ver CODE ISSUE abaixo)
+  label?: string;        // aceito, mas ignorado (ver CODE ISSUE abaixo)
 }
 
 Actors.registerSheet(scope: string, SheetClass: any, options?: RegisterSheetOptions): void;
@@ -47,3 +47,9 @@ Items.registerSheet('world', MyItemSheet);
 
 O `SheetClass` registrado precisa seguir o contrato de sheet (`LoomDocumentSheet` com
 `LoomHandlebarsMixin(...)` aplicado na declaração, ver `sheets.md` e `windows.md`).
+
+Só `types` é usado. O argumento `scope` das três funções é ignorado, e `makeDefault` e
+`label` não têm efeito. Cada entrada de `types` é registrada no catálogo como está.
+
+> **CODE ISSUE:** `client/core/sheet-registration.ts` (`registerInCatalog`) lê apenas `options.types`. `makeDefault`
+> e `label` nunca são usados, então uma ficha registrada com `makeDefault: true` não vira a padrão por causa dessa flag.

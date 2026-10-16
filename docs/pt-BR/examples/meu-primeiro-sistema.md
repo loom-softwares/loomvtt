@@ -22,6 +22,7 @@ Vamos criar um sistema "Fantasia Simplificada" com:
   "name": "fantasia-simplificada",
   "title": "Fantasia Simplificada",
   "version": "1.0.0",
+  "engine": "loom",
   "client": "client.js"
 }
 ```
@@ -29,7 +30,7 @@ Vamos criar um sistema "Fantasia Simplificada" com:
 ## 3. Client-side (`client.js`)
 
 ```javascript
-import { SystemRegistry, defineSystem } from '/_loom/sdk/index.js';
+import { SystemRegistry, defineSystem, settings } from '/_loom/sdk/index.js';
 
 SystemRegistry.register(defineSystem({
   id: 'fantasia-simplificada',
@@ -39,6 +40,7 @@ SystemRegistry.register(defineSystem({
   actorTypes: ['character', 'npc'],
   itemTypes: ['weapon', 'armor', 'consumable'],
 
+  // Chamado para actors (`systemData` na criação) E para itens (`data` na criação), com o tipo do novo documento.
   getDefaultData(type) {
     if (type === 'character') {
       return {
@@ -54,9 +56,12 @@ SystemRegistry.register(defineSystem({
         hp: { value: 10, max: 10 },
       };
     }
+    if (type === 'weapon') return { damage: '1d6', damageType: 'physical' };
+    if (type === 'armor') return { defense: 1 };
     return {};
   },
 
+  // Declarado no tipo, mas o motor ainda não chama validateData.
   validateData(type, data) {
     const errors = [];
     if (data.hp?.value > data.hp?.max) {
@@ -68,28 +73,20 @@ SystemRegistry.register(defineSystem({
     return { valid: errors.length === 0, errors };
   },
 
+  // O motor ignora o valor de retorno: altere o objeto recebido, no lugar.
+  // Os valores do actor ficam em `actor.systemData` (o mesmo objeto que `actor.system`).
+  // Limite conhecido: a janela genérica de actor recarrega o actor depois de preparar,
+  // então estes modificadores não aparecem nela (veja a nota no fim da seção 3).
   prepareData(actor) {
-    const data = { ...actor };
-    data.modifiers = {
-      str: Math.floor((data.attributes?.str || 10) / 2) - 5,
-      dex: Math.floor((data.attributes?.dex || 10) / 2) - 5,
-      vit: Math.floor((data.attributes?.vit || 10) / 2) - 5,
+    const attrs = actor.systemData?.attributes ?? {};
+    actor.systemData.modifiers = {
+      str: Math.floor((attrs.str || 10) / 2) - 5,
+      dex: Math.floor((attrs.dex || 10) / 2) - 5,
+      vit: Math.floor((attrs.vit || 10) / 2) - 5,
     };
-    return data;
   },
 
-  // ⚠️ rollInitiative é declarado na interface mas NÃO é invocado pelo motor.
-  // Para customizar iniciativa, use Loom.settings.get(systemId, 'initiativeFormula')
-  rollInitiative(actor) {
-    const mod = Math.floor(((actor.attributes?.dex || 10) / 2) - 5);
-    return { formula: `1d20${mod >= 0 ? '+' : ''}${mod}`, total: 0 };
-  },
-
-  getItemDefaultData(type) {
-    if (type === 'weapon') return { damage: '1d6', damageType: 'physical' };
-    if (type === 'armor') return { defense: 1 };
-    return {};
-  },
+  // rollInitiative é declarado no tipo, mas o motor nunca o chama (veja a seção 4, "Iniciativa").
 
   getSheetSchema(actorType) {
     if (actorType === 'npc') {
@@ -131,6 +128,8 @@ SystemRegistry.register(defineSystem({
     };
   },
 
+  // Nota: o cliente ainda não renderiza isto. A ficha de item pede o schema ao servidor,
+  // e o servidor nunca recebe sistemas client-side, então itens usam a ficha básica.
   getItemSheetSchema(itemType) {
     if (itemType === 'weapon') {
       return {
@@ -148,11 +147,38 @@ SystemRegistry.register(defineSystem({
   },
 }));
 
-// Opcional: personalizar a ficha de actor via sheetCatalog
+// Configuração usada pelo hook `combatInitiative` (veja "Iniciativa" abaixo).
+settings.register('fantasia-simplificada', 'initiativeFormula', {
+  name: 'Fórmula de iniciativa',
+  scope: 'world',
+  type: String,
+  default: '1d20',
+});
+
 console.log('Sistema Fantasia Simplificada carregado!');
 ```
 
-## 4. Ativação
+> **Nota:** `prepareData` roda para fichas construídas sobre `LoomDocumentSheet`/`LoomActorSheet`. A janela genérica
+> de actor (`ActorSheetWindow`, usada nas fichas abertas pela sidebar) carrega o actor de novo depois desse passo,
+> então os valores derivados não aparecem nela.
+
+## 4. Iniciativa
+
+O motor não chama `rollInitiative`. Quando o GM inicia um combate com iniciativa por Destreza, a sidebar
+chama o hook `combatInitiative` com um objeto de contexto, e o sistema define os totais ali:
+
+- `ctx.castIds`: os tokens que participam
+- `ctx.initiatives`: escreva `ctx.initiatives[castId] = total` para cada token
+- `ctx.pending`: adicione uma Promise aqui se a rolagem for assíncrona
+
+O hook só roda pelo botão "Iniciar combate (iniciativa DES)", para os tokens selecionados. `POST /start`,
+`POST /combatant` e a ficha de encontro não o chamam. Só os totais em `ctx.initiatives` são usados, então
+escrever `ctx.rolls` e `ctx.health` é opcional.
+
+A fórmula é lida com `Loom.settings.get('fantasia-simplificada', 'initiativeFormula')` (a configuração acima;
+usa `1d20` quando nenhum valor está definido).
+
+## 5. Ativação
 
 1. Copie a pasta para `<DataRoot>/marketplace/rulesets/fantasia-simplificada/`
 2. No servidor, acesse Setup Hub > Sistemas
@@ -160,14 +186,18 @@ console.log('Sistema Fantasia Simplificada carregado!');
 4. Crie ou edite um mundo, defina `sistema: fantasia-simplificada`
 5. Conecte ao mundo — os tipos `character`/`npc` estarão disponíveis
 
-## 5. Testando
+## 6. Testando
+
+Actors criados pela API recebem os valores iniciais do `systemData` que você envia
+(o servidor não tem um sistema client-side para preenchê-los). No console do navegador, conectado ao mundo:
 
 ```javascript
 // No console do navegador
 const actor = await Loom.api.post('/actors', {
   worldId: 'seu-world-id',
   name: 'Aragorn',
-  type: 'character'
+  type: 'character',
+  systemData: Loom.systems.getActive().getDefaultData('character'),
 });
 console.log('Actor criado:', actor);
 ```

@@ -92,5 +92,8 @@ keybinds.unregister('my-addon-action');
 ## Notes
 
 - Shortcuts only work when focus is not in an input/textarea/contenteditable
-- Multiple shortcuts can be registered to the same key (last registered wins)
+- Key names are `KeyboardEvent.key` values (`t`, `Escape`, `ArrowUp`). If the user turns on the universal keys option (localStorage `loom_universal_keys`), `KeyboardEvent.code` is used instead, with `KeyT` and `Digit1` read as `t` and `1`.
+- Multiple shortcuts can be registered to the same key. A user override wins over defaults; among defaults, the one registered first wins (`getAction` returns the first match). See the CODE ISSUE note below.
+
+> **CODE ISSUE:** `getAction` in `client/core/keybinds.ts` returns the first matching default in registration order, so a later action on the same key never fires, and no conflict is reported. Unresolved: whether "first wins" is the intended behavior.
 - Users can reconfigure shortcuts in the keybind configuration window

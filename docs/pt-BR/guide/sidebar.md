@@ -10,12 +10,10 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 
 ![Aba de Chat com Rolagens](/assets/screenshots/sidebar/sidebar-chat-rolls.png)
 
-* **Cards de Rolagem Ricos:** Exibição com nome do ator, teste realizado, dados rolados com modificadores, comparação com Classe de Dificuldade (DC), além de destaque para **Sucessos Críticos** e **Falhas Críticas**.
-* **Comandos de Chat:**
-  * `/roll 1d20 + 5` — Rolagem pública para todos.
-  * `/gmroll 1d20 + 2` — Rolagem visível apenas para você e o Mestre.
-  * `/blindroll 1d20` — Rolagem cega (apenas o Mestre vê).
-  * `/whisper [Jogador] mensagem` — Mensagem privada.
+* **Cards de Rolagem:** Mostram a fórmula, o valor de cada dado, os modificadores, o total e um detalhamento ao passar o cursor. Uma rolagem que não é pública recebe uma etiqueta (somente Mestre, Mestre às cegas, somente eu). A comparação com a Classe de Dificuldade (DC) e o destaque de sucessos e falhas críticas ficam a cargo dos cards do próprio sistema.
+* **Comando de Rolagem:**
+  * `/r 1d20 + 5` — Rola a fórmula. Os botões de modo de rolagem no painel de chat (Pública, Somente Mestre, Mestre às Cegas, Somente Eu) definem quem vê a próxima rolagem.
+  * `/roll`, `/gmroll`, `/blindroll` e `/whisper` não são interpretados pelo cliente: o texto é enviado como uma mensagem comum do chat.
 * **Ferramentas de Formatação:** Barra de formatação inferior com suporte a negrito, links, códigos e imagens.
 
 ---
@@ -28,7 +26,7 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 * **Criação Rápida:** Botão **Criar Ator** com suporte a importação ou criação manual.
 * **Arrastar para o Mapa:** Arraste qualquer ator para o canvas para gerar um token pronto para o combate.
 * **Busca Instantânea:** Filtre atores pelo nome ou tipo com a barra de busca em tempo real.
-* **Importar e Exportar:** importe um personagem de um slot do Loom Connect ou de um arquivo `.json`, e salve um pelo menu da ficha ("Salvar em arquivo" ou "Exportar para o Loom Connect" depois de conectar nas configurações da conta). Um personagem importado por jogador aguarda a aprovação do Mestre.
+* **Importar e Exportar:** importe um personagem de um slot do Loom Connect ou de um arquivo `.json`, e salve um pelo menu da ficha ("Salvar personagem em arquivo (.json)" ou "Exportar para o Loom Connect" depois de conectar nas configurações da conta). Um personagem importado por jogador aguarda a aprovação do Mestre.
 
 ---
 
@@ -46,7 +44,7 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 ![Aba de Cenas](/assets/screenshots/sidebar/sidebar-scenes.png)
 
 * Lista todos os mapas disponíveis na campanha com preview em miniatura.
-* **Ativação Simples:** Clique duas vezes na cena para abri-la ou clique no botão de ativação para puxar todos os jogadores simultaneamente para o novo mapa.
+* **Ativação:** Clique na cena para abrir sua janela de configuração. Clique com o botão direito e escolha **Ativar (Todos os Jogadores)** para puxar todos os jogadores conectados para essa cena de uma vez. (Ao clicar em uma cena de mapa, ela expande para mostrar as cenas filhas.)
 
 ---
 
@@ -73,7 +71,7 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 ![Aba de Baralhos](/assets/screenshots/sidebar/sidebar-cards-decks.png)
 
 * Suporte nativo a baralhos de cartas tradicionais (54 cartas) ou baralhos temáticos (como cartas de tarô, inspiração, ferimentos críticos ou magias).
-* Permite embaralhar, comprar cartas para a mão do jogador ou descartar no tabuleiro.
+* Permite embaralhar, comprar cartas ou distribuí-las para outras pilhas do mundo (mãos ou descartes), e passar cartas individuais de uma pilha para outra.
 
 ---
 
@@ -119,7 +117,7 @@ O chat é onde a narrativa acontece e as rolagens de dados são calculadas com a
 
 ![Camadas da Cena](/assets/screenshots/sidebar/sidebar-scene-directory.png)
 
-* Permite buscar rapidamente qualquer elemento presente na cena ativa: tokens, luzes, paredes, desenhos ou notas.
+* Permite buscar rapidamente qualquer elemento presente na cena ativa: tokens, luzes, paredes, tiles, desenhos ou notas.
 
 ---
 

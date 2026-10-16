@@ -26,21 +26,28 @@ Cria macro.
 | `imgUrl` | `string` | URL da imagem |
 | `slot` | `number` | Slot na hotbar |
 
+Defaults: `type` `'chat'`, `command` `''`, `imgUrl` `''`, `slot` `-1`. `worldId` não é validado
+aqui além do `requireWorldMatch`.
+
 Criar uma macro `type: 'script'` exige role >= 3 (Assistant GM/GM).
 
+**Response `201`:** Macro criada (a linha)
+**Response `400`:** `{ "error": "..." }` (erro do Document)
 **Response `403`:** `{ "error": "Apenas GM/Assistant GM podem criar macros do tipo script" }`
-**Evento WS:** `macros.created` (auto-broadcast pela camada de documento — a rota em si nunca chama `Signal.broadcast`)
+**Evento WS:** `macro.created` (payload: a linha criada, repassada a todos os clientes). A rota nunca chama `Signal.broadcast`; a camada de documento emite `macros.created` e `server/index.ts` repassa.
 
 ---
 
 ### PUT `/:id`
 
 Atualiza macro. Editar uma macro tipo `script` também exige role >= 3; usuários não-GM só
-podem editar macros que possuem.
+podem editar macros que possuem. Só `name`, `type`, `command`, `imgUrl` e `slot` são copiados do body.
 
+**Response `200`:** `{ "success": true }` (não a linha atualizada)
+**Response `400`:** `{ "error": "..." }` (erro do Document)
 **Response `403`:** `{ "error": "Apenas GM/Assistant GM podem editar macros do tipo script" }` / `{ "error": "Access denied" }`
 **Response `404`:** `{ "error": "Macro not found" }`
-**Evento WS:** `macros.updated` (auto-broadcast)
+**Evento WS:** `macro.updated` (payload: a linha atualizada, repassada a todos os clientes)
 
 ---
 
@@ -48,6 +55,8 @@ podem editar macros que possuem.
 
 Remove macro. Usuários não-GM só podem remover macros que possuem.
 
+**Response `200`:** `{ "success": true }`
+**Response `400`:** `{ "error": "..." }` (erro do Document)
 **Response `403`:** `{ "error": "Access denied" }`
 **Response `404`:** `{ "error": "Macro not found" }`
-**Evento WS:** `macros.deleted` (auto-broadcast)
+**Evento WS:** `macro.deleted` (payload: `{ id, worldId, stageId }`, repassado a todos os clientes)

@@ -14,9 +14,9 @@ console.log(Loom.config.ui.chat);
 ```
 
 ### Integração de `documentClass` (Fase 1 e Fase 2)
-Sistemas convertidos costumam alterar o `Loom.config.Actor.documentClass` ou `Loom.config.Item.documentClass` para injetar lógica customizada de cálculo e roll. No LoomVTT, o registro funciona perfeitamente (Fase 1) para evitar que o código quebre, e os Documentos Base instanciarão e delegarão chamadas de hooks (`_preCreate`, `_onUpdate`, `_onDelete`, `prepareData`, etc) para a classe registrada (Fase 2).
+Sistemas convertidos costumam alterar o `Loom.config.Actor.documentClass` ou `Loom.config.Item.documentClass` para injetar lógica customizada de cálculo e roll. No LoomVTT, o registro funciona perfeitamente (Fase 1) para evitar que o código quebre, e os Documentos Base instanciarão a classe registrada e chamarão seus `prepareData()`/`prepareDerivedData()` (Fase 2). O client não tem delegação de `_preCreate`, `_onUpdate` ou `_onDelete`: nenhum caminho de código chama esses métodos.
 
-> **Nota de Implementação (Fase 2):** Atualmente, `Actor` e `Item` operam 100% na Fase 2. A Fase 2 de `ChatMessage` ainda está **pendente** — você pode registrar a classe no `Loom.config`, mas as mensagens de chat ainda não instanciam seu `documentClass` customizado no client.
+> **Nota de Implementação (Fase 2):** `Actor`, `Item` e `User` instanciam o `documentClass` registrado. `ChatMessage` também o instancia (`LiveMessage` em `client/core/messages-collection.ts`) e chama seu `prepareDerivedData()`, mas os demais métodos de ciclo de vida não são chamados.
 
 ### `prepareData` em fichas (sheets) — quando roda e o que NÃO fazer
 
@@ -76,7 +76,10 @@ O objeto `ui.notifications` é exposto em `Loom.ui` e mapeia notificações visu
 
 - `Loom.actors`: Coleção viva de Atores (`WorldCollection`).
 - `Loom.items`: Coleção viva de Itens globais.
+- `actor.items` em um ator vivo (não é `Loom.items`) é um getter que devolve uma visão tipo coleção dos itens
+  embutidos daquele ator: tem `size` e `get()`, mas não tem `length`. Uma linha de ator crua com `populate=true`
+  traz `items` como array simples. Confira qual dos dois você tem antes de usar.
 - `Loom.system`: Informações do ruleset ativo (incluindo `id`, `version`, `title`).
-- `Loom.world`: Propriedade global plana contendo as informações do mundo atualmente ativo (como `id`, `title`, etc). Diferente das coleções, este é um snapshot dos dados obtido no momento do bootstrap e não possui métodos interativos, seguindo paridade com a VTT legada (`game.world`).
+- `Loom.world`: Propriedade global plana contendo as informações do mundo atualmente ativo (como `id`, `title`, etc). Diferente das coleções, este é um snapshot dos dados obtido no momento do bootstrap e não possui métodos interativos, seguindo paridade com a VTT legada (`game.world`). A HUD de jogo busca esse dado quando abre o mundo, antes de o hook `init` disparar. Antes desse ponto ele é `undefined`, e continua `undefined` se essa busca falhar.
 - `Loom.Roll`: Atalho global para a classe `LoomRoll`, espelhando a classe `Roll` original usada para rolagem de dados e avaliação matemática.
 - `Loom.Die`: Atalho global para a classe `Die`, compondo os termos base de um `LoomRoll`.

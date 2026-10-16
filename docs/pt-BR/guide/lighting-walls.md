@@ -13,17 +13,19 @@ As ferramentas de parede definem como a luz, a visão dos personagens e a movime
 ### Tipos de Paredes Disponíveis
 
 * **Paredes Padrão:** Bloqueiam completamente a passagem física de tokens, a visão dos personagens e a propagação da luz.
-* **Portas Interativas:** Podem ser abertas ou trancadas com um clique pelo Mestre (ou jogadores autorizados), revelando dinamicamente a área oculta além dela.
+* **Portas Interativas:** Um clique abre ou fecha a porta, revelando a área oculta além dela. Uma porta trancada só pode ser aberta pelo Mestre. Só o Mestre tranca ou destranca uma porta, com um clique com o botão direito.
   Cada porta pode definir uma **distância de abertura** (um token do próprio jogador precisa estar perto; o Mestre sempre abre) e **sons próprios de abrir e fechar**.
-* **Janelas e Frestas:** Bloqueiam o movimento de tokens, mas permitem a passagem de luz e visão.
+* **Janelas:** Restringem o movimento de tokens e bloqueiam a luz, mas deixam a visão passar.
 * **Portas Secretas:** Ficam completamente invisíveis aos jogadores até que o Mestre decida revelá-las ou abri-las.
-* **Paredes de Terreno:** Permitem enxergar o primeiro obstáculo (como um muro baixo ou penhasco), mas bloqueiam o que está atrás.
+* **Paredes de Terreno:** Bloqueiam apenas o movimento de tokens. Visão, luz e som atravessam essas paredes.
+* **Paredes Etéreas:** Bloqueiam a visão e a luz, mas não o movimento.
+* **Paredes Invisíveis:** Bloqueiam o movimento e não são desenhadas no mapa.
 
 ### Atalhos de Parede
 * **Clique:** Seleciona um segmento de parede ou nó.
 * **Arrastar:** Move o segmento selecionado.
 * **Delete:** Remove o segmento.
-* **Ctrl + Clique:** Conecta nós contíguos formando corredores e salas rapidamente.
+* **Shift + soltar:** Ao terminar um segmento, solte o mouse segurando Shift para continuar a cadeia a partir da ponta. **Duplo clique** encerra a cadeia.
 
 ---
 

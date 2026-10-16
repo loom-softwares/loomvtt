@@ -20,7 +20,7 @@ interface FilePickerOptions {
   height?: number;        // default 680
   userRole?: number;
   worldId?: string;
-  title?: string;         // default 'Navegador de Texturas'
+  title?: string;         // padrão: string localizada `filePicker.title` ("File Browser" em inglês; "Navegador de Arquivos" em pt-BR)
 }
 
 class FilePicker {

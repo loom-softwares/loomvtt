@@ -62,7 +62,7 @@ Allows GMs and authorized players to sketch visual annotations on the fly:
 ![Area Templates](/assets/screenshots/gridtool/gridtool-templates-select.png)
 
 Essential for calculating spell areas of effect (AoE), breath weapons, and explosions:
-* **Available Shapes:** Cones, Circles/Spheres, Rays/Lines, and Cubes/Rectangles.
+* **Available Shapes:** Cones, Circles/Spheres, Rays/Lines, and Rectangles.
 * **Target Highlighting:** Tokens encompassed by the template are highlighted visually to simplify saving throw calculations.
 * Click to select and press `Delete` to remove the template once the spell resolves.
 
@@ -72,9 +72,9 @@ Essential for calculating spell areas of effect (AoE), breath weapons, and explo
 
 ![Traps Tool](/assets/screenshots/gridtool/gridtool-traps-place.png)
 
-Loom VTT includes a native trap and trigger zone engine:
-* **Quick Placement:** Click and drag to create trigger zones across any floor tiles.
-* **Automatic Activation:** When any token moves onto the trigger zone, the trap fires immediately and deactivates.
+Loom VTT includes a native trap and trigger zone engine. Traps are placed with the **Interactions** tool, under **Trap**:
+* **Quick Placement:** Drag on the map to create a trap area.
+* **Automatic Activation:** When a token steps onto the trap, it triggers once and then deactivates.
 * Perfect for pit traps, poison darts, pressure plates, and arcane glyphs.
 
 ---

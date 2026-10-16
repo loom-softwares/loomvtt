@@ -7,7 +7,7 @@ solto).
 
 Fonte: `client/core/const.ts`, export único `CONST_VALUES`.
 
-> **Cobertura ampla de propósito (26/08/2026):** ~90 grupos de constantes, não só o
+> **Cobertura ampla de propósito (26/08/2026):** 105 grupos de constantes, não só o
 > que já apareceu em sistema conhecido — a lista de nomes segue o formato de
 > referência público que sistemas convertidos esperam. Valores conferidos contra
 > a doc pública nos grupos mais usados/arriscados (ver lista abaixo); o resto

@@ -9,13 +9,16 @@
 
 ### GET `/stage/:stageId`
 
-Lista zonas de trigger de uma stage.
+Lista zonas de trigger de uma stage, da mais antiga para a mais nova.
+
+**Response `200`:** `ZonesDocument[]`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
 ### POST `/`
 
-Cria zona.
+Cria zona. O id é gerado pelo servidor (`zone-<uuid>`).
 
 | Campo | Tipo | Obrigatório | Default |
 |-------|------|-------------|---------|
@@ -29,15 +32,21 @@ Cria zona.
 | `points` | `array` | não | `[]` |
 | `handlers` | `array` | não | `[]` |
 
-**Evento interno:** Signal `zone.created` (server-side, **não relayado** para WebSocket)
+**Response `201`:** Zona criada (a linha da zona)
+**Response `400`:** `{ "error": "stageId and name are required" }`
+**Response `500`:** `{ "error": "..." }`
+**Evento interno:** Signal `zone.created` (só no servidor; **não** é relayado para os clientes WebSocket)
 
 ---
 
 ### PUT `/:id`
 
-Atualiza zona.
+Atualiza zona. Atualização parcial de `name`, `shape`, `x`, `y`, `width`, `height`, `points`, `handlers`.
 
-**Evento interno:** Signal `zone.updated` (server-side, **não relayado** para WebSocket)
+**Response `200`:** Zona atualizada (a linha da zona)
+**Response `404`:** `{ "error": "..." }` (zona não encontrada)
+**Response `500`:** `{ "error": "..." }`
+**Evento interno:** Signal `zone.updated` (só no servidor; **não** é relayado para os clientes WebSocket)
 
 ---
 
@@ -45,4 +54,7 @@ Atualiza zona.
 
 Remove zona.
 
-**Evento interno:** Signal `zone.deleted` (server-side, **não relayado** para WebSocket)
+**Response `200`:** `{ "success": true }`
+**Response `404`:** `{ "error": "..." }` (zona não encontrada)
+**Response `500`:** `{ "error": "..." }`
+**Evento interno:** Signal `zone.deleted` (só no servidor; **não** é relayado para os clientes WebSocket)

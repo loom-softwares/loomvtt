@@ -3,7 +3,7 @@
 > **Importante pra quem está portando um sistema:** existem DUAS coisas distintas aqui.
 >
 > - **Parser real** (`server/applications/dice/roller.ts`, função `roll()`) — interpreta a
->   string de fórmula (`"2d6+3"`, `"5d10cs>5c"`) e calcula o `total`. É isso que roda de
+>   string de fórmula (`"2d6+3"`, `"5d10cs>5"`) e calcula o `total`. É isso que roda de
 >   verdade quando o cliente manda `chat.roll` via WebSocket. Servidor é sempre a
 >   autoridade final pros termos padrão (`d`, `kh/kl/dh/dl`, `r`, `x`, `cs>`).
 > - **Dice Registry** (`dice-registry.ts`, abaixo) — registro de **expressões de dado
@@ -21,23 +21,34 @@
 NdF              → N dados de F faces, soma tudo (ex: "2d6")
 NdFkh / NdFkl    → mantém só o(s) N mais alto(s)/baixo(s)
 NdFdh / NdFdl    → descarta o(s) N mais alto(s)/baixo(s)
-NdFr[T]          → reroll uma vez se o resultado for <= T
-NdFx[T]          → dado explode (rola de novo) se resultado >= T
+NdFr[T]          → reroll recursivo enquanto o resultado for <= T (T padrão = 1)
+NdFro[T]         → reroll uma vez se o resultado for <= T (T padrão = 1)
+NdFx[T]          → dado explode: rola de novo enquanto o resultado for >= T
+                   (T omitido = número de faces, então só o máximo explode;
+                   dados fate "dF" nunca explodem)
 NdFcs>N / cs<N / cs=N   → CONTA SUCESSOS (não soma!) — dado-pool genérico
-NdFcs>Nc                → igual acima, mas o resultado MÁXIMO da face conta como 2 sucessos
+NdFcs>=N / cs<=N        → igual acima, com as comparações inclusivas
+NdFcs>Nc                → aceito, mas o sufixo `c` NÃO tem efeito: o máximo natural
+                          conta como um sucesso como qualquer outro acerto
+NdFcf>N / cf<N / cf=N   → CONTA FALHAS (mesmas comparações de cs). Quando cs e cf
+                          estão juntos, o termo é sucessos menos falhas
+(expr) / -(expr)        → parênteses e menos unário
+min(...), max(...), floor(...), ceil(...), round(...)  → funções sobre expressões
 +N / -N          → modificador fixo somado ao total
-@caminho.do.dado → substituído por valor numérico antes de avaliar (ver `resolve-formula.ts`)
+@caminho.do.dado → substituído pelo valor numérico antes de avaliar. O parser do
+                   servidor (`roll-formula.ts`) troca um caminho desconhecido por 0 em silêncio
 ```
 
-`cs>`/`cs<`/`cs=` transformam o termo num contador de sucessos: em vez de somar os valores
-dos dados, `total` vira a contagem de dados que bateram a condição (+2 por dado no natural
-máximo, se usar o sufixo `c`). Genérico — qualquer sistema de dice-pool pode usar, não é
-específico de nenhum jogo.
+`cs>`/`cs<`/`cs=` (e `>=`/`<=`) transformam o termo num contador de sucessos: em vez de somar os
+valores dos dados, `total` vira a contagem de dados que bateram a condição. O sufixo `c` é
+aceito e descartado, então não dobra o máximo natural: um 10 conta como um sucesso. Genérico —
+qualquer sistema de dice-pool pode usar, não é específico de nenhum jogo.
 
-**Exemplo (estilo WoD5e — pool de 5 dados básicos + 2 avançados, sucesso >5, crítico dobra em 10):**
+**Exemplo (estilo WoD5e — pool de 5 dados básicos + 2 avançados, sucesso >5):**
 ```
-roll("5d10cs>5c + 2d10cs>5c")
+roll("5d10cs>5 + 2d10cs>5")
 // total = soma de sucessos dos dois grupos de dados
+// dobrar o crítico em 10 não é feito pelo parser; um sistema que precisa disso tem de adicionar
 ```
 
 ## Montando o pool automaticamente (`resolve-formula.ts` / `item-modifiers.ts`)
@@ -57,7 +68,7 @@ const baseDice = sumPaths(['attributes.strength.value', 'skills.brawl.value'], a
 const modifiers = collectItemModifiers(actor.items); // lê `item.systemData.bonuses: ItemModifier[]`
 const bonus = getActiveModifiers(modifiers, ['skills.brawl'], actor.systemData);
 
-const formula = `${baseDice + bonus}d10cs>5c`;
+const formula = `${baseDice + bonus}d10cs>5`;
 ```
 
 `ItemModifier` = `{ selectors: string[], value: number, activeWhen?: {...}, source?: string }`.
@@ -105,11 +116,12 @@ quebra o roll).
 
 # Dice Registry (`dice-registry.ts`)
 
-Registro de expressões de dados customizáveis (visual/face de dado). Exposto globalmente como `globalThis.__loomDice`.
+Registro de expressões de dados customizáveis (visual/face de dado). No navegador fica exposto como `Loom.dice` (`client/core/dice-registry.ts`), e o SDK exporta como `diceRegistry`. As classes de expressão do cliente ficam em `client/core/dice-expression.ts`.
+
+> **Nota:** `globalThis.__loomDice` é definido por `server/applications/dice/dice-registry.ts`, um módulo do servidor que o navegador não carrega; portanto esse global não existe no cliente. Use `Loom.dice` (ou o `diceRegistry` do SDK).
 
 ```typescript
 import { diceRegistry } from '/_loom/sdk/index.js';
-import { DiceExpression, DieExpression, FateExpression, ModifierExpression } from '../applications/dice/dice-expression.js';
 ```
 
 ## API
@@ -133,7 +145,7 @@ interface DiceEvaluation {
   rolls: number[];
   subtotal: number;
   label: string;
-  dropped?: number[];
+  dropped: boolean[];
 }
 ```
 
@@ -148,13 +160,13 @@ interface DiceEvaluation {
 ## Exemplo
 
 ```js
-const DiceRegistry = globalThis.__loomDice;
+const DiceRegistry = Loom.dice;
 
-// Registrar dado customizado
-DiceRegistry.register('d%', MyPercentileDie);
+// Registrar uma expressão customizada (o kind é a chave usada nos termos `{kind:config}`)
+DiceRegistry.register('pct', MyPercentileDie);
 
-// Usar
-const die = DiceRegistry.create('d20', { count: 1 });
+// Usar o kind nativo 'd' (config: count e faces)
+const die = DiceRegistry.create('d', { count: 1, faces: 20 });
 const result = die.evaluate();
 console.log(result.subtotal, result.rolls);
 ```

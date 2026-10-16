@@ -39,19 +39,23 @@ Creates a measured template.
 | `hidden` | `boolean` | no | `false` |
 | `flags` | `string` | no | `'{}'` |
 
-**Supported types:** `cone`, `circle`, `rectangle`, `ray`
+**Type:** the server stores `type` as sent and does not validate it. The renderer draws `cone`, `rect`, `circle` and `ray`; the client only saves `cone` and `rect` templates (`canvas-manager.ts`, the `onTemplateCreate` call). Note that the value is `rect`, not `rectangle`.
 
 **Response `201`:** Template created
-**WS Event:** `template.created`
+**Response `400`:** `{ "error": "..." }` (validation error from the document layer)
+**Response `500`:** `{ "error": "Failed to create template" }`
+**WS Event:** `template.created` (sent to all connected sockets)
 
 ---
 
 ### PUT `/:stageId/templates/:id`
 
-Updates a template.
+Updates a template. Partial update: only the fields sent are changed. Accepts the same fields as the POST body (`type`, `x`, `y`, `rotation`, `radius`, `width`, `height`, `angle`, `distance`, `fillColor`, `strokeColor`, `opacity`, `locked`, `hidden`, `flags`); `locked` and `hidden` are coerced to boolean.
 
 **Response `200`:** Template updated
-**WS Event:** `template.updated`
+**Response `404`:** `{ "error": "..." }` (template not found)
+**Response `500`:** `{ "error": "Failed to update template" }`
+**WS Event:** `template.updated` (sent to all connected sockets)
 
 ---
 
@@ -60,4 +64,6 @@ Updates a template.
 Removes a template.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
-**WS Event:** `template.deleted`
+**Response `404`:** `{ "error": "..." }` (template not found)
+**Response `500`:** `{ "error": "Failed to delete template" }`
+**WS Event:** `template.deleted` (payload `{ id, stageId }`, sent to all connected sockets)

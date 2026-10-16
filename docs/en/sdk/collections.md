@@ -17,6 +17,8 @@ The following collections are available under `window.Loom`:
 - `Loom.tables` (RollTables)
 - `Loom.playlists`
 
+`actor.items` on a live actor returns the items linked to that actor (filtered from the same item collection). Its shape is a collection-like view with `size`, not an array with `length`; see `globals.md`.
+
 ## Iterative Methods
 
 To ensure compatibility with loops and migration scripts that operate by iterating over entire collections, LoomVTT collections provide the same standard Array method signatures that converted RPG systems expect:

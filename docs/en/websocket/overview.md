@@ -9,10 +9,14 @@ enabled — Socket.IO negotiates the transport itself, this is not a plain HTTP 
 
 **Auth:** two `io.use()` middlewares run before `connection` fires:
 1. License check.
-2. JWT extracted from the `loom_world_token` cookie (`socket.handshake.headers.cookie`) and
-   verified. If missing/invalid, the middleware calls `next(new Error(...))` — Socket.IO turns
-   this into a `connect_error` event on the client (there is no literal HTTP 401 response,
-   since the handshake may complete over polling before upgrading).
+2. JWT extracted from the `loom_world_token` cookie (`socket.handshake.headers.cookie`, or
+   `handshake.auth.token` as a fallback) and verified. For a player session the middleware also
+   checks that the account is not banned and that its `sessionVersion` still matches the token.
+   Failures call `next(new Error(...))` — Socket.IO turns this into a `connect_error` event on the
+   client (there is no literal HTTP 401 response, since the handshake may complete over polling
+   before upgrading). The error messages are `LICENSE_REQUIRED: ...` (license), `Authentication error`
+   (missing or invalid token), `ACCOUNT_BANNED` and `SESSION_REVOKED`. The client sends the browser
+   to `/` for the last two.
 
 ## Rooms
 
@@ -27,6 +31,9 @@ Broadcasts are scoped with Socket.IO rooms, not sent to every socket:
 one, so a client only ever sits in one stage room at a time. See
 [`server/applications/ws/channels.ts`](../../../server/applications/ws/channels.ts) for the
 room-naming helpers and broadcast functions.
+
+The one exception is `world.deactivated`, which is sent with `io.emit` to every socket on the server
+and disconnects every connected user, across all worlds (see [events.md](./events.md)).
 
 Despite its name, the server's `broadcastToAll()` helper is usually **not** a true
 all-sockets broadcast: it resolves `worldId` (or `stageId`, or `castId`) from the payload and
@@ -46,7 +53,11 @@ socket.emit('message', { type: string, data: unknown });
 
 `wsClient.send(type, data)` does this wrapping for you — see
 [`sdk/ws-client.md`](../sdk/ws-client.md). The server's `socket.on('message', ...)` handler
-switches on `type` to dispatch.
+switches on `type` to dispatch. Messages sent while the socket is offline are queued by
+`wsClient` (up to 50, flushed after reconnecting); `token.drag` and `user.cursor` are dropped instead.
+
+Display and stream sessions (`display`/`stream` kinds) are read-only: the server accepts only
+`user.identify` from them and silently drops every other message type.
 
 **Server → Client** is the opposite: each event is emitted under its **own name**
 (`socket.emit('cast.created', data)`, `io.to(room).emit('chat.message', data)`, etc.), never
@@ -54,9 +65,19 @@ wrapped in a `{type, data}` envelope. The client's `wsClient` uses `socket.onAny
 every incoming event and re-dispatch it to handlers registered by name — see
 [`events.md`](./events.md) for the full catalog.
 
+**Internal `Signal` names are not wire names.** `Signal` is the server's internal event bus. Many
+internal names differ from what clients receive: `actors.updated` goes out as `actor.updated`,
+`stages.updated` as `stage.updated`, `tiles.created` as `tile.created`, `users.updated` as
+`user.updated`, `macros.*` as `macro.*`, `worlds.*` as `world.*`, `levels.*` as `level.*`,
+`decks.deleted` as `deck.deleted`, `compendium_packs.*` as `compendium.*`, `roll_tables.*` as
+`roll-table.*` and `folders.*` as `folder.*`. The renames are made by the `Signal.listen` relays in
+`server/index.ts`. Some events never pass through `Signal` at all and go straight to a room with `broadcastToWorld`
+or `broadcastToStage` (for example `chat.message`, `ping`, `user.cursor`, `token.drag`). Only the wire names in [`events.md`](./events.md) are part of
+the protocol; a `Signal` name in the server code is not a client-facing contract.
+
 There is also a raw passthrough: any client-emitted event whose name starts with `module.`,
 `system.`, or `socket.` is relayed as-is to the sender's world room, bypassing the `message`
-envelope — the escape hatch addons use for custom real-time events (see
+envelope (limited to 20 messages per second and 64 KB per payload) — the escape hatch addons use for custom real-time events (see
 [`events.md`](./events.md#custom-relay-for-addonsystem-events-module-system-socket)).
 
 ## Connection lifecycle
@@ -84,10 +105,16 @@ envelope — the escape hatch addons use for custom real-time events (see
 
 ## Auto-reconnect
 
-Handled entirely by Socket.IO's own client (`ws-client.ts` just configures it): up to 5
-attempts with exponential backoff (1s, 2s, 4s, 8s, capped at 16s). A server-initiated
-disconnect (`reason === 'io server disconnect'`, e.g. after `world.deactivated` force-closes
-the room) does **not** trigger a client reconnect attempt.
+Socket.IO's own client retries without a limit (`reconnectionAttempts: Infinity`), with the delay
+growing from 1s up to a 16s cap. A server-initiated disconnect (`reason === 'io server disconnect'`,
+e.g. after `world.deactivated`) is **not** retried by Socket.IO itself: `ws-client.ts` calls
+`connect()` again by hand, using the delays 1s, 2s, 4s, 8s and then 16s for every later attempt,
+also without a limit.
+
+After any reconnect, if the client still has a session it sends `user.identify` with
+`isReconnect: true` and then `context.update` for its current stage. The server answers the
+identify with `users.online` and `cast.resync` instead of a new `init` (see the `user.identify`
+section below).
 
 ## user.identify
 
@@ -103,6 +130,8 @@ Sent right after connecting to start the sync:
 The server extracts `userId`/`userName`/`userRole` from the JWT — the identity fields the
 client sends are informational only, never trusted. This joins the `world:<worldId>` room and
 triggers the `init` payload plus a `users.online` broadcast to the rest of that room.
+When the client sends `isReconnect: true`, the server skips `init` and sends `users.online` to the
+room plus `cast.resync` to that socket only.
 
 ## init
 

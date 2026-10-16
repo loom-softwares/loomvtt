@@ -7,12 +7,11 @@ Source: `client/core/data-model.ts`. Exposed at runtime as `Loom.fields_v14`
 (the fields), `Loom.abstract.TypeDataModel`, and by the global aliases `vtt.data.fields`
 and `vtt.abstract` (see `globals.md`).
 
-> **Important:** there are **two** fields APIs in LoomVTT. `Loom.fields` is a **separate**
-> set, with minimalist classes defined inline in `client/main.ts` (without schema logic).
-> `Loom.fields_v14` (this module's fields) are the classes that extend `DataField`
-> and are the ones a `TypeDataModel` understands. Converted systems that use
-> `class MyModel extends TypeDataModel` + `static defineSchema()` must use the fields from
-> **`Loom.fields_v14`** / `vtt.data.fields`.
+> **Note:** `Loom.fields` and `Loom.fields_v14` expose the **same** classes, both imported from
+> `client/core/data-model.ts` in `client/main.ts`. A field created from either one is an
+> `instanceof` match for `TypeDataModel`. Converted systems that use
+> `class MyModel extends TypeDataModel` + `static defineSchema()` can use `Loom.fields_v14` or
+> `vtt.data.fields`.
 
 ## Exports
 
@@ -21,11 +20,13 @@ and `vtt.abstract` (see `globals.md`).
 | `DataField` | `class` | Common base — holds `options` (including `initial`) |
 | `ArrayField` | `class extends DataField` | Array field |
 | `BooleanField` | `class extends DataField` | Boolean field |
+| `ColorField` | `class extends DataField` | Color field (string) |
 | `HTMLField` | `class extends DataField` | HTML/rich text field |
 | `NumberField` | `class extends DataField` | Numeric field |
 | `ObjectField` | `class extends DataField` | Object field |
 | `SchemaField` | `class extends DataField` | Nested schema field |
 | `StringField` | `class extends DataField` | String field |
+| `TypedObjectField` | `class extends DataField` | Object whose keys are not pre-declared (defaults to `{}`) |
 | `TypeDataModel` | `class` | Schema base — `static defineSchema()` + hydration of `initial` |
 
 ## API

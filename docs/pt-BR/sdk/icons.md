@@ -95,15 +95,15 @@ digitação aparece na hora em vez de virar ícone faltando na tela.
 O CSS gerado é versionado, então **o bundle do cliente não carrega nenhuma das
 duas bibliotecas** — o custo em produção é só o arquivo de máscaras.
 
-## Emoji
+## Marcadores de status e emoji
 
-Alguns pontos da interface usam emoji de propósito, e não são candidatos a
-conversão: as condições de status do token (envenenado, queimando, atordoado)
-aparecem miúdas e sobrepostas ao token, várias ao mesmo tempo, e a cor própria do
-emoji é o que permite distingui-las sobre um mapa colorido. Ícone monocromático
-de 16px seria pior de ler exatamente onde mais importa.
+Marcadores de status do token não são emoji. Cada status effect é desenhado no canvas
+como um disco colorido com o ícone da sua definição (`icon: 'fa-solid fa-skull-crossbones'`
+para `poisoned`, `fa-fire` para `burning`, `fa-star` para `stunned`), então passam pelo mesmo
+mapeamento acima. O disco usa a primeira letra do rótulo quando o ícone está ausente.
 
-O mesmo vale para os naipes de carta (`♥ ♠ ♦ ♣`) e para marcadores em que a cor
+Algumas partes da interface continuam usando texto ou emoji de propósito, e não são
+candidatas a conversão: os naipes de carta (`♥ ♠ ♦ ♣`) e os marcadores em que a cor
 carrega o significado.
 
 ## Ver também

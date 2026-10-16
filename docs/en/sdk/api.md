@@ -21,6 +21,14 @@ api.put<T>(path: string, body?: unknown): Promise<T>
 api.delete<T>(path: string): Promise<T>
 ```
 
+`T` is the body as it comes back, with no unwrapping. The client does not read `.data` for you:
+
+- Some routes answer with the `{ "data": ..., "error": ... }` envelope (for example `/module-settings`), so
+  read `res.data`. Others answer with a plain payload: `GET /api/actors` returns an array. Check the route's page.
+- A response without a JSON body resolves to `null`.
+- A non-2xx response throws. The thrown error has `status` and `message`, taken from the body's `error` or `message`.
+- A 401 on any route other than the auth-attempt routes (setup login and init, world join, connect-account) reloads the page to `/`.
+
 ## SDK Exports
 
 In addition to the HTTP client, the SDK exports:

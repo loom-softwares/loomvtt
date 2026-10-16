@@ -36,7 +36,7 @@ Para entidades que vivem no cliente (`Actor`, `Item`, etc.), o `ClientDocument` 
 
 Durante este ciclo, a flag `isPreparingData(this)` é verdadeira.
 
-**Paginação:** `find()` aceita `limit` e `number` no filter:
+**Paginação:** `find()` aceita `limit` e `offset` no filter:
 ```typescript
 const page = await ActorsDocument.find({ worldId, limit: 50, offset: 0 });
 ```
@@ -68,7 +68,7 @@ SchemaField<T>({ schema })          // objeto aninhado (JSON string)
 
 ## LoomHooks
 
-Sistema de eventos client-side. Exposto como `Loom.LoomHooks` e como `window.Hooks` para compatibilidade.
+Sistema de eventos client-side. Exposto como `Loom.LoomHooks` e como `window.LoomHooks`.
 
 ```typescript
 LoomHooks.on('actor.created', (actor) => {});
@@ -77,22 +77,25 @@ LoomHooks.callAll('actor.created', actorData);
 LoomHooks.call('preUpdateActor', actor, changes, context);
 ```
 
-> **Funcionamento:** O `LoomHooks` dispara hooks locais no cliente via `call()` (retornando `boolean` para permitir cancelamento em pré-hooks) e `callAll()`. No cliente, o `ClientDocument` dispara hooks de documento (`preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`, etc.) e escuta eventos de Socket.IO relayados pelo servidor (`actors.created`, `actors.updated`, `actors.deleted`, `cast.created`, etc. — a nomenclatura não é consistente entre entidades, ver [websocket/events.md](../websocket/events.md)).
+> **Funcionamento:** O `LoomHooks` dispara hooks locais no cliente via `call()` (retornando `boolean` para permitir cancelamento em pré-hooks) e `callAll()`. No cliente, o `ClientDocument` dispara hooks de documento (`preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`, etc.) e escuta eventos de Socket.IO relayados pelo servidor (`actor.created`, `actor.updated`, `actor.deleted`, `cast.created`, etc. — a nomenclatura não é consistente entre entidades, ver [websocket/events.md](../websocket/events.md)).
 
 Os hooks client-side disponíveis incluem:
 
-- Documentos: `preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`, `actors.created`, `actors.updated`, `actors.deleted`
-- Cast (Tokens): `cast.created`, `cast.updated`, `cast.deleted`, `token.target`
-- Chat e Dados: `chat.message`, `chat.roll`, `preRoll`
+- Documentos: `preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`, `actor.created`, `actor.updated`, `actor.deleted`
+- Chat e Dados: `chat.roll`, `preRoll`
 - Janelas e Sistema: `renderWindow`, `closeWindow`, `render<Class>`, `close<Class>`, `init`, `setup`, `ready`
+
+Os eventos de cast (`cast.created`, `cast.updated`, `cast.deleted`) e `token.target` são eventos de WebSocket, não LoomHooks: assine-os pelo cliente WebSocket, não com `LoomHooks.on()`.
 
 ## Release / Versão do Motor
 
-O ambiente expõe `game.release` com a assinatura de versão do LoomVTT:
+O ambiente expõe `Loom.release` com a versão do LoomVTT:
 
 ```typescript
-game.release = { generation: "1", build: 364 };
+Loom.release; // { generation: 1, version: "<x.y.z>", channel: "dev" }
 ```
+
+`generation` é o número da versão maior, como número.
 
 ## Signals
 
@@ -197,7 +200,7 @@ Os atalhos core do LoomVTT incluem:
 
 | Atalho                    | Ação               | Descrição                                  |
 | ------------------------- | -------------------- | -------------------------------------------- |
-| `T`                     | target-cast         | Marcar/desmarcar cast member como alvo             |
+| `T`                     | target-token        | Marcar/desmarcar cast member como alvo             |
 | `Delete`                | delete-selected      | Excluir selecionado                          |
 | `Escape`                | cancel-or-close      | Cancelar ferramenta ou fechar janela do topo |
 | `Ctrl+A`                | select-all           | Selecionar todos cast members visíveis            |

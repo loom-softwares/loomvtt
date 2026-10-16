@@ -31,6 +31,26 @@ export class MinhaSheetWindow extends BaseWindow {
       classes: ['minha-sheet'], // vira classe do .loom-window raiz, usada no CSS abaixo
     });
   }
+
+  bodyTemplate(): string {
+    return MINHA_SHEET_HTML; // MINHA_SHEET_HTML: template string (declarada acima da classe) com o HTML da seção 2
+  }
+
+  // As abas são trocadas pela própria janela: o BaseWindow não faz isso (só o LoomHandlebarsMixin faz).
+  // O listener fica no elemento raiz, que sobrevive às re-renderizações do corpo.
+  mount(): void {
+    super.mount();
+    this.element.addEventListener('click', (e) => {
+      const tabEl = (e.target as HTMLElement).closest<HTMLElement>('[data-tab][data-group]');
+      if (!tabEl) return;
+      const group = tabEl.dataset.group!;
+      const tab = tabEl.dataset.tab!;
+      this.element.querySelectorAll<HTMLElement>(`[data-group="${group}"][data-tab]`)
+        .forEach((el) => el.classList.toggle('active', el.dataset.tab === tab));
+      this.element.querySelectorAll<HTMLElement>(`.tab[data-group="${group}"]`)
+        .forEach((el) => el.classList.toggle('active', el.dataset.tab === tab));
+    });
+  }
 }
 ```
 
@@ -59,10 +79,17 @@ pule `allowOverflow`/`overflowMargin`/`classes` — só a seção 2 se aplica.
 ```
 
 Regras fixas, não mude:
-- Nav: `[data-tab][data-group]` em qualquer elemento clicável — clique já funciona
-  sozinho (delegação do core), não precisa `data-action` nem listener novo.
+- Nav: `[data-tab][data-group]` em qualquer elemento clicável. O clique é tratado pelo listener do
+  `mount()` da seção 1 (ou pelo `LoomHandlebarsMixin`, veja abaixo). Um `BaseWindow` puro NÃO troca abas
+  sozinho: sem esse listener, as abas não fazem nada.
+- A primeira aba de cada grupo precisa de `class="active"` no markup, porque o CSS esconde todo
+  `.tab[data-group]` que não tem `.active`.
 - Conteúdo: classe `.tab` exata (não `.tab-content`) + `data-tab`/`data-group`
   batendo com o botão correspondente.
+
+Alternativa: uma janela feita com `LoomHandlebarsMixin(BaseWindow)` já tem a delegação de clique e
+`changeTab(tab, group)`, mas renderiza a partir de `static PARTS` em vez de `bodyTemplate()`. Use o mixin
+só se você já usa `PARTS`.
 
 ## 3. CSS (no stylesheet do sistema)
 
@@ -98,9 +125,9 @@ do corpo — use as classes genéricas já prontas em vez de reinventar `.minha-
 </nav>
 ```
 
-`.loom-window-tabs` já estiliza a barra (`client/styles/windows.css`). Isso cobre a
-maioria dos casos — o rail flutuante (seção 1/3) é só pra quando o design pede
-especificamente algo pendurado pra fora da janela.
+`.loom-window-tabs` já estiliza a barra (`client/styles/windows.css`), mas a troca de abas ainda precisa do
+listener do `mount()` da seção 1. Isso cobre a maioria dos casos — o rail flutuante (seção 1/3) é só pra quando
+o design pede especificamente algo pendurado pra fora da janela.
 
 Ver também: `docs/sdk/windows.md` (`allowOverflow`, abas), `docs/sdk/wrappable.md`
-(`addWrapper`).
+(`.wrap`; `addWrapper` é um alias de runtime dele, que os tipos da SDK não declaram).

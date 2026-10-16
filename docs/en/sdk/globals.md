@@ -14,9 +14,9 @@ console.log(Loom.config.ui.chat);
 ```
 
 ### `documentClass` Integration (Phase 1 and Phase 2)
-Converted systems often alter `Loom.config.Actor.documentClass` or `Loom.config.Item.documentClass` to inject custom calculation and roll logic. In LoomVTT, the registry works perfectly (Phase 1) to prevent the code from breaking, and the Base Documents will instantiate and delegate hook calls (`_preCreate`, `_onUpdate`, `_onDelete`, `prepareData`, etc) to the registered class (Phase 2).
+Converted systems often alter `Loom.config.Actor.documentClass` or `Loom.config.Item.documentClass` to inject custom calculation and roll logic. In LoomVTT, the registry works perfectly (Phase 1) to prevent the code from breaking, and the Base Documents will instantiate the registered class and call its `prepareData()`/`prepareDerivedData()` (Phase 2). The client has no `_preCreate`, `_onUpdate` or `_onDelete` delegation: no code path calls those methods.
 
-> **Implementation Note (Phase 2):** Currently, `Actor` and `Item` operate 100% in Phase 2. Phase 2 for `ChatMessage` is still **pending** — you can register the class in `Loom.config`, but chat messages do not yet instantiate your custom `documentClass` on the client.
+> **Implementation Note (Phase 2):** `Actor`, `Item` and `User` instantiate the registered `documentClass`. `ChatMessage` also instantiates it (`LiveMessage` in `client/core/messages-collection.ts`) and calls its `prepareDerivedData()`, but the other lifecycle methods are not called.
 
 ### `prepareData` in sheets — when it runs and what NOT to do
 
@@ -76,7 +76,10 @@ The `ui.notifications` object is exposed on `Loom.ui` and maps visual notificati
 
 - `Loom.actors`: Live collection of Actors (`WorldCollection`).
 - `Loom.items`: Live collection of global Items.
+- `actor.items` on a live actor (not `Loom.items`) is a getter returning a collection-like view of that actor's
+  embedded items: it has `size` and `get()`, but no `length`. A raw actor row with `populate=true` carries `items`
+  as a plain array instead. Check which one you have before using it.
 - `Loom.system`: Active ruleset information (including `id`, `version`, `title`).
-- `Loom.world`: Flat global property containing the currently active world's information (like `id`, `title`, etc). Unlike collections, this is a snapshot of the data obtained at bootstrap time and has no interactive methods, following parity with the legacy VTT (`game.world`).
+- `Loom.world`: Flat global property containing the currently active world's information (like `id`, `title`, etc). Unlike collections, this is a snapshot of the data obtained at bootstrap time and has no interactive methods, following parity with the legacy VTT (`game.world`). The game HUD fetches it when it opens the world, before the `init` hook fires. It is `undefined` before that point, and it stays `undefined` if that fetch fails.
 - `Loom.Roll`: Global shortcut for the `LoomRoll` class, mirroring the original `Roll` class used for dice rolling and mathematical evaluation.
 - `Loom.Die`: Global shortcut for the `Die` class, composing the base terms of a `LoomRoll`.

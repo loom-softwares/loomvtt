@@ -21,6 +21,14 @@ api.put<T>(path: string, body?: unknown): Promise<T>
 api.delete<T>(path: string): Promise<T>
 ```
 
+`T` é o corpo como volta, sem desembrulhar nada. O client não lê o `.data` por você:
+
+- Algumas rotas respondem com o envelope `{ "data": ..., "error": ... }` (por exemplo `/module-settings`), então
+  leia `res.data`. Outras respondem com um payload simples: `GET /api/actors` devolve um array. Confira a página da rota.
+- Uma resposta sem corpo JSON resolve para `null`.
+- Uma resposta fora do 2xx lança erro. O erro lançado tem `status` e `message`, tirados de `error` ou `message` do corpo.
+- Um 401 em qualquer rota que não seja de tentativa de autenticação (login e init do setup, entrada no mundo, connect-account) recarrega a página para `/`.
+
 ## SDK Exports
 
 Além do cliente HTTP, o SDK exporta:

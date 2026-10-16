@@ -16,15 +16,17 @@ Upload e gerenciamento de arquivos.
 Upload de arquivo. Multipart form-data com campo `file`.
 
 - Limite: **100MB**
+- Quem: qualquer sessão logada do mundo (jogadores incluídos)
 - Validação: magic bytes (rejeita um arquivo cujo conteúdo não bate com o tipo declarado — ex: SVG, HTML, exe renomeado pra `.png`)
 - Tipos permitidos: `png, jpg, jpeg, webp, gif, mp3, ogg, wav, mp4, webm, mov, pdf` — decididos pela extensão antes de gravar qualquer coisa; scripts, executáveis e marcação são recusados
 
 **Query:**
-- `?worldId=`: se presente e válido, salva em `/worlds/<worldId>/assets/`; senão vai pra `/uploads/`
-- `?dir=`: sobrescreve o destino — **só em sessão admin** (Setup Hub), ignorado em auth normal
+- `?worldId=`: usado só quando a sessão não tem mundo próprio. Um id válido salva em `/worlds/<worldId>/assets/`; senão vai pra `/uploads/`. O mundo da sessão logada (`req.auth.worldId`) sempre prevalece
+- `?dir=`: sobrescreve o destino. A sessão admin (Setup Hub) pode gravar em qualquer lugar da pasta de dados; as outras sessões só dentro de `uploads/` ou do próprio `worlds/<worldId>/...`. Um `dir` que a sessão não pode usar é ignorado e vai a pasta padrão
+- `?overwrite=1`: um arquivo com o mesmo nome substitui o existente. Sem isso, o novo arquivo recebe um número no nome (`nome (1).png`)
 
-**Response `200`:** `{ success: true, path, name, size }`
-**Response `400`:** `{ "error": "No file provided." }` / `{ "error": "File content does not match its declared type." }` / mensagem de erro do Multer (ex: limite de tamanho excedido)
+**Response `200`:** `{ success: true, path, name, size }` — `path` é o caminho web (ex: `/worlds/<id>/assets/arquivo.png`), `name` é o nome original do arquivo
+**Response `400`:** `{ "error": "No file provided." }` / `{ "error": "File content does not match its declared type." }` / `{ "error": "SVG, HTML, and executable files are not allowed." }` / `{ "error": "Only images, audio, video and PDF assets are allowed." }` / mensagem de erro do Multer (ex: limite de tamanho excedido)
 
 ---
 
@@ -36,7 +38,7 @@ Lista arquivos e subpastas.
 podem listar `uploads/` ou o próprio `worlds/<worldId>/...`; sessões admin navegam livre.
 
 **Response `200`:** `{ directories: string[], files: { name, path, type, size }[] }` — `type` é
-`image`/`audio`/`video`/`unknown` baseado na extensão
+`image`/`audio`/`video`/`pdf`/`unknown` baseado na extensão. Nomes de pastas terminam com `/`. Uma pasta que não existe devolve `{ directories: [], files: [] }`. Uma sessão de mundo não vê os arquivos da raiz da pasta do mundo (`worlds/<id>/`), só as subpastas
 **Response `403`:** `{ "error": "Access denied." }`
 **Response `500`:** `{ "error": "Failed to list assets." }`
 
@@ -52,5 +54,6 @@ Cria uma nova subpasta dentro do diretório de assets permitido.
 - `worldId`: (opcional) ID do mundo para validação de escopo caso não conste no token
 
 **Response `200`:** `{ success: true, name: "Nova Pasta", path: "/uploads/Nova Pasta" }`
-**Response `400`:** `{ "error": "Nome de pasta obrigatório." }` / `{ "error": "Esta pasta já existe." }`
-**Response `403`:** `{ "error": "Access denied." }`
+**Response `400`:** `{ "error": "Nome de pasta obrigatório." }` (sem nome) / `{ "error": "Nome de pasta inválido." }` (o nome fica vazio depois da sanitização) / `{ "error": "Esta pasta já existe." }`
+**Response `403`:** `{ "error": "Access denied." }` — também quando a pasta pai está fora dos locais permitidos para a sessão
+**Response `500`:** `{ "error": "Failed to create folder." }`

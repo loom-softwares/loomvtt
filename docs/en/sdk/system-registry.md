@@ -27,6 +27,7 @@ interface LoomSystem {
   itemTypes: string[];        // e.g.: ['weapon', 'armor', 'spell']
   getDefaultData(type: string): Record<string, any>;
   validateData?(type: string, data: any): { valid: boolean; errors?: string[] };
+  prepareData?(actor: any): any;
   /**
    * ⚠️ **Declared in the interface, but NOT invoked by the engine** (checked on client and
    * server — no call site exists). To customize initiative, use `Loom.settings.get(systemId, 'initiativeFormula')`
@@ -40,8 +41,15 @@ interface LoomSystem {
   changelogUrl?: string;
   wikiUrl?: string;
   bugsUrl?: string;
+  licenseNotice?: { title: string; html: string; icon?: string };
 }
 ```
+
+> **Client-side registry:** `client/core/system-registry.ts` (behind `window.Loom.systems`) has its own
+> `LoomSystem` with the same fields, plus the optional `rollField(field, actor, dispatch)`,
+> `useItem(actorId, itemId)`, `runMacro(key)` and `manifest` (the parsed `ruleset.json`), and no
+> `licenseNotice`. Its `getActive()` also returns the only registered system when exactly one exists.
+> The server `getActive()` returns only the id set with `setActive()`.
 
 ## SheetSchema
 

@@ -13,17 +13,19 @@ Wall tools dictate how lighting, character perception, and token movement intera
 ### Wall Types
 
 * **Standard Walls:** Completely block physical token movement, character sight, and light propagation.
-* **Interactive Doors:** Can be toggled open or locked with a click by the GM (or authorized players), dynamically revealing hidden rooms.
+* **Interactive Doors:** A click opens or closes the door, revealing hidden rooms. A locked door can only be opened by the GM. Only the GM can lock or unlock a door, with a right-click.
   Each door can set an **opening distance** (a token owned by the player must be that close; the GM can always open it) and its own **open and close sounds**.
-* **Windows & Grates:** Restrict token movement while allowing light and vision to pass through.
+* **Windows:** Restrict token movement and block light, while letting vision through.
 * **Secret Doors:** Rendered invisibly to players until revealed or unlocked by the GM.
-* **Terrain Walls:** Let tokens see past the first barrier (such as a low parapet or cliff edge) while blocking what lies behind.
+* **Terrain Walls:** Block token movement only. Sight, light and sound pass through them.
+* **Ethereal Walls:** Block sight and light, but not movement.
+* **Invisible Walls:** Block movement, and are not drawn on the map.
 
 ### Wall Shortcuts
 * **Click:** Select a wall segment or endpoint node.
 * **Drag:** Reposition selected segments.
 * **Delete:** Remove selected wall.
-* **Ctrl + Click:** Chain connected wall nodes to rapidly outline rooms and corridors.
+* **Shift + release:** When you finish a segment, release the mouse while holding Shift to continue the chain from its end. **Double Click** ends the chain.
 
 ---
 

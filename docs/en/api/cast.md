@@ -7,7 +7,7 @@ Cast members — characters, NPCs, monsters placed on a stage.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `id` | `string` | UUID (`member-<uuid>`) | Unique identifier |
-| `worldId` | `string` | — | World (from auth context or body; no fallback) |
+| `worldId` | `string` | `'world-1'` | World: taken from the session, or from the body when the session has none. The schema default applies only when neither is set |
 | `stageId` | `string` | active stage's id, or `'stage-1'` | Current stage |
 | `levelId` | `string` | `''` | Level within the stage |
 | `name` | `string` | — | Name (**required**) |
@@ -17,14 +17,17 @@ Cast members — characters, NPCs, monsters placed on a stage.
 | `y` | `number` | `100` | Position Y on the grid |
 | `colorHex` | `string` | random hex | Token color |
 | `avatarUrl` | `string` | `''` | Avatar URL |
-| `ringColor` | `string` | `colorHex` | Ring color |
+| `ringColor` | `string` | `colorHex` when sent, otherwise `'#e74c3c'` | Ring color |
+| `ringUrl` | `string` | `''` | Ring image URL |
+| `ringEffect` | `string` | `'none'` | Ring effect |
+| `ringScale` | `number` | `1.6` | Ring scale |
 | `shape` | `string` | `'circle'` | Shape (`circle`, `square`, etc.) |
 | `effects` | `array` | `[]` | Active visual effects |
 | `statusMarkers` | `array` | `[]` | Status markers |
 | `systemData` | `object` | `{}` | System data (ruleset) |
 | `actorId` | `string` | `''` | Linked actor ID |
 | `isLinked` | `boolean` | `false` | Linked to the actor? |
-| `ownership` | `object` | creator-only | Owner permissions |
+| `ownership` | `object` | creator-only (plus the linked actor's owners with edit level, on create) | Owner permissions |
 | `folderId` | `string` | `''` | Folder |
 | `elevation` | `number` | `0` | Elevation |
 | `locked` | `boolean` | `false` | Locked? |
@@ -64,7 +67,7 @@ Cast members — characters, NPCs, monsters placed on a stage.
 
 Lists all cast members, ordered by `createdAt` ascending.
 
-**Query:** `?limit=`, `?offset=`
+**Query:** `?stageId=` (only the tokens of that stage), `?limit=`, `?offset=`
 
 **Response `200`:** `CastsDocument[]`
 **Response `500`:** `{ "error": "Failed to retrieve cast members" }`
@@ -85,16 +88,18 @@ Fetches a cast member by ID.
 Returns all tokens linked to an actor (`actorId` match, regardless of `isLinked`).
 
 **Response `200`:** `CastsDocument[]`
+**Response `500`:** `{ "error": "Failed to retrieve linked tokens." }`
 
 ---
 
 ### POST `/:actorId/propagate`
 
 Copies `name`, `systemData` and `avatarUrl` from the actor to every token where
-`actorId` matches **and** `isLinked` is `true`.
+`actorId` matches **and** `isLinked` is `true`. `avatarUrl` falls back to the token's own value when the actor has none. Each token update also emits `cast.updated`. There is no GM or ownership check.
 
 **Response `200`:** `{ "success": true, "propagatedCount": 3 }`
 **Response `404`:** `{ "error": "Actor not found." }`
+**Response `500`:** `{ "error": "Failed to propagate actor changes." }`
 
 ---
 
@@ -110,8 +115,12 @@ If `actorId` is given:
   actor (fully synced).
 - `isLinked: false` → `systemData` is copied as an independent snapshot, and if `traits`
   was not provided, `traits.hp` is seeded from the actor's `systemData.hp.value` (or `10`).
+  The snapshot is not synced afterwards. Clicking the token still opens the actor sheet, not this snapshot.
+
+The owners of the linked actor with edit level (3) also get edit access on the token, and the creator always does. Any signed-in session can create a token; there is no GM check.
 
 **Response `201`:** Created cast object
+**Response `500`:** `{ "error": "Failed to create cast member" }`
 **Response `400`:** `{ "error": "Field \"name\" is required and must be a non-empty string." }`
 **WS Event:** `cast.created`
 
@@ -119,11 +128,18 @@ If `actorId` is given:
 
 ### PUT `/:id`
 
-Updates token fields. Partial update (only send what you want to change) — accepts any
-field from the schema above except `id`/`worldId`/`actorId`/`isLinked`/`ownership`/`createdAt`/`updatedAt`.
+Updates token fields. Partial update (only send what you want to change). Accepted fields: `name`, `kind`, `traits`, `colorHex`, `x`, `y`, `avatarUrl`, `ringColor`, `shape`, `effects`, `statusMarkers`, `systemData`, `folderId`, `stageId`, `elevation`, `levelId`, `locked`, `hidden`, `movementAction`, `targetedBy`, `tintColor`, `opacity`, `rotation`, `scale`, `sightEnabled`, `sightRange`, `sightAngle`, `sightMode`, `detectionModes`, `lightDimRange`, `lightBrightRange`, `lightColor`, `lightAnimation`, `barGridSize`, `bar1`, `bar2`, `displayBars`. The ring fields `ringUrl`, `ringEffect` and `ringScale` are ignored here (use `PUT /:id/token`). `id`, `worldId`, `actorId`, `isLinked`, `ownership` and the timestamps are ignored too.
+
+The actor owners rule from `POST /` also runs here before the update. Non-editors get `403`.
+
+`systemData` is deep-merged into the stored JSON value, as on actors: plain objects merge key by key, arrays and scalars replace the old value, and a key written as `"-=key"` deletes that key. A partial `systemData` only changes the keys you send.
+
+Clicking a token does not edit this snapshot. The client opens the actor sheet for any token with an `actorId`, linked or not, and that sheet writes to the actor (see `sdk/sheets.md`).
 
 **Response `200`:** Updated object
 **Response `400`:** `{ "error": "No valid fields provided for update." }`
+**Response `403`:** `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Not found" }`
 **WS Event:** `cast.updated`
 
 ---
@@ -133,13 +149,15 @@ field from the schema above except `id`/`worldId`/`actorId`/`isLinked`/`ownershi
 Updates only the token's visual/config properties (same handler shape as `PUT /:id`, but
 excludes `name`, `kind`, `colorHex`, `x`, `y`, `folderId`, `stageId`).
 
-**Request body:** `avatarUrl`, `ringColor`, `shape`, `effects`, `statusMarkers`, `systemData`,
+**Request body:** `avatarUrl`, `ringColor`, `ringUrl`, `ringEffect`, `ringScale`, `shape`, `effects`, `statusMarkers`, `systemData`,
 `elevation`, `levelId`, `locked`, `hidden`, `movementAction`, `targetedBy`, `tintColor`,
 `opacity`, `rotation`, `scale`, `sightEnabled`, `sightRange`, `sightAngle`, `sightMode`,
 `detectionModes`, `lightDimRange`, `lightBrightRange`, `lightColor`, `lightAnimation`,
-`barGridSize`
+`barGridSize`, `bar1`, `bar2`, `displayBars`
 
 **Response `200`:** Updated object
+**Response `403`:** `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Not found" }`
 **WS Event:** `cast.updated`
 
 ---
@@ -155,7 +173,8 @@ Marks/unmarks who is targeting the token. Any authenticated user in the world ca
 
 **Response `200`:** Updated object
 **Response `400`:** `{ "error": "targetedBy must be an array" }`
-**WS Event:** `token.target` (not `cast.updated`)
+**Response `404`:** `{ "error": "Not found" }`
+**WS Event:** `token.target` (sent to every connected client, all worlds). The update itself also emits `cast.updated`.
 
 ---
 
@@ -171,6 +190,7 @@ WS broadcast of its own beyond what `CastsDocument.update` triggers).
 
 **Response `200`:** `{ "success": true }`
 **Response `404`:** `{ "error": "Cast member not found" }`
+**Note:** the result of the update is not checked. A session without edit access gets `200` and nothing changes.
 
 ---
 
@@ -183,6 +203,7 @@ actor on all stages, linked or not, and sets their shape to `none` (free-form ar
 **Response `400`:** `{ "error": "The actor has no image to apply." }`
 **Response `403`:** `{ "error": "Only the GM can apply the token image to the stages." }`
 **Response `404`:** `{ "error": "Actor not found." }`
+**Response `500`:** `{ "error": "Failed to apply the token image." }`
 **WS Event:** `cast.updated` for each cast
 
 ---
@@ -192,5 +213,6 @@ actor on all stages, linked or not, and sets their shape to `none` (free-form ar
 Removes a token.
 
 **Response `200`:** `{ "success": true, "id": "member-abc123" }`
+**Response `403`:** `{ "error": "Access denied" }`
 **Response `404`:** `{ "error": "Cast member not found" }`
 **WS Event:** `cast.deleted`

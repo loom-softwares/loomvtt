@@ -3,15 +3,14 @@
 Objeto de configuração que sistemas convertidos preenchem no próprio `init` pra
 customizar comportamento: o **core cria o objeto antes**
 de qualquer sistema carregar, sistema só escreve propriedades nele. Exposto como
-`window.CONFIG` (global solto, `main.ts:569`) e como `Loom.config`.
+`window.CONFIG` (global solto, `main.ts:557`) e como `Loom.config`.
 
 Fonte: `client/core/config.ts` (`LOOM_CONFIG`), importado e atribuído em
 `client/main.ts` — mesmo padrão de `const.ts`/`CONST_VALUES`.
 
 > **Nem toda chave está "ligada" a comportamento real.** Algumas são só um lugar
 > pra guardar o valor (não quebra a atribuição do sistema, mas nada no core lê
-> depois) — está marcado abaixo qual é qual. Ver `.planning/config-const-parity-checklist.md`
-> pro rastreamento completo, atualizado conforme mais coisa é ligada.
+> depois) — está marcado abaixo qual é qual.
 
 ## Tipos de documento
 
@@ -60,7 +59,7 @@ própria no core; os demais só guardam o valor (sem classe `Live*` ainda pra ch
 | `Region`/`RegionBehavior` (conceito de origem)                                                                                                          | não é gap, não tem chave própria — coberto por`Tile` (`TileTrigger`/`TileAction`: teleporte, toggle de visibilidade, tocar som, diálogo, etc.)                                                                                                                                                                                                                      |
 | `Card`, `Deck`                                                                                                                                         | ✅ chama`prepareDerivedData()` por baralho/carta ao carregar "Decks" (`sidebar.ts:loadDecks()`, rota `/api/decks`)                                                                                                                                                                                                                                                        |
 | `FogReveal`                                                                                                                                              | ✅ chama`prepareDerivedData()` no resultado de `loadFogReveals()` (`canvas-manager.ts`, rota `/api/fog-reveals`, por stage+usuário). Bug separado corrigido na mesma sessão: exploração de fog não rodava em cena com `darknessLevel=0` (padrão de cena nova) — `fovEnabled` dependia errado de escuridão>0, não só de `tokenVision` (`fog-layer.ts`) |
-| `Adventure`                                                                                                                                              | ⚠️ feature inteira não existe no Loom ainda (sem API/coleção) — é um compêndio de aventura completa, decisão futura em aberto                                                                                                                                                                                                                                          |
+| `Adventure`                                                                                                                                              | ⚠️ não existe como tipo de documento no Loom: o conceito de aventura é uma entrada de Compêndio do tipo `Adventure` (`POST /api/compendium/:id/adventure-entry`, `server/applications/api/compendium.ts`); este slot só guarda o valor                                                                                                                                                                                                                                          |
 
 > **Correção (21/08/2026):** `Setting` e `MeasuredTemplate` foram removidos —
 > conferido contra a lista real de membros do formato de referência
@@ -80,9 +79,9 @@ CONFIG.Combat.documentClass = MyCombat;
 
 ## Dados/rolagem
 
-`CONFIG.Dice.rolls`/`.terms` — motor real de dados é `Loom.dice` (dice-registry);
-esses slots existem só pra não quebrar a atribuição do sistema, mas não alimentam
-o motor de verdade.
+`CONFIG.Dice.rolls`/`.terms` — motor real de dados é `Loom.dice` (dice-registry).
+`CONFIG.Dice.terms` é lido só como fallback legado quando uma letra de dado não está
+registrada via `Loom.dice` (`getSystemDie`, `client/core/dice-term-bridge.ts`). `CONFIG.Dice.rolls` não é lido.
 
 ## UI / Sidebar
 
@@ -118,15 +117,15 @@ Helper compartilhado: `client/core/ui-override.ts` (`applyUiOverride(key, elemen
   lista atual do registry.
 - `CONFIG.specialStatusEffects` — só guarda o valor, nenhum código de canvas/visão
   lê ainda.
-- `CONFIG.time.worldCalendarClass`/`.worldCalendarConfig`/`.formatters` — slot
-  preparado pra um motor de calendário customizável (anos/meses/dias/estações,
-  bissexto), que ainda **não foi construído**. `Loom.time.earthCalendar` continua
-  fixo (Gregoriano, sem essas features) até esse motor existir.
+- `CONFIG.time.worldCalendarClass`/`.worldCalendarConfig`/`.formatters` — slots que o core **não** lê.
+  Calendários são definições declarativas registradas com `Loom.time.calendars.register(def)` (ver `time.md`).
+  `Loom.time.earthCalendar` continua sendo o helper Gregoriano fixo, mais antigo.
 
 ## Texto / i18n
 
-- `CONFIG.TextEditor.enrichers` — **funciona de verdade**: `.push(fn)` alimenta um
-  array percorrido de verdade no enrichHTML.
+- `CONFIG.TextEditor.enrichers` — **não está ligado**: `.push(fn)` não chega ao enrichHTML. Não há
+  registro público de enrichers customizados no `Loom` (`registerCustomEnricher` em `client/main.ts` é
+  uma função de módulo, não fica em `window.Loom`).
 - `CONFIG.i18n` — getter que retorna a mesma instância de `Loom.i18n`, não duplica.
 - `fontDefinitions`, `defaultFontFamily`, `supportedLanguages`, `compatibility`,
   `debug` — só guardam valor default razoável, sem consumidor real ainda.
@@ -134,7 +133,7 @@ Helper compartilhado: `client/core/ui-override.ts` (`applyUiOverride(key, elemen
 ## Diversos (só guardam valor, sem consumidor no core)
 
 `controlIcons`, `cursors`, `canvasTextStyle`, `weatherEffects`, `soundEffects`,
-`sounds`, `WebRTC`, `MeasuredTemplate`, `Canvas`, `ux`, `queries`, `formulaEditor`.
+`sounds`, `WebRTC`, `Canvas`, `ux`, `queries`, `formulaEditor`.
 
 ## Fora de escopo (deliberadamente não existe)
 

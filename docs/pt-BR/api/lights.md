@@ -10,7 +10,8 @@ Luzes ambiente de uma stage.
 | `y` | `number` | `0` | Posição Y |
 | `radius` | `number` | `200` | Raio |
 | `color` | `string` | `'#ffdd88'` | Cor |
-| `intensity` | `number` | `0.5` | Intensidade |
+| `intensity` | `number` | `0.05` | Intensidade |
+| `rotation` | `number` | `0` | Rotação |
 | `levelId` | `string` | `''` | ID do Andar (nível) |
 | `allLevels` | `boolean` | `false` | Compartilhada por todos os andares da cena (desligado: a luz brilha só no próprio andar) |
 | `animation` | `string` | `'none'` | Animação |
@@ -42,18 +43,36 @@ Lista luzes de uma stage.
 
 ### POST `/:stageId/lights`
 
-Cria luz.
+Cria luz. O `stageId` vem da URL. Todos os campos do body são opcionais; os defaults são os do
+schema acima, exceto `intensity` (`0.05`) e `dim`, que usa `radius` como default (`200` se nenhum
+dos dois for informado). `allLevels` só é salvo como `true` quando enviado como `true`.
+
+**Request body:** `x`, `y`, `radius`, `color`, `intensity`, `rotation`, `bright`, `dim`, `angle`,
+`walls`, `vision`, `animationSpeed`, `animationIntensity`, `animation`, `isHidden`, `darknessMin`,
+`darknessMax`, `levelId`, `allLevels`.
 
 **Response `201`:** Light criada
-**Evento WS:** `light.created`
+**Response `400`:** `{ "error": "..." }` (erro do Document)
+**Response `500`:** `{ "error": "Failed to create light" }`
+**Evento WS:** `light.created` (payload: a linha criada, repassada a todos os clientes)
 
 ---
 
 ### PUT `/:stageId/lights/:id`
 
-Atualiza luz.
+Atualiza luz. Só os campos abaixo são copiados; os demais (incluindo `rotation`) são ignorados.
+`walls`, `vision`, `isHidden` e `allLevels` são convertidos para boolean.
 
-**Evento WS:** `light.updated`
+**Request body:** `x`, `y`, `radius`, `color`, `intensity`, `bright`, `dim`, `angle`, `walls`,
+`vision`, `animationSpeed`, `animationIntensity`, `animation`, `isHidden`, `darknessMin`,
+`darknessMax`, `levelId`, `allLevels`.
+
+> **CODE ISSUE:** `rotation` é aceito pelo POST e salvo, mas o handler de PUT não o copia, então a
+> rotação de uma luz não pode ser alterada por esta rota.
+
+**Response `200`:** Light atualizada
+**Response `404`:** `{ "error": "..." }` (erro do Document)
+**Evento WS:** `light.updated` (payload: a linha atualizada, repassada a todos os clientes)
 
 ---
 
@@ -62,4 +81,5 @@ Atualiza luz.
 Remove luz.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
-**Evento WS:** `light.deleted`
+**Response `404`:** `{ "error": "..." }` (erro do Document)
+**Evento WS:** `light.deleted` (payload: `{ "id", "stageId" }`, repassado a todos os clientes)

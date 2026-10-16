@@ -18,15 +18,20 @@ Starts the Cloudflare tunnel.
 | `mode` | `string` | **yes** | `'quick'` (temporary) or `'named'` (fixed name) |
 | `name` | `string` | no | Tunnel name (required if mode=`named`) |
 
-**Response `200`:** Tunnel status
+A `quick` tunnel waits up to 15 seconds for cloudflared to print its `trycloudflare.com` URL. A `named` tunnel runs `cloudflared tunnel run <name>` and returns `url: null`, because the URL is the user's own domain. Starting while a tunnel is running stops the old one first.
+
+**Response `200`:** Tunnel status (see `GET /status`)
+**Response `400`:** `{ "error": "Invalid mode. Must be \"quick\" or \"named\"." }`
+**Response `500`:** `{ "error": "..." }` when cloudflared is not installed, when `named` is used without a `name`, or when the quick URL does not appear in 15 seconds
 
 ---
 
 ### POST `/stop`
 
-Stops the tunnel.
+Stops the tunnel (SIGTERM to cloudflared) and saves `tunnelMode: "off"`.
 
-**Response `200`:** Tunnel status
+**Response `200`:** Tunnel status (see `GET /status`)
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -37,12 +42,23 @@ Returns the current tunnel status.
 **Response `200`:**
 ```json
 {
-  "active": true,
-  "url": "https://my-tunnel.trycloudflare.com",
+  "running": true,
   "mode": "quick",
-  "pid": 12345
+  "url": "https://my-tunnel.trycloudflare.com"
 }
 ```
+
+`mode` is `"off"` and `url` is `null` when no tunnel is running. `running` is `false` when the cloudflared process has exited.
+
+---
+
+### Errors on every route
+
+`401` `{ "error": "Admin session required" }` (no admin cookie) or `{ "error": "Invalid or expired token" }`; `403` `{ "error": "Admin access required" }` (valid session without admin).
+
+### WebSocket
+
+None. The tunnel routes emit no events.
 
 ---
 
@@ -57,4 +73,6 @@ Accessible via `AppConfigWindow` (Setup Hub → gear → Application Configurati
 ## URL in sharing points
 
 - "Invite Links" Window — "Tunnel (Internet)" section
-- World Login Screen — "External Link" field (only visible to admin)
+- World Login Screen — "External Link" field (only for an admin session, and only while a tunnel runs with a URL, i.e. quick mode)
+
+The Invite Links endpoint (`GET /api/worlds/:worldId/invite-links`) also returns the tunnel state, so the GM window does not call these routes.

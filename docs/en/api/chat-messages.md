@@ -7,6 +7,34 @@
 
 ---
 
+### GET `/`
+
+Recent chat history of the world, oldest first. Used on reconnect to catch up on missed messages.
+
+**Query:** `?worldId=` (required if the session is admin without worldId in the token), `?limit=` (default `50`, clamped to `1`–`100`)
+
+**Response `200`:** array of messages (the same fields as the Schema below), passed through `projectChatHistory` for the viewer's role
+**Response `400`:** `{ "error": "worldId is required" }`
+**Response `500`:** `{ "error": "..." }`
+
+---
+
+### PUT `/:id/roll`
+
+Replaces the `roll` of an already posted message (used by mechanics that edit a card in place). Message owner or GM only.
+
+**Query:** `?worldId=` (same rule as above)
+
+**Request body:** `{ "roll": { ... } }` (required)
+
+**Response `200`:** `{ "success": true }`
+**Response `400`:** `{ "error": "worldId is required" }` / `{ "error": "roll is required" }`
+**Response `403`:** `{ "error": "Message belongs to a different world" }` / `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Message not found" }`
+**WS Event:** `chat.messageUpdated` (payload: `{ id, worldId, roll, userId }`)
+
+---
+
 ### PUT `/:id/flags`
 
 Merge-patch of flags in a chat message.
@@ -19,12 +47,13 @@ Merge-patch of flags in a chat message.
 |-------|------|-------------|-----------|
 | `scope` | `string` | **yes** | Flag scope (e.g. `'my-addon'`) |
 | `key` | `string` | **yes** | Flag name |
-| `value` | `any` | **yes** | Value to be set |
+| `value` | `any` | no (not validated) | Value to be set |
 
 **Response `200`:** `{ "flags": { ... } }`
 **Response `400`:** `{ "error": "worldId is required" }` / `{ "error": "scope and key are required" }`
 **Response `403`:** `{ "error": "Message belongs to a different world" }`
 **Response `404`:** `{ "error": "Message not found" }`
+**Note:** there is no owner or GM check: any signed-in user of the world can change the flags of any message. No WS event is sent.
 
 ---
 
@@ -75,17 +104,16 @@ Clears the entire world's chat history. GM only.
 
 ## Message creation
 
-There is no REST creation endpoint (`POST`). Creation is 100% via WebSocket:
+There is no REST creation endpoint (`POST`). Creation is 100% via WebSocket. The client sends a `message` event with `{ type: 'chat.message', data }`:
 
 ```typescript
 wsClient.send('chat.message', {
-  worldId,
-  userId,
   content,
   speaker, // optional
+  flags,   // optional
 });
 ```
 
-The server inserts the row and calls `broadcastToWorld('chat.message', worldId, {...})`.
+The server takes `worldId` and the sender (`userId`, `userName`, `userColor`) from the socket's token, not from the payload, and rate-limits the sender. It inserts the row and broadcasts `chat.message` to the world with `{ id, userId, userName, userColor, type, content, speaker, flags, createdAt, worldId }`. Dice rolls use the separate `chat.roll` message type.
 
 On the client, `ChatMessage.create(data)` (`client/main.ts`) encapsulates this dispatch — fire-and-forget, it doesn't wait for a round-trip before resolving.

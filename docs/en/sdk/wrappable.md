@@ -59,10 +59,18 @@ try to create its own competing equivalents:
 | Wrap point | Signature | Usage |
 |---|---|---|
 | `renderRollCard` | `(roll: RollResult, esc) => string` | Customizes the HTML card of a chat roll |
-| `renderMessage` | `(msg, ctx: { esc, canSeeRoll }) => string` | Customizes the HTML of any chat message |
+| `renderMessage` | `(msg, ctx: { esc, canSeeRoll, canDelete? }) => string` | Customizes the HTML of any chat message |
 | `renderMacroIcon` | `(macro) => string` | Customizes the icon of a macro hotbar slot |
 | `resolveFOVOrigins` | `function` | Customizes the origin points for the Canvas FOV calculation |
 | `chatCardContextOptions` | `(msg) => ChatCardContextOption[]` | Right-click menu items on a chat card — core already returns a generic "Reroll" for every roll message (resends the same formula/mode/meta/actorId), works even without any system registered |
+
+`RollResult` is `{ formula, terms, total, flavor?, mode, meta? }`. Its `mode` is the **visibility** mode
+(`public`, `gmroll`, `blindroll` or `selfroll`), not the dice mode. The engine has no dice-mode field: a system that
+needs one has to send it in `meta`, which the engine does not interpret. `meta` is optional and comes from the
+client, so treat it as untrusted input.
+
+`esc` is the chat's escaper (it is `textContent` into `innerHTML`). It escapes `&`, `<` and `>` only, **not quotes**.
+Do not put its output inside a quoted attribute value without escaping `"` and `'` yourself.
 
 ```js
 Loom.wraps.renderRollCard.addWrapper((original, roll, esc) => {

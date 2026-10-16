@@ -27,6 +27,12 @@ import { LoomHooks, api, SystemRegistry } from '/_loom/sdk/index.js';
 | `diceRegistry` | `{ register, create, has }` | Dice registry |
 | `keybinds` | `{ register, unregister, getKey, setBinding, resetBinding, resetAll }` | Keybind registry |
 | `statusEffects` | `{ register, get, getAll }` | Conditions / status effects registry |
+| `settings` | `{ register, registerMenu, get, set, settings }` | Module/system settings (see `settings.md`) |
+| `actorSheetMenu` | `{ register, unregister }` | Extra entries in the dots menu of every actor sheet |
+| `effects` | `{ forActor, forItem, create, update, delete }` | Active effects (buffs) over the REST `/buffs` routes |
+| `dispatchRoll` | `(opts) => void` | Rolls a formula to the chat from a system or sheet |
+| `LoomActorSheet` | `class` | Actor sheet base class (`actor` and `token` getters) |
+| `LoomItemSheet` | `class` | Item sheet base class (`item` and `actor` getters; `apiRoute` sets the GET/save URL, default `/items`, see `sheets.md`) |
 | `loadThree` | `() => Promise<typeof import('three')>` | Loads Three.js on demand |
 | `loadCannon` | `() => Promise<typeof import('cannon-es')>` | Loads cannon-es on demand |
 | `VERSION` | `string` | SDK version |
@@ -50,7 +56,10 @@ import { LoomHooks, api, SystemRegistry } from '/_loom/sdk/index.js';
 | `Wrappable<Fn>` | Wrapping type |
 | `WindowLike` | Window contract |
 | `ToastType` | `'info' \| 'success' \| 'warning' \| 'error'` |
-| `KeybindRegistryAPI` | `{ register, unregister, getKey, setBinding, resetBinding, resetAll }` |
+| `EffectData`, `EffectChange`, `EffectsAPI` | Active effects (buffs) data and API |
+| `StatusEffectDef` | Definition for `statusEffects.register` |
+| `ActorSheetMenuItem`, `ActorSheetMenuContext`, `ActorSheetMenuProvider` | Dots menu entries and provider |
+| `SettingConfigSDK`, `SettingMenuConfigSDK`, `SettingsAPI` | Settings configuration and API |
 
 ## Alternative via window.Loom
 

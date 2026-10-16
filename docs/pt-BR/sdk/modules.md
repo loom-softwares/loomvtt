@@ -27,6 +27,12 @@ import { LoomHooks, api, SystemRegistry } from '/_loom/sdk/index.js';
 | `diceRegistry` | `{ register, create, has }` | Registro de dados |
 | `keybinds` | `{ register, unregister, getKey, setBinding, resetBinding, resetAll }` | Registro de atalhos |
 | `statusEffects` | `{ register, get, getAll }` | Registro de condições/status effects |
+| `settings` | `{ register, registerMenu, get, set, settings }` | Configurações de módulo/sistema (ver `settings.md`) |
+| `actorSheetMenu` | `{ register, unregister }` | Entradas extras no menu de pontos de toda ficha de ator |
+| `effects` | `{ forActor, forItem, create, update, delete }` | Efeitos ativos (buffs) pelas rotas REST `/buffs` |
+| `dispatchRoll` | `(opts) => void` | Rola uma fórmula no chat a partir de um sistema ou ficha |
+| `LoomActorSheet` | `class` | Classe base de ficha de ator (getters `actor` e `token`) |
+| `LoomItemSheet` | `class` | Classe base de ficha de item (getters `item` e `actor`; `apiRoute` define a URL de GET/salvar, padrão `/items`, veja `sheets.md`) |
 | `loadThree` | `() => Promise<typeof import('three')>` | Carrega Three.js sob demanda |
 | `loadCannon` | `() => Promise<typeof import('cannon-es')>` | Carrega cannon-es sob demanda |
 | `VERSION` | `string` | Versão do SDK |
@@ -50,7 +56,10 @@ import { LoomHooks, api, SystemRegistry } from '/_loom/sdk/index.js';
 | `Wrappable<Fn>` | Tipo do wrapping |
 | `WindowLike` | Contrato de janela |
 | `ToastType` | `'info' \| 'success' \| 'warning' \| 'error'` |
-| `KeybindRegistryAPI` | `{ register, unregister, getKey, setBinding, resetBinding, resetAll }` |
+| `EffectData`, `EffectChange`, `EffectsAPI` | Dados e API de efeitos ativos (buffs) |
+| `StatusEffectDef` | Definição para `statusEffects.register` |
+| `ActorSheetMenuItem`, `ActorSheetMenuContext`, `ActorSheetMenuProvider` | Entradas do menu de pontos e provider |
+| `SettingConfigSDK`, `SettingMenuConfigSDK`, `SettingsAPI` | Configuração e API de settings |
 
 ## Alternativa via window.Loom
 

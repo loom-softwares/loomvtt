@@ -17,6 +17,8 @@ As seguintes coleções estão disponíveis em `window.Loom`:
 - `Loom.tables` (RollTables)
 - `Loom.playlists`
 
+`actor.items` em um ator vivo devolve os itens vinculados àquele ator (filtrados da mesma coleção de itens). O formato é uma visão tipo coleção com `size`, não um array com `length`; veja `globals.md`.
+
 ## Métodos Iterativos
 
 Para garantir compatibilidade com loops e scripts de migração que operam iterando sobre coleções inteiras, as coleções do LoomVTT fornecem a mesma assinatura de métodos de Array padrão que sistemas de RPG convertidos esperam:

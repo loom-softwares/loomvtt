@@ -39,19 +39,23 @@ Cria um template de área.
 | `hidden` | `boolean` | não | `false` |
 | `flags` | `string` | não | `'{}'` |
 
-**Tipos suportados:** `cone`, `circle`, `rectangle`, `ray`
+**Tipo:** o servidor guarda `type` como enviado e não valida o valor. O renderizador desenha `cone`, `rect`, `circle` e `ray`; o cliente só salva templates `cone` e `rect` (`canvas-manager.ts`, a chamada `onTemplateCreate`). Observe que o valor é `rect`, não `rectangle`.
 
 **Response `201`:** Template criado
-**Evento WS:** `template.created`
+**Response `400`:** `{ "error": "..." }` (erro de validação da camada de documentos)
+**Response `500`:** `{ "error": "Failed to create template" }`
+**Evento WS:** `template.created` (enviado a todos os sockets conectados)
 
 ---
 
 ### PUT `/:stageId/templates/:id`
 
-Atualiza um template.
+Atualiza um template. Atualização parcial: só os campos enviados são alterados. Aceita os mesmos campos do body do POST (`type`, `x`, `y`, `rotation`, `radius`, `width`, `height`, `angle`, `distance`, `fillColor`, `strokeColor`, `opacity`, `locked`, `hidden`, `flags`); `locked` e `hidden` são convertidos para boolean.
 
 **Response `200`:** Template atualizado
-**Evento WS:** `template.updated`
+**Response `404`:** `{ "error": "..." }` (template não encontrado)
+**Response `500`:** `{ "error": "Failed to update template" }`
+**Evento WS:** `template.updated` (enviado a todos os sockets conectados)
 
 ---
 
@@ -60,4 +64,6 @@ Atualiza um template.
 Remove um template.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
-**Evento WS:** `template.deleted`
+**Response `404`:** `{ "error": "..." }` (template não encontrado)
+**Response `500`:** `{ "error": "Failed to delete template" }`
+**Evento WS:** `template.deleted` (payload `{ id, stageId }`, enviado a todos os sockets conectados)

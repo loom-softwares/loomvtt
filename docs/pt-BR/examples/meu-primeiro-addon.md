@@ -3,9 +3,11 @@
 Tutorial completo criando um addon do zero.
 
 Vamos criar um addon "Chat Enhancer" que:
-- Adiciona um timestamp nas mensagens de chat
-- Adiciona um comando `/roll` customizado
-- Mostra uma notificação quando um dado crítico é rolado
+- Adiciona um comando `/r adv` que rola um d20 com vantagem
+- Mostra uma notificação quando um d20 sai 20 ou 1
+
+> **Limitação:** um addon ainda não consegue decorar a lista do chat (não há hook para
+> renderizar mensagens de chat), então este tutorial não adiciona timestamps às mensagens.
 
 ## 1. Estrutura de diretórios
 
@@ -22,6 +24,7 @@ Vamos criar um addon "Chat Enhancer" que:
   "name": "chat-enhancer",
   "title": "Chat Enhancer",
   "version": "1.0.0",
+  "engine": "loom",
   "client": "client.js"
 }
 ```
@@ -29,67 +32,35 @@ Vamos criar um addon "Chat Enhancer" que:
 ## 3. Client-side (`client.js`)
 
 ```javascript
-import { LoomHooks, showToast, api } from '/_loom/sdk/index.js';
+import { LoomHooks, showToast } from '/_loom/sdk/index.js';
 
 console.log('Chat Enhancer carregado!');
 
-// ─── Timestamp nas mensagens ───
-LoomHooks.on('chat.message', (message) => {
-  const time = new Date().toLocaleTimeString();
-  console.log(`[${time}] ${message.userName}: ${message.content}`);
-});
-
 // ─── Notificação de crítico ───
-LoomHooks.on('chat.roll', (rollData) => {
-  if (rollData.roll?.total === 20) {
-    showToast('🎯 Crítico! ' + rollData.userName + ' rolou 20!', 'success');
-  }
-  if (rollData.roll?.total === 1) {
-    showToast('💀 Falha crítica! ' + rollData.userName + ' rolou 1!', 'error');
-  }
+// `chat.roll` é chamado só com o resultado da rolagem (`data.roll`): formula, terms, total, flavor, mode, meta.
+// Rolagens ocultas para este jogador chegam censuradas, sem `total` e `terms`.
+LoomHooks.on('chat.roll', (roll) => {
+  if (roll?.total === undefined) return;
+  const die = roll.terms?.find((t) => t.kind === 'dice' && t.faces === 20 && t.count === 1);
+  if (!die) return;
+
+  const face = die.rolls[0];
+  if (face === 20) showToast('🎯 Crítico! Um d20 saiu 20!', 'success');
+  if (face === 1) showToast('💀 Falha crítica! Um d20 saiu 1!', 'error');
 });
 
-// ─── Comando /roll customizado ───
-LoomHooks.on('chat.message', (message) => {
-  if (message.content.startsWith('/roll ')) {
-    const formula = message.content.replace('/roll ', '');
-    const result = evaluateDiceFormula(formula);
-    api.post('/chat/roll', {
-      worldId: getCurrentWorldId(),
-      formula,
-      roll: result,
-    });
-  }
+// ─── `/r adv 1d20+3` rola com vantagem (2d20, mantém o maior) ───
+// `chatRollCommand` roda antes de a rolagem ser enviada. Alterar `ctx.formula` muda o que o servidor rola.
+LoomHooks.on('chatRollCommand', (ctx) => {
+  const match = ctx.originalFormula?.match(/^adv\s+1d20(.*)$/i);
+  if (match) ctx.formula = `2d20kh1${match[1]}`;
 });
 
-// ─── Exemplo: adicionar botão na sidebar ───
-LoomHooks.on('window.render', (window, data) => {
-  if (window.constructor.name === 'Sidebar') {
-    console.log('Sidebar renderizada, posso modificar!');
-  }
+// ─── Exemplo: reagir à renderização de uma janela ───
+// `window.render` é chamado com a instância da janela e um objeto de dados vazio.
+LoomHooks.on('window.render', (win) => {
+  console.log('Janela renderizada:', win.options?.id);
 });
-
-// Utilitário simples de dado
-function evaluateDiceFormula(formula) {
-  const match = formula.match(/^(\d*)d(\d+)([+-]\d+)?$/);
-  if (!match) return { total: 0, rolls: [] };
-
-  const count = parseInt(match[1] || '1');
-  const sides = parseInt(match[2]);
-  const mod = parseInt(match[3] || '0');
-  const rolls = [];
-
-  for (let i = 0; i < count; i++) {
-    rolls.push(Math.floor(Math.random() * sides) + 1);
-  }
-
-  const total = rolls.reduce((a, b) => a + b, 0) + mod;
-  return { total, rolls };
-}
-
-function getCurrentWorldId() {
-  return document.querySelector('[data-world-id]')?.dataset.worldId;
-}
 ```
 
 ## 4. Instalação
@@ -99,18 +70,22 @@ Opção A — Copiar manualmente:
 <DataRoot>/marketplace/addons/chat-enhancer/
 ```
 
-Opção B — Instalar via API:
+Opção B — Instalar via API (exige sessão de administrador; o campo do corpo é `manifestUrl`, a URL do `addon.json` hospedado):
 ```bash
 curl -X POST http://localhost:3000/api/marketplace/install \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://raw.githubusercontent.com/seu-user/chat-enhancer/main/addon.json", "type": "addon"}'
+  -H "Cookie: <seu cookie de sessão de administrador>" \
+  -d '{"manifestUrl": "https://raw.githubusercontent.com/seu-user/chat-enhancer/main/addon.json", "type": "addon"}'
 ```
+
+O instalador rejeita qualquer manifest sem `"engine": "loom"`.
 
 ## 5. Ativação
 
-1. Acesse Setup Hub > Addons
-2. Ative "Chat Enhancer"
-3. Ou em um mundo: Configurações > Addons > ative por mundo
+1. Acesse Setup Hub > Addons (a aba Addons)
+2. Clique em Ativar em "Chat Enhancer" (chama `POST /api/marketplace/addon/chat-enhancer/activate`, só administrador)
+3. Para um mundo só: na sidebar do mundo, abra Configurações > Módulos, que abre o Gerenciamento de Módulos, e habilite o addon ali
+4. Recarregue a página do mundo: os addons client-side são carregados quando o mundo inicia
 
 ## 6. Próximos passos
 

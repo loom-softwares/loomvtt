@@ -22,6 +22,7 @@ Let's create a "Simplified Fantasy" system with:
   "name": "simplified-fantasy",
   "title": "Simplified Fantasy",
   "version": "1.0.0",
+  "engine": "loom",
   "client": "client.js"
 }
 ```
@@ -29,7 +30,7 @@ Let's create a "Simplified Fantasy" system with:
 ## 3. Client-side (`client.js`)
 
 ```javascript
-import { SystemRegistry, defineSystem } from '/_loom/sdk/index.js';
+import { SystemRegistry, defineSystem, settings } from '/_loom/sdk/index.js';
 
 SystemRegistry.register(defineSystem({
   id: 'simplified-fantasy',
@@ -39,6 +40,7 @@ SystemRegistry.register(defineSystem({
   actorTypes: ['character', 'npc'],
   itemTypes: ['weapon', 'armor', 'consumable'],
 
+  // Called for actors (`systemData` on creation) AND items (`data` on creation), with the type of the new document.
   getDefaultData(type) {
     if (type === 'character') {
       return {
@@ -54,9 +56,12 @@ SystemRegistry.register(defineSystem({
         hp: { value: 10, max: 10 },
       };
     }
+    if (type === 'weapon') return { damage: '1d6', damageType: 'physical' };
+    if (type === 'armor') return { defense: 1 };
     return {};
   },
 
+  // Declared in the type, but the engine does not call validateData yet.
   validateData(type, data) {
     const errors = [];
     if (data.hp?.value > data.hp?.max) {
@@ -68,28 +73,20 @@ SystemRegistry.register(defineSystem({
     return { valid: errors.length === 0, errors };
   },
 
+  // The engine ignores the return value: change the object it receives, in place.
+  // The actor's values live in `actor.systemData` (the same object as `actor.system`).
+  // Known limit: the generic actor window reloads the actor after preparing it, so these
+  // modifiers are not shown there (see the note at the end of section 3).
   prepareData(actor) {
-    const data = { ...actor };
-    data.modifiers = {
-      str: Math.floor((data.attributes?.str || 10) / 2) - 5,
-      dex: Math.floor((data.attributes?.dex || 10) / 2) - 5,
-      vit: Math.floor((data.attributes?.vit || 10) / 2) - 5,
+    const attrs = actor.systemData?.attributes ?? {};
+    actor.systemData.modifiers = {
+      str: Math.floor((attrs.str || 10) / 2) - 5,
+      dex: Math.floor((attrs.dex || 10) / 2) - 5,
+      vit: Math.floor((attrs.vit || 10) / 2) - 5,
     };
-    return data;
   },
 
-  // ⚠️ rollInitiative is declared in the interface but is NOT invoked by the engine.
-  // To customize initiative, use Loom.settings.get(systemId, 'initiativeFormula')
-  rollInitiative(actor) {
-    const mod = Math.floor(((actor.attributes?.dex || 10) / 2) - 5);
-    return { formula: `1d20${mod >= 0 ? '+' : ''}${mod}`, total: 0 };
-  },
-
-  getItemDefaultData(type) {
-    if (type === 'weapon') return { damage: '1d6', damageType: 'physical' };
-    if (type === 'armor') return { defense: 1 };
-    return {};
-  },
+  // rollInitiative is declared in the type, but the engine never calls it (see section 4, "Initiative").
 
   getSheetSchema(actorType) {
     if (actorType === 'npc') {
@@ -131,6 +128,8 @@ SystemRegistry.register(defineSystem({
     };
   },
 
+  // Note: the client does not render this yet. The item sheet asks the server for the schema,
+  // and the server never receives client-side rulesets, so items use the basic sheet.
   getItemSheetSchema(itemType) {
     if (itemType === 'weapon') {
       return {
@@ -148,11 +147,38 @@ SystemRegistry.register(defineSystem({
   },
 }));
 
-// Optional: customize the actor sheet via sheetCatalog
+// Setting used by the `combatInitiative` hook (see "Initiative" below).
+settings.register('simplified-fantasy', 'initiativeFormula', {
+  name: 'Initiative formula',
+  scope: 'world',
+  type: String,
+  default: '1d20',
+});
+
 console.log('Simplified Fantasy System loaded!');
 ```
 
-## 4. Activation
+> **Note:** `prepareData` runs for sheets built on `LoomDocumentSheet`/`LoomActorSheet`. The generic actor
+> window (`ActorSheetWindow`, used for sheets opened from the sidebar) loads the actor again after this step,
+> so its derived values do not appear there.
+
+## 4. Initiative
+
+The engine does not call `rollInitiative`. When the GM starts a combat with Dex initiative, the sidebar
+calls the `combatInitiative` hook with a context object, and the system sets the totals there:
+
+- `ctx.castIds`: the tokens taking part
+- `ctx.initiatives`: write `ctx.initiatives[castId] = total` for each token
+- `ctx.pending`: push a Promise here if the roll is asynchronous
+
+The hook runs only from the "Start Combat (DEX Initiative)" button, for the selected tokens. `POST /start`,
+`POST /combatant` and the encounter sheet do not call it. Only the totals in `ctx.initiatives` are used, so
+`ctx.rolls` and `ctx.health` are optional to write.
+
+The formula is read with `Loom.settings.get('simplified-fantasy', 'initiativeFormula')` (the setting above;
+it falls back to `1d20` when no value is set).
+
+## 5. Activation
 
 1. Copy the folder to `<DataRoot>/marketplace/rulesets/simplified-fantasy/`
 2. On the server, go to Setup Hub > Systems
@@ -160,14 +186,18 @@ console.log('Simplified Fantasy System loaded!');
 4. Create or edit a world, set `system: simplified-fantasy`
 5. Connect to the world — the `character`/`npc` types will be available
 
-## 5. Testing
+## 6. Testing
+
+Actors created through the API take their starting values from the `systemData` you send
+(the server has no client-side system to fill them in). In the browser console, while connected to the world:
 
 ```javascript
 // In the browser console
 const actor = await Loom.api.post('/actors', {
   worldId: 'your-world-id',
   name: 'Aragorn',
-  type: 'character'
+  type: 'character',
+  systemData: Loom.systems.getActive().getDefaultData('character'),
 });
 console.log('Actor created:', actor);
 ```

@@ -68,15 +68,22 @@ Cria journal com página inicial.
 | `pinY` | `number` | `0` |
 
 **Response `201`:** Journal criado
+**Response `400`:** `{ "error": "Field \"name\" is required and must be a non-empty string." }`
 **Evento WS:** `journal.created`
 
 ---
 
 ### PUT `/:id`
 
-Atualiza journal.
+Atualiza journal. Só os campos abaixo são copiados. `ownership` e `flags` só podem ser alterados pelo GM.
+`flags` é mesclado aos flags existentes, não substituído.
+
+**Request body:** `name`, `content`, `pages`, `categories`, `folderId`, `isPinned`, `pinX`, `pinY`, `ownership`, `flags`.
 
 **Response `200`:** Journal atualizado
+**Response `400`:** `{ "error": "No valid fields provided for update." }` quando nenhum campo é enviado, ou `{ "error": "Pages must be an array" }`
+**Response `403`:** `{ "error": "Access denied" }`, `{ "error": "Only the Gamemaster can change ownership." }` ou `{ "error": "Only the Gamemaster can change flags." }`
+**Response `404`:** `{ "error": "Journal entry not found" }`
 **Evento WS:** `journal.updated`
 
 ---
@@ -87,7 +94,12 @@ Adiciona página.
 
 **Request body:** `{ "name" (obrigatório), "content", "type", "src", "categoryId" }`
 
-**Response `201`:** Página criada
+`type` tem default `'text'`; qualquer valor fora da lista acima recebe `400`.
+
+**Response `201`:** Página criada (o objeto da página, não o journal)
+**Response `400`:** `{ "error": "Unsupported page type" }` ou `{ "error": "Field \"name\" is required." }`
+**Response `403`:** `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Journal entry not found" }`
 **Evento WS:** `journal.updated`
 
 ---
@@ -107,14 +119,17 @@ Exige GM. Abre a página nos clientes-alvo em tempo real.
 
 Atualiza página.
 
-**Response `200`:** Página atualizada
+Campos copiados do body: `name`, `content`, `categoryId`, `index`, `theme`, `themeVars`, `src`.
+
+**Response `200`:** Página atualizada (o objeto da página, não o journal)
+**Response `404`:** `{ "error": "Page not found" }`
 **Evento WS:** `journal.updated`
 
 ---
 
 ### DELETE `/:id/pages/:pageId`
 
-Remove página.
+Remove página. As páginas restantes são renumeradas em `sort`. Um `pageId` desconhecido não é tratado como erro.
 
 **Response `200`:** `{ "success": true }`
 **Evento WS:** `journal.updated`

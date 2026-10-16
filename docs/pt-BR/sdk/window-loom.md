@@ -31,8 +31,7 @@ API global exposta para addons e sistemas no lado do cliente.
   },
   renderTemplate,
   loadTemplates,
-  debounce,
-  throttle,
+  utils: { debounce, throttle, mergeObject, /* ...ver utils.md */ },
   DragDrop,
   fields,
   rolls: {
@@ -47,6 +46,7 @@ API global exposta para addons e sistemas no lado do cliente.
     get resolveFOVOrigins() { ... },
     renderRollCard: renderRollCardWrap,
     renderMessage: renderMessageWrap,
+    chatCardContextOptions: chatCardContextOptionsWrap,
     renderMacroIcon: renderMacroIconWrap,
   },
   BaseWindow,
@@ -86,8 +86,8 @@ API global exposta para addons e sistemas no lado do cliente.
 | `sheets`                     | `SheetCatalog`                                 | Catálogo de fichas                                                    |
 | `systems`                    | `SystemRegistry`                               | Registro de sistemas de RPG                                            |
 | `applications.ux.TextEditor` | `TextEditor`                                   | Utilitários de texto e enrichment HTML (ex:`@Embed`, `[[/roll]]`) |
-| `debounce`                   | `(fn, delay) => fn`                            | Limita a execução de uma função no tempo                           |
-| `throttle`                   | `(fn, delay) => fn`                            | Limita a frequência de execução de uma função                     |
+| `utils.debounce`             | `(fn, delay) => fn`                            | Limita a execução de uma função no tempo (não existe `Loom.debounce` top-level) |
+| `utils.throttle`             | `(fn, delay) => fn`                            | Limita a frequência de execução de uma função (não existe `Loom.throttle` top-level) |
 | `DragDrop`                   | `class LoomDragDrop`                           | Utilitário para gerenciar operações de drag-and-drop nativas        |
 | `fields`                     | `Object`                                       | Data fields API (StringField, NumberField, etc)                        |
 | `dice`                       | `DiceRegistry`                                 | Registro de expressões de dados (visual/face — ver`dice.md`)       |
@@ -103,6 +103,12 @@ API global exposta para addons e sistemas no lado do cliente.
 | `wraps.renderRollCard`       | `function`                                     | Wrap point do card de roll no chat (ver`wrappable.md`)               |
 | `wraps.renderMessage`        | `function`                                     | Wrap point do HTML de qualquer mensagem de chat                        |
 | `wraps.renderMacroIcon`      | `function`                                     | Wrap point do ícone de cada slot da hotbar de macros                  |
+| `wraps.chatCardContextOptions` | `function`                                   | Itens do menu de clique direito de um card do chat (ver `wrappable.md`) |
+| `settings`                   | `{ register, registerMenu, get, set, whenReady, settings }` | Registro de configurações de módulos |
+| `i18n`                       | `{ registerLang, localize, format }`           | Helpers de tradução de ruleset |
+| `mainMenu`                   | `{ register, unregister }`                     | Entradas do menu principal (botão da hotbar, "Menu Principal") |
+| `LoomCategoryBrowser`        | `class`                                        | Classe base do navegador de categorias (implementar `_prepareCategoryData()`) |
+| `Roll` / `Die`               | `class`                                        | Classes base para dados/rolagens customizados (`class X extends Loom.Roll`) |
 | `BaseWindow`                 | `class`                                        | Classe base de janela — addon estende pra criar sheet própria        |
 | `LoomDocumentSheet`          | `class`                                        | Base de ficha com data-binding automático                             |
 | `LoomHandlebarsMixin`        | `function`                                     | Mixin`(Base) => class` — render por `static PARTS`/`TABS`       |

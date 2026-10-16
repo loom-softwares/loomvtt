@@ -71,16 +71,18 @@ schema), `fontSize` (32 — difere do default 16 do schema), `textBold`, `textIt
 
 **Response `201`:** Desenho criado
 **Response `400`:** `{ "error": "..." }` (erro de validação da camada de documento)
+**Response `500`:** `{ "error": "Failed to create drawing.", "details": "<mensagem>" }`
 **Evento WS:** `drawing.created`
 
 ---
 
 ### PUT `/:id`
 
-Atualiza desenho. Atualização parcial — aceita o mesmo conjunto de campos do `POST` acima.
+Atualiza desenho. Atualização parcial — só os campos enviados são alterados. Aceita os mesmos campos do `POST` acima, exceto `stageId` (um desenho não pode ser movido para outra stage por esta rota); `imgUrl` e `authorId` não são aceitos.
 
 **Response `200`:** `{ "success": true }`
-**Response `404`:** `{ "error": "..." }`
+**Response `404`:** `{ "error": "..." }` (erro da camada de documento, ex.: desenho não encontrado)
+**Response `500`:** `{ "error": "Failed to update drawing." }`
 **Evento WS:** `drawing.updated`
 
 ---
@@ -91,7 +93,8 @@ Remove desenho.
 
 **Response `200`:** `{ "success": true }`
 **Response `404`:** `{ "error": "..." }`
-**Evento WS:** `drawing.deleted`
+**Response `500`:** `{ "error": "Failed to delete drawing." }`
+**Evento WS:** `drawing.deleted` (payload `{ id }`)
 
 ---
 
@@ -100,4 +103,5 @@ Remove desenho.
 Limpa todos os desenhos de uma stage.
 
 **Response `200`:** `{ "success": true, "count": N }`
-**Evento WS:** `drawing.cleared`
+**Response `500`:** `{ "error": "..." }` (erro da camada de documento) ou `{ "error": "Failed to delete drawings." }`
+**Evento WS:** `drawing.cleared` (payload `{ stageId }`; nenhum evento por desenho é enviado)

@@ -3,7 +3,7 @@
 > **Important for those porting a system:** there are TWO distinct things here.
 >
 > - **Real parser** (`server/applications/dice/roller.ts`, `roll()` function) — interprets the
->   formula string (`"2d6+3"`, `"5d10cs>5c"`) and calculates the `total`. This is what actually runs
+>   formula string (`"2d6+3"`, `"5d10cs>5"`) and calculates the `total`. This is what actually runs
 >   when the client sends `chat.roll` via WebSocket. The server is always the
 >   final authority for standard terms (`d`, `kh/kl/dh/dl`, `r`, `x`, `cs>`).
 > - **Dice Registry** (`dice-registry.ts`, below) — registry of **custom dice
@@ -21,23 +21,34 @@
 NdF              → N dice of F faces, sums everything (e.g.: "2d6")
 NdFkh / NdFkl    → keeps only the highest/lowest N
 NdFdh / NdFdl    → drops the highest/lowest N
-NdFr[T]          → reroll once if result is <= T
-NdFx[T]          → exploding die (rerolls) if result >= T
+NdFr[T]          → recursive reroll while result is <= T (default T = 1)
+NdFro[T]         → reroll once if result is <= T (default T = 1)
+NdFx[T]          → exploding die: rolls again while result >= T
+                   (T omitted = the face count, so only the maximum explodes;
+                   fate dice "dF" never explode)
 NdFcs>N / cs<N / cs=N   → COUNTS SUCCESSES (doesn't sum!) — generic dice-pool
-NdFcs>Nc                → same as above, but the MAXIMUM face result counts as 2 successes
+NdFcs>=N / cs<=N        → same, with the inclusive comparisons
+NdFcs>Nc                → accepted, but the `c` suffix has NO effect: a natural
+                          maximum counts as one success like any other hit
+NdFcf>N / cf<N / cf=N   → COUNTS FAILURES (same comparisons as cs). When cs and cf
+                          are both present, the term is successes minus failures
+(expr) / -(expr)        → parentheses and unary minus
+min(...), max(...), floor(...), ceil(...), round(...)  → functions over expressions
 +N / -N          → flat modifier added to the total
-@path.to.data    → replaced by numeric value before evaluating (see `resolve-formula.ts`)
+@path.to.data    → replaced by its numeric value before evaluating. The server
+                   parser (`roll-formula.ts`) replaces an unknown path with 0 silently
 ```
 
-`cs>`/`cs<`/`cs=` transforms the term into a success counter: instead of summing the dice
-values, `total` becomes the count of dice that met the condition (+2 per die on natural
-maximum, if using the `c` suffix). Generic — any dice-pool system can use it, it is not
-specific to any game.
+`cs>`/`cs<`/`cs=` (and `>=`/`<=`) transform the term into a success counter: instead of summing
+the dice values, `total` becomes the count of dice that met the condition. The `c` suffix is
+parsed and discarded, so it does not double a natural maximum: a 10 counts as one success.
+Generic — any dice-pool system can use it, it is not specific to any game.
 
-**Example (WoD5e style — pool of 5 basic dice + 2 advanced, success >5, critical doubles on 10):**
+**Example (WoD5e style — pool of 5 basic dice + 2 advanced, success >5):**
 ```
-roll("5d10cs>5c + 2d10cs>5c")
+roll("5d10cs>5 + 2d10cs>5")
 // total = sum of successes of both dice groups
+// critical doubling on 10 is not done by the parser; a system that needs it must add it itself
 ```
 
 ## Automatically building the pool (`resolve-formula.ts` / `item-modifiers.ts`)
@@ -57,7 +68,7 @@ const baseDice = sumPaths(['attributes.strength.value', 'skills.brawl.value'], a
 const modifiers = collectItemModifiers(actor.items); // reads `item.systemData.bonuses: ItemModifier[]`
 const bonus = getActiveModifiers(modifiers, ['skills.brawl'], actor.systemData);
 
-const formula = `${baseDice + bonus}d10cs>5c`;
+const formula = `${baseDice + bonus}d10cs>5`;
 ```
 
 `ItemModifier` = `{ selectors: string[], value: number, activeWhen?: {...}, source?: string }`.
@@ -105,11 +116,12 @@ break the roll).
 
 # Dice Registry (`dice-registry.ts`)
 
-Registry of customizable dice expressions (visuals/die faces). Exposed globally as `globalThis.__loomDice`.
+Registry of customizable dice expressions (visuals/die faces). In the browser it is exposed as `Loom.dice` (`client/core/dice-registry.ts`), and the SDK exports it as `diceRegistry`. The client expression classes are in `client/core/dice-expression.ts`.
+
+> **Note:** `globalThis.__loomDice` is set by `server/applications/dice/dice-registry.ts`, a server module that the browser does not load, so this global is not available in the client. Use `Loom.dice` (or the SDK `diceRegistry`) instead.
 
 ```typescript
 import { diceRegistry } from '/_loom/sdk/index.js';
-import { DiceExpression, DieExpression, FateExpression, ModifierExpression } from '../applications/dice/dice-expression.js';
 ```
 
 ## API
@@ -133,7 +145,7 @@ interface DiceEvaluation {
   rolls: number[];
   subtotal: number;
   label: string;
-  dropped?: number[];
+  dropped: boolean[];
 }
 ```
 
@@ -148,13 +160,13 @@ interface DiceEvaluation {
 ## Example
 
 ```js
-const DiceRegistry = globalThis.__loomDice;
+const DiceRegistry = Loom.dice;
 
-// Register custom die
-DiceRegistry.register('d%', MyPercentileDie);
+// Register a custom expression kind (the kind is the key used in `{kind:config}` terms)
+DiceRegistry.register('pct', MyPercentileDie);
 
-// Use
-const die = DiceRegistry.create('d20', { count: 1 });
+// Use the native die kind 'd' (config: count and faces)
+const die = DiceRegistry.create('d', { count: 1, faces: 20 });
 const result = die.evaluate();
 console.log(result.subtotal, result.rolls);
 ```

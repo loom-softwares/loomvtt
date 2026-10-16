@@ -26,6 +26,8 @@ const Sheet = sheets.get('actor', 'character');
 // Se typeName não for encontrado, fallback pra '*'
 ```
 
+O catálogo do core faz fallback pra entrada `'*'`. O `sheets.get()` do SDK adiciona mais um fallback: se nada bater, `actor` retorna `LoomActorSheet` e `item` retorna `LoomItemSheet` (`packages/sdk/src/index.ts`).
+
 ## LoomDocumentSheet
 
 Todas as fichas estendem `LoomDocumentSheet`:
@@ -43,8 +45,10 @@ abstract class LoomDocumentSheet<DocType> extends BaseWindow {
   `'data'` pra qualquer outro `documentName`.
 - **Fluxo de fetch:** ao montar, `loadDocument()` lê `this.options.documentId`; se
   vazio, não busca nada (ficha abre em branco). Se presente, faz
-  `GET {apiRoute}/{documentId}` e guarda o resultado em `this.document`, já passado
-  pelo `prepareData()` do `documentClass` registrado (ver `globals.md#prepareData`).
+  `GET {apiRoute}/{documentId}?populate=true` (o `populate` é obrigatório pra que os itens de
+  `ChildrenField` voltem) e guarda o resultado em `this.document`, já passado pelo `prepareData()`:
+  primeiro o `prepareData(row)` do sistema ativo (se registrado), depois o `prepareData()` do próprio
+  documento, do `documentClass` registrado (ver `globals.md#prepareData`).
 - **`documentId` não é o prop que quem abre a ficha passa** — é um campo interno que
   o `super()` da SUA classe precisa preencher a partir do prop que você escolher
   (a convenção nativa é `actorId`/`itemId`, mas é você quem decide no seu construtor):
@@ -53,11 +57,22 @@ abstract class LoomDocumentSheet<DocType> extends BaseWindow {
     super({ id: `item-sheet-${props.itemId}`, documentId: props.itemId, title: '...' });
   }
   ```
+- **`apiRoute` e fichas de item:** `LoomItemSheet` (abstrata nos tipos do SDK) lê e salva por
+  `${apiRoute}/${id}`. O padrão é `/items`, e `_apiRouteOverride` o substitui. Mantenha a rota do mundo `/items`
+  também para itens embutidos. `GET /api/actors/:actorId/items/:itemId` não existe, então um override para a rota
+  de itens do actor faz a ficha falhar com 404. Fichas de item buscam sem `?populate=true`.
 - **ID da janela:** não tem convenção única imposta pelo motor — só precisa ser
   estável e único por documento (se abrir a mesma ficha duas vezes com o mesmo id,
   `windowManager.open` foca a existente em vez de abrir outra). O código nativo usa o
   id cru do documento (`windowManager.open(id, SheetClass, { itemId: id })`); fichas
   de terceiro costumam prefixar (`item-sheet-${id}`) — os dois funcionam.
+
+## Abrindo a ficha a partir de um token
+
+Clicar em um token que tem `actorId` abre a ficha do actor só com `{ actorId, worldId }`, tanto para tokens
+vinculados quanto não vinculados. O id da janela é `actor-sheet-<actorId>` (uma janela por actor). O snapshot
+`systemData` próprio de um token não vinculado (veja `api/cast.md`) portanto não é mostrado nem editado ali, e a
+ficha grava no actor.
 
 ## Como abrir a ficha (própria ou de outro documento) programaticamente
 

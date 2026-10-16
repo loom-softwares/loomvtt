@@ -17,12 +17,29 @@ LoomHooks.call(hookName: string, ...args: any[]): boolean
 ```
 
 > **Nota:** `LoomHooks` é o sistema de eventos client-side.
+> - `call` está disponível em `window.Loom.LoomHooks` (e em `window.Hooks`), mas o objeto `LoomHooks` exportado pelo import do SDK só tem `on`, `once`, `off` e `callAll`.
 > - `callAll(name, ...args)` executa todos os callbacks registrados, tratando chamadas assíncronas e capturando erros individualmente sem interromper os demais listeners.
-> - `call(name, ...args)` executa os listeners em sequência e retorna `false` caso algum callback retorne explicitamente `false` (permitindo a interrupção de ciclo em pré-hooks como `preUpdateActor`).
-> - No cliente, `ClientDocument` dispara hooks de documento locais via `LoomHooks.call()` (`preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`, `createActor`, etc.).
-> - Além disso, o cliente escuta eventos Socket.IO relayados do servidor (ex: `actors.created`, `actors.updated`, `actors.deleted` — a nomenclatura não é consistente entre entidades, ver [`websocket/events.md`](../websocket/events.md)) e eventos de Janelas (`renderWindow`, `closeWindow`, `renderActorSheet`, etc.).
+> - `call(name, ...args)` executa os listeners em sequência (não aguarda promises) e retorna `false` caso algum callback síncrono retorne `false`. Só `chatRollCommand` usa esse retorno. Os hooks `preUpdate*` / `preDelete*` do cliente ignoram o retorno, então retornar `false` ali não cancela o update (ver a nota CODE ISSUE abaixo).
+> - No cliente, `ClientDocument` dispara hooks de documento locais via `LoomHooks.call()`: `preUpdate<Doc>`, `update<Doc>`, `preDelete<Doc>`, `delete<Doc>` (por exemplo `preUpdateActor`, `updateActor`, `preDeleteActor`, `deleteActor`).
+> - O servidor repassa seus sinais `actors.*` ao cliente com os nomes no singular usados nos exemplos (`actor.created`, `actor.updated`, `actor.deleted`, ver `server/index.ts`). Itens já são emitidos como `item.created` / `item.updated` / `item.deleted`. A sidebar e o HUD então disparam o mesmo nome mais os aliases `create…`, `update…`, `delete…` e as formas `createDocument` / `updateDocument` / `deleteDocument` (ver a lista abaixo). Eventos de Janelas (`renderWindow`, `closeWindow`, `renderActorSheet`, etc.) também são disparados aqui.
+>
+> Outros hooks que o cliente dispara: `init`, `setup` e `ready` (boot do HUD); `combatStart`, `combatTurn`, `combatRound` e `combatEnd`; `updateWorldTime`, `timeScaleChanged` e `timePausedChanged` (ver `time.md`); `stage.updated`, `updateScene`; `preRoll` e `chatRollCommand` (um listener que retorna `false` assume a rolagem); `chat.roll`; `combatantLabel` e `combatInitiative`; `window.<evento>` para `render`, `close`, `position`, `minimize` e `maximize`; `getWindowOptionsMenuItems`; `render<Classe>` e `close<Classe>`.
 >
 > `targetToken` é disparado do evento Socket.IO `token.target` (marcar/desmarcar alvo). Payload: `{ castId, targetedBy }`. Para consultar os alvos do usuário atual, use `Loom.user.targets` — ver `window-loom.md`.
+>
+> **Contratos dos hooks de combate:**
+> - `combatStart`, `combatTurn`, `combatRound` e `combatEnd` disparam só em clients de GM. O servidor retransmite os eventos
+>   `combat.*` sem filtro de dono, então jogadores não recebem nenhum evento de combate. Um painel de jogador precisa consultar
+>   `GET /api/combat/:worldId` periodicamente.
+> - `combatantLabel` é síncrono, via `LoomHooks.call('combatantLabel', ctx)` com `ctx = { combat, combatant, label }`.
+>   Um listener escreve `ctx.label`. Um listener que retorna `false` interrompe a cadeia.
+> - `combatInitiative` roda via `callAll` com `ctx = { castIds, initiatives, health, rolls, pending }`. Escreva os totais em
+>   `ctx.initiatives[castId]`. Trabalho assíncrono vai para `ctx.pending`: a UI espera por ele antes do POST. Uma promise
+>   rejeitada aborta o início inteiro, e a UI só mostra um toast. Ele roda só pelo botão "Iniciar combate (iniciativa DES)", para os
+>   tokens selecionados, não por `POST /start`, `POST /combatant` nem pela ficha de encontro.
+> - `combatantLabelsChanged` é escutado pela sidebar, que re-renderiza ao recebê-lo, mas nenhum código do motor o emite. Um
+>   sistema que preenche badges de forma assíncrona precisa emiti-lo por conta própria, por exemplo com
+>   `LoomHooks.callAll('combatantLabelsChanged')`.
 
 ## Exemplo
 
@@ -32,11 +49,11 @@ const handler = (actor) => console.log('Actor:', actor.name);
 // Eventos WS (client-side) — nomes: actor.created, actor.updated, actor.deleted
 LoomHooks.on('actor.created', handler);
 
-// Listener com interrupção condicional em pré-hook
+// Listener de pré-hook (recebe o documento, as alterações e o contexto).
+// O retorno é ignorado: retornar false NÃO cancela o update.
 LoomHooks.on('preUpdateActor', (actor, changes, context) => {
   if (changes.system?.hp?.value < 0) {
     console.warn('HP não pode ser negativo');
-    return false; // Interrompe o update
   }
 });
 
@@ -48,3 +65,5 @@ LoomHooks.callAll('actor.created', actorData);
 ```
 
 Erros em hooks são capturados e logados via `console.error`, sem quebrar a execução dos outros hooks.
+
+> **CODE ISSUE:** `ClientDocument.update()` e `delete()` (`client/core/client-document.ts`) chamam `LoomHooks.call('preUpdate…')` e `LoomHooks.call('preDelete…')` sem verificar o resultado, então um `false` retornado não interrompe a requisição. Os hooks `preUpdate*` do servidor têm o mesmo limite (`server/applications/utils/hooks.ts`: `call` retorna `void`).

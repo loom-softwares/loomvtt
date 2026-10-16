@@ -60,7 +60,7 @@ npm run dev # desenvolvimento
 # ou npm start para o build compilado
 ```
 
-Ou, em execução direta do servidor, use `--configPath="D:\LoomVTT\Config\loom.config.json"`. O arquivo indicado precisa existir; se não existir ou estiver inválido, o servidor para com erro em vez de criar outra configuração silenciosamente. O `dataPath` dentro desse arquivo, quando preenchido, indica a pasta exata dos dados (`worlds`, `assets`, banco e backups).
+Ou, em execução direta do servidor, use `--configPath="D:\LoomVTT\Config\loom.config.json"`. O arquivo indicado precisa existir; se não existir ou estiver inválido, o servidor para com erro em vez de criar outra configuração silenciosamente. O `dataPath` dentro desse arquivo, quando preenchido, indica a pasta raiz do LoomVTT (a que contém `Config/`, `Data/` e `Logs/`), igual ao `--dataPath`.
 
 O atalho `start.command` de clique duplo não recebe argumentos dessa forma — para definir um caminho de dados personalizado, execute via terminal.
 

@@ -13,7 +13,7 @@ Integração opcional para o GM criar salas de voz de campanha direto do LoomVTT
 
 ### GET `/config`
 
-Configuração atual do Discord (sem o token).
+Configuração atual do Discord (sem o token). Sem config salva, retorna `{ configured: false, guildId: null, categoryId: null }`.
 
 **Response `200`:** `{ configured: boolean, guildId: string | null, categoryId: string | null }`
 
@@ -21,14 +21,17 @@ Configuração atual do Discord (sem o token).
 
 ### PUT `/config`
 
-Salva ou atualiza a configuração Discord do mundo (1 config por mundo — `worldId` é único). Numa atualização, `botToken` é opcional (omitir mantém o token já salvo); `guildId` é sempre obrigatório.
+Salva ou atualiza a configuração Discord do mundo (1 config por mundo — `worldId` é único). `botToken` e `guildId` são obrigatórios em toda chamada, inclusive nas atualizações; o ramo de atualização tem um trecho para token opcional que nunca é alcançado (ver CODE ISSUE abaixo). `categoryId` é opcional; valor vazio grava `null`.
 
-**Request body:** `{ "botToken": string (obrigatório na criação), "guildId": string (obrigatório), "categoryId"?: string | null }`
+**Request body:** `{ "botToken": string (obrigatório), "guildId": string (obrigatório), "categoryId"?: string | null }`
 
-**Response `200`/`201`:** `{ configured: true, guildId, categoryId }`
+**Response `201`** quando a config é criada, **`200`** quando é atualizada: `{ configured: true, guildId, categoryId }`
 
 **Erros:**
 - `400` — `botToken`/`guildId` ausentes
+- `500` — erro de banco ao salvar
+
+> CODE ISSUE: `server/applications/api/discord.ts` (`PUT /config`) rejeita `botToken` ausente com `400` antes de chegar ao ramo de atualização, então o comportamento "omitir `botToken` mantém o token salvo" não existe. A doc descreve o comportamento real até o código ser corrigido.
 
 ---
 
@@ -45,6 +48,9 @@ Cria uma sala de campanha (canal de **voz**, `ChannelType.GuildVoice`, dentro de
 - `500` — Discord não configurado para o mundo (nenhum `PUT /config` feito ainda)
 - `500` — Guild não encontrada (`guildId` errado ou bot não foi convidado para o servidor)
 - `500` — Permissão insuficiente (bot sem "Gerenciar Canais" na guild — código Discord `50013`)
+- `500` — qualquer outra falha do Discord (`{ "error": "Erro ao criar sala Discord: <mensagem>" }`)
+
+As mensagens de erro desta rota estão em português (por exemplo `"Discord não configurado para este mundo..."`).
 
 ## Setup (feito pelo GM, fora do LoomVTT)
 

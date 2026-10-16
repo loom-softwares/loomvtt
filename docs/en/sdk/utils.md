@@ -3,9 +3,9 @@
 Critical utility functions for converted systems: debounce/throttle, recursive merge,
 deep cloning and nested property access.
 
-Source: `client/core/utils.ts`. Exposed at runtime as `Loom.utils` (all
-functions), as `Loom.debounce`/`Loom.throttle` (top-level shortcuts) and via the global alias
-`vtt.utils` (see `globals.md`).
+Source: `client/core/utils.ts` (`mediaHtml` and `isVideoUrl` come from `client/core/media-helper.ts`).
+Exposed at runtime as `Loom.utils` (all functions, including `debounce`/`throttle`) and via the
+global alias `vtt.utils` (see `globals.md`). There are no top-level `Loom.debounce`/`Loom.throttle`.
 
 ## Exports
 
@@ -18,6 +18,9 @@ functions), as `Loom.debounce`/`Loom.throttle` (top-level shortcuts) and via the
 | `deepClone` | `(obj): cloned` | Alias for `duplicate` |
 | `getProperty` | `(obj, path): value?` | Reads nested property by dot notation (`'a.b.c'`) |
 | `setProperty` | `(obj, path, value): void` | Sets nested property, creating intermediate objects |
+| `hasProperty` | `(obj, path): boolean` | `true` if every segment of the dot-notation path exists on the object |
+| `performIntegerSort` | `(source[], { target?, key?, sortBy? }): updates[]` | Computes sort updates (`{ target, update }`) for a list, the contract converted systems expect |
+| `debouncedReload` | `(...args): void` | Reloads the page once, collapsing repeated calls made in the same tick (100 ms) |
 | `isEmpty` | `(value): boolean` | `true` if `value` is `null`/`undefined`/empty array/empty object/empty Map or Set |
 | `randomID` | `(length = 16): string` | Generates random alphanumeric ID |
 | `flattenObject` | `(obj): flat` | Flattens nested object into dot keys (`{a:{b:1}}` → `{"a.b":1}`) — arrays are not flattened |
@@ -50,8 +53,8 @@ const save = debounce(() => submitForm(), 300);
 > **`duplicate`/`deepClone` limitation:** uses `JSON.parse(JSON.stringify())` — functions,
 > `Map`, `Set` and non-serializable values are not cloned (becomes `undefined`/lost).
 
-> **Note:** `expandObject` also runs automatically as a server-side middleware
-> (`server/index.ts`) on every request — any update payload sent in
+> **Note:** the server's `expandObject` (`server/applications/utils/helpers.ts`) runs automatically on every request (`server/index.ts`) — any update payload sent in
 > dot notation (`{"system.attributes.hp": 5}`, common format in converted
 > scripts) is expanded before reaching the route handler, and the `system`
-> key (if present) is automatically renamed to `systemData`.
+> key (if present) is automatically renamed to `systemData`. A payload with an unsafe key is
+> rejected with 400, and the rename does not apply under `/api/worlds`, where `system` is the ruleset id.

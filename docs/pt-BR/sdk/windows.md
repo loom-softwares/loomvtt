@@ -17,7 +17,13 @@ windowManager.get(id: string): WindowLike | undefined
 windowManager.rerenderIfOpen(id: string): void
 windowManager.mountExisting(id: string, instance: WindowLike): Promise<void>
 windowManager.closeTopmost(): boolean
+windowManager.getAll(): WindowLike[]
 ```
+
+O export do SDK (`/_loom/sdk/index.js`) expõe só `open`, `focus`, `close` e `closeAll`. Os outros métodos
+acima existem no `windowManager` do core (`client/core/window-manager.ts`).
+
+- `getAll()`: retorna todas as instâncias de janela abertas.
 
 - `get(id)`: retorna a instância da janela aberta, ou `undefined` se não estiver aberta.
 - `rerenderIfOpen(id)`: re-renderiza o body da janela se estiver aberta; no-op caso contrário.
@@ -31,7 +37,9 @@ interface WindowLike {
   setZ(z: number): void;
   mount(): void | Promise<void>;
   destroy(): void | Promise<void>;
+  canClose?(): boolean | Promise<boolean>; // opcional: retorne false pra bloquear o fechamento
 }
+```
 
 ## BaseWindowOptions
 
@@ -48,6 +56,7 @@ interface BaseWindowOptions {
   submitOnChange?: boolean; // Regra 5: auto-save debounce
   showFooter?: boolean; // Se false, oculta o rodapé padrão com botões save/cancel
   anchorTop?: boolean; // Se true, ancora a janela no topo da tela em vez de centralizar
+  classes?: string[] | string; // classes CSS extras na raiz `.loom-window`
   allowOverflow?: boolean; // Se true, não corta conteúdo que vaze pra fora do retângulo da janela (overflow:hidden vira visible)
   overflowMargin?: number; // Só com allowOverflow:true — px de conteúdo pendurado pra fora (ex: aba lateral flutuante). Some da tela sem isso.
 }
@@ -88,9 +97,9 @@ de sistema precisa liberar isso também, escopado pela sua própria classe (pass
 
 ## BaseWindow
 
-Todas as janelas estendem `BaseWindow` (`src/windows/base-window.ts`) ou `LoomDocumentSheet` (`src/windows/document-sheet.ts`).
+Todas as janelas estendem `BaseWindow` (`client/windows/base-window.ts`) ou `LoomDocumentSheet` (`client/windows/document-sheet.ts`).
 
-Janelas com formulário usam `LoomFormData` (`src/core/form-data.ts`) pra serializar os campos do body em objeto tipado, com validação de obrigatórios:
+Janelas com formulário usam `LoomFormData` (`client/core/form-data.ts`) pra serializar os campos do body em objeto tipado, com validação de obrigatórios:
 
 ```typescript
 import { LoomFormData } from '../core/form-data.js';
@@ -103,7 +112,7 @@ const data = fd.toObject();
 ### ApplicationV2 Parity
 
 A `BaseWindow` implementa paridade com a API ApplicationV2:
-- `renderChild(instance)` / `renderChild(id, class, options)`: Renderiza uma sub-janela e a anexa automaticamente no array `this.childIds`. O ciclo de vida da janela-pai fecha as janelas-filhas.
+- `renderChild(ChildClass, id, props)` / `renderChild(instance, options?)`: Renderiza uma sub-janela e a anexa automaticamente no array `this.childIds`. O ciclo de vida da janela-pai fecha as janelas-filhas.
 - `activateListeners(html)`: stub de compatibilidade com o `Application` V1 da plataforma original — chamado a cada `mount()`/`rerenderBody()` com o elemento raiz da janela. Sistemas convertidos de V1 que sobrescrevem esse método continuam funcionando sem adaptação.
 
 ### Classes de compatibilidade no chrome da janela
@@ -117,7 +126,7 @@ O elemento raiz e o header gerados por `mount()` recebem classes extras, além d
 | Título | `loom-window-title` | `window-title` |
 | Botão de controle | `loom-window-control-btn` | `header-control` |
 | Botão de fechar | `loom-window-close` | `header-control` |
-| Alça de resize | (interna) | `window-resize-handle` |
+| Alça de resize | `loom-window-resize-handle` | `window-resize-handle` |
 
 Título e header usam tags reais `<h1>`/`<header>` (antes eram `<div>`) — CSS de sistema convertido que dependa de seletor de tag (`h1 { ... }`) agora casa.
 - Em `LoomDocumentSheet`, está disponível o método `_toggleDisabled(state: boolean)` para ativar ou desativar interações em todo o formulário (ex: durante salvamento assíncrono).
@@ -187,9 +196,9 @@ windowManager.close('my-window');
 
 Se uma janela com o mesmo ID já estiver aberta, `open` foca ela em vez de criar outra.
 
-## Janelas Disponíveis (37)
+## Janelas Disponíveis (52)
 
-ActorSheetWindow, AppConfigWindow, BugReportWindow, CompendiumPackWindow, CompendiumSourceWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalWindow, KeybindConfigWindow, LightConfigWindow, MacroEditorWindow, ModuleManagementWindow, ModuleManifestWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PlaylistConfigWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, WallConfigWindow, WorldConfigLiteWindow
+ActorSheetWindow, AppConfigWindow, BugReportWindow, CloudflaredTunnelWindow, CompendiumPackWindow, CompendiumSourceWindow, CoreLanguageWindow, CreateWorldWindow, DeckSheetWindow, DiscordConfigWindow, DisplayLinksWindow, DrawingConfigWindow, EditWorldWindow, FilePickerWindow, FontSettingsWindow, GameConfigWindow, GameSettingsWindow, InviteLinksWindow, ItemCreateWindow, ItemSheetWindow, JournalEditWindow, JournalFolderHubWindow, JournalPageViewerWindow, JournalWindow, KeybindConfigWindow, LevelConfigWindow, LightConfigWindow, MacroEditorWindow, MediaViewerWindow, ModuleManagementWindow, ModuleManifestWindow, ModuleSettingsWindow, NoiseConfigWindow, NoteConfigWindow, OwnershipConfigWindow, PackageBrowserWindow, PlaylistConfigWindow, PortraitEditorWindow, RollTableResultWindow, RollTableWindow, SaveTileToolWindow, SheetConfigWindow, SoundConfigWindow, StageConfigWindow, TheaterItemWindow, TileConfigWindow, TokenConfigWindow, UserManagementWindow, UserPermissionsWindow, UvttImportWindow, WallConfigWindow, WorldConfigLiteWindow
 
 > `showSelectDialog()`/`showColorDialog()`/`showRangeDialog()` (em `client/components/
 > dialog.ts`) não têm classe própria de janela registrada — são funções de conveniência

@@ -13,7 +13,7 @@ Optional integration for the GM to create campaign voice rooms straight from Loo
 
 ### GET `/config`
 
-Current Discord config (without the token).
+Current Discord config (without the token). Without a saved config it returns `{ configured: false, guildId: null, categoryId: null }`.
 
 **Response `200`:** `{ configured: boolean, guildId: string | null, categoryId: string | null }`
 
@@ -21,14 +21,17 @@ Current Discord config (without the token).
 
 ### PUT `/config`
 
-Saves or updates the world's Discord config (1 config per world — `worldId` is unique). On update, `botToken` is optional (omitting it keeps the saved token); `guildId` is always required.
+Saves or updates the world's Discord config (1 config per world — `worldId` is unique). `botToken` and `guildId` are both required on every call, including updates; the update branch has a branch for an optional token that is never reached (see CODE ISSUE below). `categoryId` is optional; an empty value stores `null`.
 
-**Request body:** `{ "botToken": string (required on creation), "guildId": string (required), "categoryId"?: string | null }`
+**Request body:** `{ "botToken": string (required), "guildId": string (required), "categoryId"?: string | null }`
 
-**Response `200`/`201`:** `{ configured: true, guildId, categoryId }`
+**Response `201`** when the config is created, **`200`** when it is updated: `{ configured: true, guildId, categoryId }`
 
 **Errors:**
 - `400` — `botToken`/`guildId` missing
+- `500` — database error while saving
+
+> CODE ISSUE: `server/applications/api/discord.ts` (`PUT /config`) rejects a missing `botToken` with `400` before reaching the update branch, so the "omit `botToken` to keep the saved token" behavior does not exist. The doc describes the actual behavior until the code is fixed.
 
 ---
 
@@ -45,6 +48,9 @@ Creates a campaign room (**voice** channel, `ChannelType.GuildVoice`, inside `ca
 - `500` — Discord not configured for the world (no `PUT /config` done yet)
 - `500` — Guild not found (wrong `guildId` or bot wasn't invited to the server)
 - `500` — Insufficient permission (bot lacks "Manage Channels" on the guild — Discord code `50013`)
+- `500` — any other Discord failure (`{ "error": "Erro ao criar sala Discord: <message>" }`)
+
+Error messages from this route are in Portuguese (for example `"Discord não configurado para este mundo..."`).
 
 ## Setup (done by the GM, outside LoomVTT)
 

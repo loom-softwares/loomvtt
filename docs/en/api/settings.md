@@ -12,8 +12,9 @@ Hub.
 
 ### GET `/`
 
-Lists every setting as a flat `{ key: value }` map. The `admin_password` key is always
-excluded from the response.
+Lists every setting as a flat `{ key: value }` map. The `admin_password` key is filtered out
+of this list only. The admin password itself is stored in `loom.config.json` by the Setup
+routes, not in this table.
 
 **Response `200`:** `{ [key]: value }`
 
@@ -21,7 +22,8 @@ excluded from the response.
 
 ### GET `/:key`
 
-Fetches a single setting.
+Fetches a single setting. This route does not apply the `admin_password` filter that `GET /`
+uses.
 
 **Response `200`:** `{ key, value }`
 **Response `404`:** `{ "error": "Setting not found" }`

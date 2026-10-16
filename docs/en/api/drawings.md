@@ -73,16 +73,18 @@ schema default of `'Arial'`), `fontSize` (32 — differs from the schema default
 
 **Response `201`:** Created drawing
 **Response `400`:** `{ "error": "..." }` (validation error from the document layer)
+**Response `500`:** `{ "error": "Failed to create drawing.", "details": "<message>" }`
 **WS Event:** `drawing.created`
 
 ---
 
 ### PUT `/:id`
 
-Updates drawing. Partial update — accepts the same field set as `POST` above.
+Updates drawing. Partial update — only the fields sent are changed. Accepts the same fields as `POST` above except `stageId` (a drawing cannot be moved to another stage through this route); `imgUrl` and `authorId` are not accepted.
 
 **Response `200`:** `{ "success": true }`
-**Response `404`:** `{ "error": "..." }`
+**Response `404`:** `{ "error": "..." }` (document layer error, e.g. drawing not found)
+**Response `500`:** `{ "error": "Failed to update drawing." }`
 **WS Event:** `drawing.updated`
 
 ---
@@ -93,7 +95,8 @@ Removes drawing.
 
 **Response `200`:** `{ "success": true }`
 **Response `404`:** `{ "error": "..." }`
-**WS Event:** `drawing.deleted`
+**Response `500`:** `{ "error": "Failed to delete drawing." }`
+**WS Event:** `drawing.deleted` (payload `{ id }`)
 
 ---
 
@@ -102,4 +105,5 @@ Removes drawing.
 Clears all drawings from a stage.
 
 **Response `200`:** `{ "success": true, "count": N }`
-**WS Event:** `drawing.cleared`
+**Response `500`:** `{ "error": "..." }` (document layer error) or `{ "error": "Failed to delete drawings." }`
+**WS Event:** `drawing.cleared` (payload `{ stageId }`; no per-drawing events are sent)

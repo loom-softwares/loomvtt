@@ -14,7 +14,7 @@ No Game HUD do Mestre, clique no ícone de antena de transmissão (<i class="fa-
 
 1. **Mesa Física (TV Deitada / Projetor)**
    - Desativa automaticamente o grid virtual (ideal caso a mesa tenha grid desenhado ou acrílico).
-   - Oculta tokens virtuais dos jogadores para permitir o uso de **miniaturas físicas reais de plástico/metal** sobre a tela.
+   - Oculta todos os tokens virtuais para permitir o uso de **miniaturas físicas reais de plástico/metal** sobre a tela.
    - Suporta **Rotação de 90°, 180° ou 270°** para TVs instaladas em qualquer orientação sem precisar reconfigurar o sistema operacional.
    - Oculta ferramentas e dados do Mestre.
 
@@ -22,7 +22,7 @@ No Game HUD do Mestre, clique no ícone de antena de transmissão (<i class="fa-
    - Visualização limpa do mapa completo com grid e tokens visíveis.
    - Ideal para arrastar para um segundo monitor ou transmitir via Miracast/Chromecast.
 
-3. **OBS Browser Source (Live / Streaming)**
+3. **OBS Overlay (Live / Streaming, usado como Browser Source)**
    - Ativa **Fundo Transparente** (`alpha = 0`) para sobreposição limpa no layout da sua live.
    - Exibe rolagens de dados e mensagens do chat em tempo real sem barras de ferramentas.
 

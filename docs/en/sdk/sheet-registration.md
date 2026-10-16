@@ -2,8 +2,8 @@
 
 Compatibility layer that allows registering actor/item sheets in the catalog using the
 converted systems' registration API. It is a **side-effect module**: just importing it exposes
-the globals `Actors`, `Items`, and `DocumentSheetConfig` on `window` (it doesn't export anything
-to import directly).
+the globals `Actors`, `Items`, and `DocumentSheetConfig` on `window`. The module also has named exports
+of the same objects, but the SDK (`/_loom/sdk/index.js`) does not re-export them, so use the globals.
 
 Source: `client/core/sheet-registration.ts`. Registrations made here end up in the
 same catalog exposed at `Loom.sheets` (see `sheets.md`) — it is not a separate registry.
@@ -19,8 +19,8 @@ same catalog exposed at `Loom.sheets` (see `sheets.md`) — it is not a separate
 ```typescript
 interface RegisterSheetOptions {
   types?: string[];   // document subtypes; empty/absent = ['*']
-  makeDefault?: boolean;
-  label?: string;
+  makeDefault?: boolean; // accepted but ignored (see CODE ISSUE below)
+  label?: string;        // accepted but ignored (see CODE ISSUE below)
 }
 
 Actors.registerSheet(scope: string, SheetClass: any, options?: RegisterSheetOptions): void;
@@ -47,3 +47,9 @@ Items.registerSheet('world', MyItemSheet);
 
 The registered `SheetClass` must follow the sheet contract (`LoomDocumentSheet` with
 `LoomHandlebarsMixin(...)` applied at declaration, see `sheets.md` and `windows.md`).
+
+Only `types` is used. The `scope` argument of all three functions is ignored, and `makeDefault` and
+`label` have no effect. Each `types` entry is registered in the catalog as is.
+
+> **CODE ISSUE:** `client/core/sheet-registration.ts` (`registerInCatalog`) reads only `options.types`. `makeDefault`
+> and `label` are never used, so a sheet registered with `makeDefault: true` does not become the default by that flag.

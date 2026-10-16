@@ -3,15 +3,14 @@
 Configuration object that converted systems populate in their own `init` to
 customize behavior: the **core creates the object before**
 any system loads, the system only writes properties to it. Exposed as
-`window.CONFIG` (loose global, `main.ts:569`) and as `Loom.config`.
+`window.CONFIG` (loose global, `main.ts:557`) and as `Loom.config`.
 
 Source: `client/core/config.ts` (`LOOM_CONFIG`), imported and assigned in
 `client/main.ts` — same pattern as `const.ts`/`CONST_VALUES`.
 
 > **Not every key is "wired" to actual behavior.** Some are just a place
 > to store the value (doesn't break the system's assignment, but nothing in the core reads it
-> later) — it's marked below which is which. See `.planning/config-const-parity-checklist.md`
-> for full tracking, updated as more things are wired.
+> later) — it's marked below which is which.
 
 ## Document types
 
@@ -60,7 +59,7 @@ in the core; the rest just store the value (no `Live*` class yet to call).
 | `Region`/`RegionBehavior` (origin concept)                                                                                                          | not a gap, doesn't have its own key — covered by `Tile` (`TileTrigger`/`TileAction`: teleport, visibility toggle, play sound, dialog, etc.)                                                                                                                                                                                                                      |
 | `Card`, `Deck`                                                                                                                                         | ✅ calls `prepareDerivedData()` per deck/card when loading "Decks" (`sidebar.ts:loadDecks()`, route `/api/decks`)                                                                                                                                                                                                                                                        |
 | `FogReveal`                                                                                                                                              | ✅ calls `prepareDerivedData()` on the result of `loadFogReveals()` (`canvas-manager.ts`, route `/api/fog-reveals`, by stage+user). Separate bug fixed in the same session: fog exploration wasn't running in a scene with `darknessLevel=0` (new scene default) — `fovEnabled` incorrectly depended on darkness>0, not just on `tokenVision` (`fog-layer.ts`) |
-| `Adventure`                                                                                                                                              | ⚠️ entire feature doesn't exist in Loom yet (no API/collection) — it's a full adventure compendium, future open decision                                                                                                                                                                                                                                          |
+| `Adventure`                                                                                                                                              | ⚠️ no document type in Loom: the adventure concept is a Compendium entry of type `Adventure` (`POST /api/compendium/:id/adventure-entry`, `server/applications/api/compendium.ts`); this slot only stores the value                                                                                                                                                                                                                                          |
 
 > **Correction (08/21/2026):** `Setting` and `MeasuredTemplate` were removed —
 > checked against the actual list of members of the reference format
@@ -80,9 +79,9 @@ CONFIG.Combat.documentClass = MyCombat;
 
 ## Data/rolling
 
-`CONFIG.Dice.rolls`/`.terms` — actual dice engine is `Loom.dice` (dice-registry);
-these slots exist only so as not to break system assignment, but they don't feed
-the actual engine.
+`CONFIG.Dice.rolls`/`.terms` — actual dice engine is `Loom.dice` (dice-registry).
+`CONFIG.Dice.terms` is read only as a legacy fallback when a die letter is not registered
+through `Loom.dice` (`getSystemDie`, `client/core/dice-term-bridge.ts`). `CONFIG.Dice.rolls` is not read.
 
 ## UI / Sidebar
 
@@ -118,15 +117,15 @@ Shared helper: `client/core/ui-override.ts` (`applyUiOverride(key, element, cont
   current registry list.
 - `CONFIG.specialStatusEffects` — only stores the value, no canvas/vision code
   reads it yet.
-- `CONFIG.time.worldCalendarClass`/`.worldCalendarConfig`/`.formatters` — slot
-  prepared for a customizable calendar engine (years/months/days/seasons,
-  leap year), which **has not been built yet**. `Loom.time.earthCalendar` remains
-  fixed (Gregorian, without these features) until this engine exists.
+- `CONFIG.time.worldCalendarClass`/`.worldCalendarConfig`/`.formatters` — slots the core does **not** read.
+  Calendars are declarative definitions registered with `Loom.time.calendars.register(def)` (see `time.md`).
+  `Loom.time.earthCalendar` remains the older fixed Gregorian helper.
 
 ## Text / i18n
 
-- `CONFIG.TextEditor.enrichers` — **actually works**: `.push(fn)` feeds an
-  array that is actually iterated in enrichHTML.
+- `CONFIG.TextEditor.enrichers` — **not wired**: `.push(fn)` does not reach `enrichHTML`. There is no
+  public registry for custom enrichers on `Loom` (`registerCustomEnricher` in `client/main.ts` is a
+  module-level function, not on `window.Loom`).
 - `CONFIG.i18n` — getter that returns the same `Loom.i18n` instance, does not duplicate.
 - `fontDefinitions`, `defaultFontFamily`, `supportedLanguages`, `compatibility`,
   `debug` — only store a reasonable default value, without an actual consumer yet.
@@ -134,7 +133,7 @@ Shared helper: `client/core/ui-override.ts` (`applyUiOverride(key, element, cont
 ## Miscellaneous (only store value, no consumer in core)
 
 `controlIcons`, `cursors`, `canvasTextStyle`, `weatherEffects`, `soundEffects`,
-`sounds`, `WebRTC`, `MeasuredTemplate`, `Canvas`, `ux`, `queries`, `formulaEditor`.
+`sounds`, `WebRTC`, `Canvas`, `ux`, `queries`, `formulaEditor`.
 
 ## Out of scope (deliberately does not exist)
 

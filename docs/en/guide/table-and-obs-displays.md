@@ -6,7 +6,7 @@ LoomVTT allows you to generate dedicated read-only display links to project maps
 
 ## Opening the Displays Manager
 
-In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa-satellite-dish"></i>) located on the top header or toolbox. The **Displays & Physical Table** window will open.
+In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa-satellite-dish"></i>) located on the top header or toolbox. The **Displays & Table View** window will open.
 
 ---
 
@@ -14,7 +14,7 @@ In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa
 
 1. **Physical Table (Horizontal TV / Projector)**
    - Automatically disables the virtual grid (ideal when using acrylic overlays or pre-printed battle mats).
-   - Hides player virtual tokens to enable using **real physical plastic/metal miniatures** directly on top of the screen.
+   - Hides all virtual tokens to enable using **real physical plastic/metal miniatures** directly on top of the screen.
    - Supports **Canvas Rotation (90°, 180°, or 270°)** to adapt to any physical table orientation without altering your operating system display settings.
    - Completely hides GM tools, hidden layers, and secret notes.
 
@@ -22,7 +22,7 @@ In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa
    - Clean, full-screen map projection with grid and tokens visible.
    - Perfect for secondary monitors, projectors, or wireless casting via Miracast / Chromecast.
 
-3. **OBS Browser Source (Live Streaming)**
+3. **OBS Overlay (Live Streaming, used as a Browser Source)**
    - Enables **Transparent Background** (`alpha = 0`) for seamless overlay integration onto stream layouts.
    - Shows live dice rolls and chat cards in real-time without bulky UI chrome.
 

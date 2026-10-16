@@ -17,15 +17,15 @@ and elevation live in the levels, not on the stage anymore. See [`levels.md`](./
 
 ### GET `/`
 
-Lists all stages.
+Lists all stages, oldest first. Each item is the stage plus `levels` (ordered by `bottomElevation`), `thumbUrl` and `bgUrl` (the same value; the background of the initial level, or of the first level).
 
-**Response `200`:** `StagesDocument[]`
+**Response `200`:** `[{ ...stage, levels, thumbUrl, bgUrl }]`
 
 ---
 
 ### GET `/active`
 
-Returns the active stage with tokens.
+Returns the active stage with tokens, `levels`, `thumbUrl` and `bgUrl`.
 
 **Response `200`:**
 ```json
@@ -35,6 +35,9 @@ Returns the active stage with tokens.
   "isActive": true,
   "gridSize": 50,
   "gridColor": "#ffffff",
+  "levels": [],
+  "thumbUrl": "",
+  "bgUrl": "",
   "tokens": [
     { "id": "member-1", "name": "Aragorn", "x": 500, "y": 300, "colorHex": "#e74c3c", "kind": "adventurer" }
   ]
@@ -47,7 +50,7 @@ Returns the active stage with tokens.
 
 ### GET `/:id`
 
-Fetches stage by ID.
+Fetches stage by ID, with `levels`, `thumbUrl` and `bgUrl` as in `GET /`.
 
 **Response `200`:** Stage object
 **Response `404`:** `{ "error": "Stage not found" }`
@@ -58,7 +61,7 @@ Fetches stage by ID.
 
 Creates a new stage. `requireGM`
 
-Automatically creates the "Ground" level (elevation 0–20) loading the provided background.
+Automatically creates the default level, named `Térreo` (elevation 0–20), loading the provided background.
 
 **Request body:**
 
@@ -83,16 +86,16 @@ Automatically creates the "Ground" level (elevation 0–20) loading the provided
 | `offsetX` | `number` | — |
 | `offsetY` | `number` | — |
 | `ambientPlaylistId` | `string` | `''` (ambient audio playlist ID) |
-| `sceneType` | `string` | `'tactical'` (`'tactical'`, `'map'`, `'theater'`) |
-| `parentStageId` | `string` | `''` (parent stage ID for map clustering) |
-| `folderId` | `string` | `''` |
+| `folderId`, `sceneType`, `parentStageId` | — | Ignored by POST; see the note below the table |
 | `width` | `number` | — |
 | `height` | `number` | — |
 
-**Response `201`:** Created stage, including the created `levels` (`{ ...stage, levels: [level] }`)
+`sceneType`, `parentStageId` and `folderId` are not read by POST; set them with `PUT /:id`. Stages also get schema defaults for fields not listed here (for example `transitionType` = `'fade'`).
+
+**Response `201`:** Created stage, including the created `levels` (`{ ...stage, levels: [level], thumbUrl, bgUrl }`)
 **Response `400`:** `{ "error": "Name is required" }`
 
-**WS Event:** `stages.created` (+ `levels.created` for the default level)
+**WS Events:** `stage.created` (relayed from the `stages.created` Signal) and `level.created` for the default level (relayed from `levels.created`)
 
 ---
 
@@ -102,9 +105,23 @@ Updates stage. `requireGM`
 
 > The background is now configured via `/api/levels` — background fields are no longer accepted here.
 
-**Request body:** Other fields from POST. If `darknessLevel` is included, triggers `stage.darkness` event.
+**Request body:** `name`, `gridSize`, `gridColor`, `navigationName`, `showInNavigation`, `darknessLevel`, `weatherEffect`, `gridDistance`, `gridUnit`, `gridStyle`, `gridOpacity`, `gridType`, `padding`, `offsetX`, `offsetY`, `ambientPlaylistId`, `ambientSoundId`, `ambientStartSoundId`, `width`, `height`, `flags`, `folderId`, `thumbnailUrl`, `transitionType`, `transitionDuration`, `sceneType`, `parentStageId`, `journalId`, `journalPageId`, `tokenVision`, `fogExplorationMode`, `fogExploredColor`, `fogUnexploredColor`, `fogImage`, `globalLight`, `globalLightThreshold`. Only the fields sent are changed. `worldId` is not accepted here.
 
-**WS Events:** `stages.updated`, `stage.darkness` (if darknessLevel changed)
+**Response `200`:** the updated stage with `levels`, `thumbUrl` and `bgUrl`.
+**Response `400`:** `{ "error": "No valid fields provided for update." }` when no accepted field is sent.
+**Response `404`:** `{ "error": "Not found" }` when the stage does not exist.
+
+If `darknessLevel` is included, also triggers `stage.darkness` (`{ stageId, darknessLevel, duration: 1000 }`).
+
+**WS Events:** `stage.updated` (relayed from the `stages.updated` Signal), `stage.darkness` (when `darknessLevel` is included)
+
+---
+
+### PUT `/:id/music`
+
+Changes only the scene music (`ambientPlaylistId`, `ambientSoundId`, `ambientStartSoundId`). Requires the `controlPlaylist` permission (not only GM): a player whose role has it can change what the table listens to. Body fields are optional, but at least one must be sent, otherwise `400`. Returns the updated stage, and clears the music timeline when the music really changed.
+
+**WS Event:** `stage.updated`
 
 ---
 
@@ -113,8 +130,9 @@ Updates stage. `requireGM`
 Removes stage. `requireGM`
 
 **Response `200`:** `{ "success": true, "id": "..." }`
+**Response `404`:** `{ "error": "Stage not found" }`
 
-**WS Event:** `stages.deleted`
+**WS Event:** `stage.deleted` (relayed from the `stages.deleted` Signal)
 
 ---
 
@@ -122,12 +140,23 @@ Removes stage. `requireGM`
 
 Activates a stage (deactivates others). `requireGM`
 
-**Request body:** `{ "worldId": "..." }`
+**Request body:** `{ "worldId": "..." }` (optional; limits which active stages are deactivated to that world)
 
-**Response `200`:** Activated stage
+**Response `200`:** the activated stage (the plain stage object, not the activation payload)
+**Response `404`:** `{ "error": "..." }` when the stage does not exist.
 
-**WS Event:** `stage.activated` — the payload includes `levelId`, `bgUrl` and `backgroundColor`
-from the base level (lowest `bottomElevation`) of the stage.
+Each stage whose `isActive` flag flips also emits `stages.updated` (WS `stage.updated`).
+
+**WS Event:** `stage.activated` — the payload is the activation payload of `GET /:id/activation`. Its `levelId`, `bgUrl` and `backgroundColor` come from the level set in `flags.initialLevel`, or otherwise from the base level (lowest `bottomElevation`).
+
+---
+
+### GET `/:id/activation`
+
+What a client needs to load this stage. Clients use it after a reconnect to catch up with a scene activated while their socket was down. Returns the same payload as the `stage.activated` event: `stageId`, `levels`, `levelId`, `bgUrl`, `backgroundColor`, grid settings, `ambientPlaylistId`, `darknessLevel`, fog/vision/lighting settings and more.
+
+**Response `200`:** activation payload
+**Response `404`:** `{ "error": "Stage not found" }` when the stage does not exist or belongs to another world (admins excepted).
 
 ---
 

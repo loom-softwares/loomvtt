@@ -10,7 +10,8 @@ Ambient lights of a stage.
 | `y` | `number` | `0` | Y Position |
 | `radius` | `number` | `200` | Radius |
 | `color` | `string` | `'#ffdd88'` | Color |
-| `intensity` | `number` | `0.5` | Intensity |
+| `intensity` | `number` | `0.05` | Intensity |
+| `rotation` | `number` | `0` | Rotation |
 | `levelId` | `string` | `''` | Level ID |
 | `allLevels` | `boolean` | `false` | Shared by every floor of the scene (off: the light shines only on its own floor) |
 | `animation` | `string` | `'none'` | Animation |
@@ -42,18 +43,36 @@ Lists lights of a stage.
 
 ### POST `/:stageId/lights`
 
-Creates light.
+Creates light. The `stageId` comes from the URL. Every body field is optional; defaults are the
+schema defaults above, except `intensity` (`0.05`) and `dim`, which defaults to `radius` (`200` when
+neither is given). `allLevels` is stored as `true` only when sent as `true`.
+
+**Request body:** `x`, `y`, `radius`, `color`, `intensity`, `rotation`, `bright`, `dim`, `angle`,
+`walls`, `vision`, `animationSpeed`, `animationIntensity`, `animation`, `isHidden`, `darknessMin`,
+`darknessMax`, `levelId`, `allLevels`.
 
 **Response `201`:** Created light
-**WS Event:** `light.created`
+**Response `400`:** `{ "error": "..." }` (Document error)
+**Response `500`:** `{ "error": "Failed to create light" }`
+**WS Event:** `light.created` (payload: the created row, relayed to all clients)
 
 ---
 
 ### PUT `/:stageId/lights/:id`
 
-Updates light.
+Updates light. Only the fields below are copied; other fields (including `rotation`) are ignored.
+`walls`, `vision`, `isHidden` and `allLevels` are coerced to boolean.
 
-**WS Event:** `light.updated`
+**Request body:** `x`, `y`, `radius`, `color`, `intensity`, `bright`, `dim`, `angle`, `walls`,
+`vision`, `animationSpeed`, `animationIntensity`, `animation`, `isHidden`, `darknessMin`,
+`darknessMax`, `levelId`, `allLevels`.
+
+> **CODE ISSUE:** `rotation` is accepted by POST and stored, but the PUT handler does not copy it,
+> so a light's rotation cannot be changed through this route.
+
+**Response `200`:** Updated light
+**Response `404`:** `{ "error": "..." }` (Document error)
+**WS Event:** `light.updated` (payload: the updated row, relayed to all clients)
 
 ---
 
@@ -62,4 +81,5 @@ Updates light.
 Removes light.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
-**WS Event:** `light.deleted`
+**Response `404`:** `{ "error": "..." }` (Document error)
+**WS Event:** `light.deleted` (payload: `{ "id", "stageId" }`, relayed to all clients)

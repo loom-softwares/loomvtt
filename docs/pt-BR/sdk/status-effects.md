@@ -30,8 +30,10 @@ interface StatusEffectDef {
 
 ## Built-ins
 
-5 condições genéricas já registradas por padrão: `blinded`, `poisoned`, `stunned`,
-`prone`, `invisible`. Um sistema pode sobrescrever qualquer uma delas registrando
+15 condições embutidas são registradas na inicialização (`client/core/status-effect-registry.ts`):
+`blinded`, `poisoned`, `stunned`, `prone`, `invisible`, `restrained`, `frightened`, `grappled`,
+`unconscious`, `burning`, `paralyzed`, `deafened`, `charmed`, `incapacitated`, `dead`. Cada uma tem um
+`label` traduzido e um `icon` do Font Awesome. Um sistema pode sobrescrever qualquer uma delas registrando
 de novo com o mesmo `id`, ou adicionar condições próprias.
 
 ## Exemplo

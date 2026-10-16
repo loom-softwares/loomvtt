@@ -67,6 +67,16 @@ node app/index.js --dataPath="/path/to/folder"   # Windows, from a terminal
 (through `npm start` directly, npm needs an extra `--` to forward the flag:
 `npm start -- --dataPath="/path/to/folder"`)
 
+By default, `loom.config.json` is at `Config/loom.config.json` inside the user data folder. To use a configuration file somewhere else, give its full path when starting:
+
+```powershell
+$env:LOOM_CONFIG = 'D:\LoomVTT\Config\loom.config.json'
+npm run dev # development (source checkout)
+# or npm start for the compiled build
+```
+
+When running the server directly, use `--configPath="D:\LoomVTT\Config\loom.config.json"` instead. The file must exist; if it is missing or invalid, the server stops with an error instead of silently creating another configuration. When the `dataPath` inside that file is set, it points to the LoomVTT root folder (the one that contains `Config/`, `Data/` and `Logs/`), the same as `--dataPath`.
+
 The `start.command` double-click launcher doesn't take arguments that way —
 for a custom data path, run from a terminal instead.
 

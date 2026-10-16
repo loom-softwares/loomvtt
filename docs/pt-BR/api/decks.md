@@ -11,27 +11,30 @@ exigem também `requireGM`.
 
 ### GET `/world/:worldId`
 
-Lista baralhos de um mundo.
+Lista baralhos de um mundo, do mais antigo para o mais novo (`createdAt` asc).
 
 ---
 
 ### GET `/:id`
 
-Busca baralho por ID.
+Busca baralho por ID. `404` se não existir.
 
 ---
 
 ### POST `/`
 
-Cria baralho.
+Cria baralho. O id é gerado pelo servidor (`deck-<uuid>`). Responde `201` com o baralho criado. `400` se `worldId` ou `name` faltar.
 
 | Campo | Tipo | Obrigatório | Default |
 |-------|------|-------------|---------|
 | `worldId` | `string` | **sim** | — |
 | `name` | `string` | **sim** | — |
-| `type` | `string` | não | — |
-| `cards` | `array` | não | — |
-| `state` | `object` | não | — |
+| `type` | `string` | não | `'standard'` |
+| `stackType` | `string` | não | `'deck'` |
+| `ownerId` | `string` | não | `''` |
+| `folderId` | `string` | não | `''` |
+| `cards` | `array` | não | `[]` |
+| `state` | `object` | não | `{}` |
 
 **Evento WS:** `deck.created`
 
@@ -39,7 +42,7 @@ Cria baralho.
 
 ### PUT `/:id`
 
-Atualiza baralho.
+Atualiza baralho. Aceita `name`, `type`, `cards`, `state`, `folderId`, `stackType`, `ownerId` (só os campos enviados são alterados). `404` se o baralho não existir.
 
 **Evento WS:** `deck.updated`
 
@@ -47,9 +50,9 @@ Atualiza baralho.
 
 ### DELETE `/:id`
 
-Remove baralho.
+Remove baralho. Responde `{ "success": true }`.
 
-**Evento WS:** `decks.deleted` (nota: plural, diferente de `deck.created`/`deck.updated`)
+**Evento WS:** `deck.deleted` (sinal interno `decks.deleted`, repassado aos clientes com o nome `deck.deleted`; payload `{ id, worldId, stageId }`)
 
 ---
 
@@ -65,6 +68,7 @@ Puxa carta(s) do topo de `:id` pra outra stack (hand/pile).
 
 **Response `200`:** `{ moved: Card[], from: Deck, to: Deck }`
 **Response `400`:** `toId` ausente, ou nada pra puxar
+**Response `404`:** baralho de origem ou destino não encontrado
 **Eventos WS:** `deck.updated` (duas vezes — origem e destino)
 
 ---

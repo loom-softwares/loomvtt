@@ -66,7 +66,7 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `title`        | `string`       | Display name                          |
 | `version`      | `string`       | Semver                                      |
 | `engine`       | `"loom"`       | **Required**. Defines that the package is for LoomVTT |
-| `type`         | `"addon"`      | **Required**. Defines that it is an addon      |
+| `type`         | `"addon"`      | Optional. If present, must match the type chosen at install (`addon`) |
 | `engineVersion`| `string`       | Required version range — min and/or max, e.g. `>=0.1.0`, `<2.0.0`, or `>=1.0.0 <2.0.0` |
 | `author`       | `string`       | Author name                              |
 | `repository`   | `string`       | Repository/source code URL            |
@@ -75,16 +75,17 @@ Addons are packages that extend LoomVTT with additional functionality.
 | `download`     | `string`       | `.zip` URL for download during installation |
 | `backgroundUrl`| `string`       | URL for background image in the Setup Hub      |
 | `coverUrl`     | `string`       | URL for cover image (if applicable)      |
-| `active`       | `boolean`      | Whether globally disabled (default: true)   |
-| `core`         | `string`       | Server-side entry point (`.js/.ts`)       |
-| `client`       | `string`       | Client-side entry point (`.js`)           |
-| `mount`        | `string`       | DOM element ID to mount UI           |
+| `active`       | `boolean`      | Whether globally disabled (default: true). The client also needs the addon enabled for the current world. |
+| `core`         | `string`       | Server-side entry point (`.js`)       |
+| `client`       | `string`       | Client-side entry point (`.js`). Without it the addon is not loaded in the browser. |
+| `mount`        | `string`       | DOM element ID to mount UI. Declared only: the engine does not read this field. |
 | `styles`       | `string[]`     | Array of paths for CSS files          |
+| `scripts`      | `string[]`     | Classic `<script>` files injected before `client.js`, in declared order (for example vendored libraries) |
 | `languages`    | `Array`        | Array of language definitions (`lang`, `name`, `path`) |
-| `signals`      | `string[]`     | Signal names that this addon listens to      |
+| `signals`      | `string[]`     | Signal names that this addon listens to. Declared only: the engine does not read this field. |
 | `dependencies` | `string[]`     | Addons/systems that must be active      |
 | `conflicts`    | `string[]`     | Addons/systems that MUST NOT be active |
-| `systems`      | `string[]`     | Restricts the addon to worlds whose `world.system` is in this list. Omitted/empty = compatible with any system. |
+| `systems`      | `string[]`     | Restricts which of the addon's compendium packs are listed in worlds whose `world.system` is not in this list. Omitted/empty = no restriction. The addon's code still loads in any world. |
 | `requiresApiKey` | `boolean`   | Only relevant with a `remote`-type `compendiums` entry. `true` requires a redeemed license per installation (`/api/marketplace/redeem`) before any request to that source — see [Remote compendium sources: security model](system-creation.md#remote-compendium-sources-security-model). |
 | `compendiums`  | `(string \| RemoteCompendiumSource)[]` | This addon's compendium sources, read live (never copied into the world's database) — same shape as [System Creation](system-creation.md#manifest-rulesetjson). |
 | `settings`     | `SettingDef[]` | Addon settings                    |
@@ -101,7 +102,7 @@ The `client.js` is loaded via dynamic `import()` in the browser. Use the LoomVTT
 
 ```javascript
 // client.js
-import { LoomHooks, api, sheets, showToast, showConfirm, windowManager, wrap } from '/_loom/sdk/index.js';
+import { LoomHooks, api, sheets, showToast, showConfirm, windowManager, getWraps } from '/_loom/sdk/index.js';
 
 console.log('My addon loaded!');
 
@@ -116,8 +117,9 @@ class MySheet extends sheets.get('actor', '*') {
 }
 sheets.catalog('actor', 'my-type', MySheet);
 
-// Function wrapper
-const unsub = wrap(resolveFOVOrigins).wrap((original, cast) => {
+// Wrap a core wrap point. The getter throws while no stage canvas is active,
+// so run this after a stage is open, not at import time.
+const unsub = getWraps().resolveFOVOrigins.wrap((original, cast) => {
   console.log('Calculating FOV for', cast.id);
   return original(cast);
 });
@@ -132,7 +134,7 @@ await windowManager.open('my-window', MyWindow);
 
 // Notifications
 showToast('Addon activated!', 'success');
-showConfirm('Are you sure?').then(ok => {});
+showConfirm('Confirm', 'Are you sure?').then(ok => {});
 ```
 
 ## Server-side
@@ -142,7 +144,7 @@ the same Node process as the rest of the app — full access to the database
 and every internal module, no sandbox. Two extension points:
 
 **Your own database table.** LoomVTT is relational end to end (knex, over
-SQLite or Postgres) — there's no NoSQL client wired in to reach for. `db` is
+SQLite, MySQL or Postgres) — there's no NoSQL client wired in to reach for. `db` is
 a knex instance pointed at whichever world is currently active:
 
 ```javascript
@@ -197,13 +199,19 @@ Signal.listen('cast.created', (data) => {
 browser by itself; it's for reacting to something else on the server, not
 for talking to the client (see the [full example addon](https://github.com/sammore2/loom-exemple-addon) for all three together).
 
+**Import paths in these examples.** The `../../../server/...` paths resolve
+only when the data root is the project root (the standalone development
+layout). With the default data root, an installed addon cannot reach the
+server modules this way, and the engine offers no other public import path
+for them.
+
 ## Lifecycle
 
-1. Server boot → `loadAllAddons()` scans `marketplace/addons/**/addon.json`
+1. Server boot → `loadAllAddons()` reads `marketplace/addons/<dir>/addon.json` (direct subfolders only)
 2. Validates dependencies and conflicts
-3. Imports `core.js` via dynamic `import()`
-4. Client connect → `GET /marketplace/packages` → imports `client.js`
-5. Active addon receives Signals/LoomHooks in real time
+3. Imports `core.js` via dynamic `import()` for every installed addon that is not `active: false`. The per-world toggle does not stop it.
+4. Client connect → `GET /api/marketplace/packages?worldId=…` → imports `client.js` of each addon enabled for that world that declares `client`
+5. Client code listens to LoomHooks; server code listens to Signals
 
 ## Installation
 
@@ -212,8 +220,11 @@ Via Setup Hub > Addons or API:
 ```bash
 curl -X POST http://localhost:3000/api/marketplace/install \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://raw.githubusercontent.com/user/repo/main/addon.json", "type": "addon"}'
+  -d '{"manifestUrl": "https://raw.githubusercontent.com/user/repo/main/addon.json", "type": "addon"}'
 ```
+
+The route requires an admin session (`requireAdminSession`), so a request
+without one is rejected.
 
 ## Available APIs
 

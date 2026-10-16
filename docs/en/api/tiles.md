@@ -24,6 +24,7 @@ JSON fields (`floors`, `triggers`, `conditions`, `actions`, `occlusion`) are par
 Fetches tile by ID.
 
 **Response `200`:** Tile (parsed)
+**Response `404`:** `{ "error": "Tile not found" }`
 
 ---
 
@@ -44,30 +45,39 @@ Creates a tile.
 | `imgUrl` | `string` | no | `''` |
 | `isActive` | `boolean` | no | `true` |
 | `rotation` | `number` | no | `0` |
-| `tintColor` | `string` | no | `''` |
+| `tintColor` | `string` | no | `'#ffffff'` |
 | `opacity` | `number` | no | `1` |
 | `locked` | `boolean` | no | `false` |
 | `videoLoop` | `boolean` | no | `true` |
 | `videoAutoplay` | `boolean` | no | `true` |
-| `videoVolume` | `number` | no | `1` |
+| `videoVolume` | `number` | no | `0` |
 | `anchorX` | `number` | no | `0.5` |
 | `anchorY` | `number` | no | `0.5` |
+| `elevation` | `number` | no | `0` |
+| `levelId` | `string` | no | `''` |
 | `floors` | `array` | no | `[]` |
 | `triggers` | `array` | no | `[]` |
 | `conditions` | `array` | no | `[]` |
 | `actions` | `array` | no | `[]` |
 
+`name` is trimmed. The JSON fields (`floors`, `triggers`, `conditions`, `actions`) are accepted as arrays or as JSON strings. POST does not read `hidden`, `isOverhead`, `isRoof` or `occlusion`; set them with PUT.
+
 **Response `201`:** Tile created
-**WS Event:** `tiles.created`
+**Response `400`:** `{ "error": "Fields \"stageId\" and \"name\" are required." }` (or the document-layer error)
+**Response `500`:** `{ "error": "Failed to create tile" }`
+**WS Event:** `tile.created` (wire name; relayed to the clients of the stage only)
 
 ---
 
 ### PUT `/:id`
 
-Updates tile.
+Updates a tile. Partial update: only the fields sent are changed. Accepts the POST fields (except `stageId`) plus `hidden`, `isOverhead`, `isRoof` and `occlusion` (`{ mode, radius, alpha }`, default `{ "mode": "fade", "radius": 100, "alpha": 0 }`). `name` is trimmed.
 
 **Response `200`:** Tile updated
-**WS Event:** `tiles.updated`
+**Response `400`:** `{ "error": "..." }` (document-layer error)
+**Response `404`:** `{ "error": "Tile not found" }`
+**Response `500`:** `{ "error": "Failed to update tile" }`
+**WS Event:** `tile.updated` (wire name; relayed to the clients of the stage only)
 
 ---
 
@@ -76,7 +86,10 @@ Updates tile.
 Removes tile.
 
 **Response `200`:** `{ "success": true, "id": "..." }`
-**WS Event:** `tiles.deleted`
+**Response `400`:** `{ "error": "..." }` (document-layer error)
+**Response `404`:** `{ "error": "Tile not found" }`
+**Response `500`:** `{ "error": "Failed to delete tile" }`
+**WS Event:** `tile.deleted` (wire name; relayed to the clients of the stage only)
 
 ---
 
@@ -91,24 +104,32 @@ Trigger engine executed on the client (`client/canvas/tile-trigger-engine.ts` + 
 | `token-enter` | Token enters the tile area |
 | `token-exit` | Token exits the tile area |
 | `token-move-inside` | Token moves inside the area |
-| `click` | Click on the tile (GM) |
+| `click` | Click on the tile (fired from the canvas tile click handler) |
 
 ### Conditions
 
 | Condition | Parameters | Description |
 |----------|------------|-----------|
-| `user-role-gte` | `role: 4` | Only triggers if the user's role is >= the value |
+| `user-role-gte` | `value: <role>` | Only triggers if the user's role is >= the value (GM always passes) |
+| `flag-equals` | `value: { flag, expectedValue }` | Only triggers if the token's field `flag` equals `expectedValue` |
 
 ### Actions
 
-| Action | Parameters | Description |
+The config fields below are the ones the engine reads (`client/canvas/tile-trigger-engine.ts`). The local-effect actions (the ones the engine broadcasts) accept an optional `recipient` (`trigger`, `gm`, `all`, `trigger+gm`) that limits who runs them.
+
+| Action | Config fields | Description |
 |------|------------|-----------|
-| `teleport` | `{ stageId, x, y }` | Teleports token to absolute coordinate |
-| `toggle-visibility` | `{}` | Toggles tile visibility |
-| `play-sound` | `{ src, volume }` | Plays sound |
-| `show-dialog` | `{ title, message, image? }` | Shows dialog |
-| `pause-game` | `{}` | Pauses the game |
-| `toggle-lock` | `{}` | Toggles tile lock |
+| `teleport` | `targetX`, `targetY`, `targetTokenId?`, `stageId?` | Moves the token to a coordinate; with `stageId`, moves it to another stage |
+| `toggle-visibility` | `targetTokenId?`, `visible?` | Hides or shows a token (`visible` absent = toggle) |
+| `play-sound` | `soundUrl`, `volume` | Plays a sound |
+| `show-dialog` | `journalId?`, `pageId?`, `title?`, `content?`, `imageUrl?` | Shows a dialog |
+| `pause-game` | `duration?` | Pauses the game |
+| `toggle-lock` | `targetTileId?`, `locked?` | Locks or unlocks a tile |
+| `activate-tile` | `targetTileId?`, `active?` | Activates or deactivates another tile (`PUT /api/tiles/:id` with `isActive`) |
+| `show-notification` | `message`, `type?`, `duration?` | Shows a notification |
+| `chat-message` | `content`, `speaker?` | Posts a chat message |
+| `run-animation` | `payload` | Runs a visual animation |
+| `floating-text` | `text`, `color?` | Shows floating text over the tile |
 
 ### UI Configuration
 

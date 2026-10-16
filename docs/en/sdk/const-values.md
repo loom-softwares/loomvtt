@@ -7,7 +7,7 @@ under `Loom.CONST` as a convenience, but the form converted systems use is loose
 
 Source: `client/core/const.ts`, single export `CONST_VALUES`.
 
-> **Broad coverage purpose (08/26/2026):** ~90 constant groups, not just
+> **Broad coverage purpose (08/26/2026):** 105 constant groups, not just
 > what has already appeared in a known system — the list of names follows the
 > public reference format that converted systems expect. Values checked against
 > public doc in the most used/risky groups (see list below); the rest

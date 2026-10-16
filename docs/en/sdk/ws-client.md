@@ -28,10 +28,11 @@ await wsClient.connect();
 ```
 
 Connects Socket.IO to the same origin, path `/ws` (both `websocket` and `polling` transports
-enabled — Socket.IO negotiates, it isn't a raw WS upgrade). Auto-reconnection is handled by
-Socket.IO itself: up to 5 attempts with exponential backoff (1s, 2s, 4s, 8s, capped at 16s).
-A server-initiated disconnect (`reason === 'io server disconnect'`) does **not** trigger
-reconnection.
+enabled — Socket.IO negotiates, it isn't a raw WS upgrade). Socket.IO reconnects on its own in
+the same socket with no attempt limit (`reconnectionAttempts: Infinity`, delay from 1s up to 16s).
+A server-initiated disconnect (`reason === 'io server disconnect'`) is the exception: Socket.IO
+does not reconnect by itself there, so the client calls `connect()` again manually, with delays of
+1s, 2s, 4s, 8s and then 16s for every further attempt.
 
 ## Sending events
 
@@ -42,6 +43,9 @@ wsClient.send('chat.message', { content: 'Hello!' });
 `send()` does not emit the event name directly on the socket — it wraps everything into a
 single Socket.IO event named `'message'`: `socket.emit('message', { type, data })`. The
 server's `message` handler unwraps `type`/`data` and dispatches internally.
+
+While the socket is not connected, `send()` queues the message (up to 50; the oldest is dropped
+when full). A queued `token.move`/`moveMember` for the same token replaces the previous one.
 
 ## Receiving events
 

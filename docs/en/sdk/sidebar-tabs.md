@@ -31,8 +31,8 @@ interface SidebarEntryContextOption {
 }
 ```
 
-`render()` calls `_onRender(context, options)`, then connects every `[data-action]`
-element inside `this.element` to the corresponding handler in
+`render()` calls `_onRender(context, options)`, then installs one delegated `click` listener
+on `this.element` that dispatches each `[data-action]` click to the matching handler in
 `static DEFAULT_OPTIONS.actions`, and finally attaches a `contextmenu` on every
 `[data-entry-id]` using what `_getEntryContextOptions()` returns (using the
 core's existing `showContextMenu` component).

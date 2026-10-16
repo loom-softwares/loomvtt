@@ -3,9 +3,9 @@
 Funções utilitárias críticas para sistemas convertidos: debounce/throttle, merge recursivo,
 clonagem profunda e acesso a propriedades aninhadas.
 
-Fonte: `client/core/utils.ts`. Exposto em runtime como `Loom.utils` (todas as
-funções), como `Loom.debounce`/`Loom.throttle` (atalhos top-level) e pelo alias global
-`vtt.utils` (ver `globals.md`).
+Fonte: `client/core/utils.ts` (`mediaHtml` e `isVideoUrl` vêm de `client/core/media-helper.ts`).
+Exposto em runtime como `Loom.utils` (todas as funções, incluindo `debounce`/`throttle`) e pelo alias
+global `vtt.utils` (ver `globals.md`). Não existem `Loom.debounce`/`Loom.throttle` top-level.
 
 ## Exports
 
@@ -18,6 +18,9 @@ funções), como `Loom.debounce`/`Loom.throttle` (atalhos top-level) e pelo alia
 | `deepClone` | `(obj): cloned` | Alias de `duplicate` |
 | `getProperty` | `(obj, path): value?` | Lê propriedade aninhada por notação de ponto (`'a.b.c'`) |
 | `setProperty` | `(obj, path, value): void` | Define propriedade aninhada, criando objetos intermediários |
+| `hasProperty` | `(obj, path): boolean` | `true` se todos os segmentos do caminho com notação de ponto existem no objeto |
+| `performIntegerSort` | `(source[], { target?, key?, sortBy? }): updates[]` | Calcula as atualizações de ordenação (`{ target, update }`) de uma lista, o contrato que os sistemas convertidos esperam |
+| `debouncedReload` | `(...args): void` | Recarrega a página uma vez, juntando chamadas repetidas no mesmo tick (100 ms) |
 | `isEmpty` | `(value): boolean` | `true` se `value` for `null`/`undefined`/array vazio/objeto vazio/Map ou Set vazios |
 | `randomID` | `(length = 16): string` | Gera ID alfanumérico aleatório |
 | `flattenObject` | `(obj): flat` | Achata objeto aninhado em chaves de ponto (`{a:{b:1}}` → `{"a.b":1}`) — arrays não são achatados |
@@ -50,8 +53,7 @@ const save = debounce(() => submitForm(), 300);
 > **Limitação do `duplicate`/`deepClone`:** usa `JSON.parse(JSON.stringify())` — funções,
 > `Map`, `Set` e valores não serializáveis não são clonados (fica `undefined`/perdido).
 
-> **Nota:** `expandObject` também roda automaticamente como middleware server-side
-> (`server/index.ts`) em toda request — qualquer payload de update mandado em
+> **Nota:** o `expandObject` do servidor (`server/applications/utils/helpers.ts`) também roda automaticamente como middleware em toda request (`server/index.ts`) — qualquer payload de update mandado em
 > notação de ponto (`{"system.attributes.hp": 5}`, formato comum em scripts
 > convertidos) é expandido antes de chegar no handler da rota, e a chave
-> `system` (se presente) é renomeada pra `systemData` automaticamente.
+> `system` (se presente) é renomeada pra `systemData` automaticamente. Payload com chave insegura recebe 400, e a renomeação não se aplica em `/api/worlds`, onde `system` é o id do ruleset.

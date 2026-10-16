@@ -62,7 +62,7 @@ Permite que o Mestre e os jogadores façam anotações e ilustrações visuais n
 ![Modelos de Área](/assets/screenshots/gridtool/gridtool-templates-select.png)
 
 Ideal para magias de área de efeito (AoE), explosões e baforadas de dragão:
-* **Tipos Disponíveis:** Cones, Esferas/Círculos, Linhas/Raios e Cubos/Retângulos.
+* **Tipos Disponíveis:** Cones, Esferas/Círculos, Linhas/Raios e Retângulos.
 * **Destaque de Alvos:** Todos os tokens tocados pelo modelo de área são destacados visualmente para agilizar testes de resistência.
 * Clique no modelo para selecioná-lo e pressione `Delete` para removê-lo quando o efeito terminar.
 
@@ -72,9 +72,9 @@ Ideal para magias de área de efeito (AoE), explosões e baforadas de dragão:
 
 ![Armadilhas no Mapa](/assets/screenshots/gridtool/gridtool-traps-place.png)
 
-O Loom VTT possui um sistema nativo de armadilhas interativas:
-* **Criação Rápida:** Clique e arraste para desenhar a área da armadilha no piso.
-* **Disparo Automático:** Quando um token pisa sobre a célula do gatilho, a armadilha é disparada instantaneamente e se desativa.
+O Loom VTT possui um sistema nativo de armadilhas interativas. As armadilhas são colocadas com a ferramenta **Interações**, na opção **Armadilha**:
+* **Criação Rápida:** Arraste sobre o mapa para criar a área da armadilha.
+* **Disparo Automático:** Quando um token pisa na armadilha, ela dispara uma única vez e depois se desativa.
 * Perfeito para alçapões, dardos envenenados, runas arcanas e armadilhas táticas de masmorras.
 
 ---

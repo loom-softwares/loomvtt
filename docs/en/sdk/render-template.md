@@ -30,13 +30,18 @@ Legacy convention path is automatically translated to the real served path:
 | `modules/<id>/...` | `/marketplace/addons/<id>/...` |
 
 Templates are plain `.hbs` files served natively — no extension rewrite. If the resolved
-path is wrong, the fetch hits the dev server's `index.html` (200 OK) — Handlebars compiles
-any HTML and the template comes out garbage.
+path is wrong, the server may answer with HTML (for example the dev server's `index.html`, 200 OK).
+`renderTemplate` detects an HTML content type and rejects with an error instead of compiling it.
+A non-2xx response also rejects.
 
 ## Cache
 
-Compiled templates and fonts are cached by resolved path. After editing an addon in
-dev, call `clearTemplateCache(path)` (or without arguments to clear everything) to see changes.
+Templates are cached in memory by resolved path (the compiled template and its source). Failed
+fetches are not cached. After editing an addon in dev, reload the page to see the changes:
+`clearTemplateCache` is not exposed on `window.Loom` (see the CODE ISSUE note below).
+
+> **CODE ISSUE:** `clearTemplateCache(path?)` is exported from `client/core/render-template.ts`, but
+> `window.Loom` (`client/main.ts`) only exposes `renderTemplate` and `loadTemplates`, so addons cannot call it.
 
 ## Handlebars helpers
 

@@ -95,16 +95,15 @@ appears immediately instead of turning into a missing icon on screen.
 The generated CSS is versioned, so **the client bundle doesn't load either
 library** — the cost in production is just the mask file.
 
-## Emoji
+## Status markers and emoji
 
-Some parts of the interface use emojis on purpose, and are not candidates for
-conversion: token status conditions (poisoned, burning, stunned)
-appear tiny and overlaid on the token, several at once, and the emoji's own color
-is what makes them distinguishable over a colorful map. A 16px monochromatic icon
-would be harder to read exactly where it matters most.
+Token status markers are not emoji. Each status effect is drawn on the canvas as a
+colored disc with the icon from its definition (`icon: 'fa-solid fa-skull-crossbones'`
+for `poisoned`, `fa-fire` for `burning`, `fa-star` for `stunned`), so they go through the same
+mapping above. The disc uses the first letter of the label when the icon is missing.
 
-The same goes for card suits (`♥ ♠ ♦ ♣`) and markers where color
-carries the meaning.
+Some parts of the interface still use text or emoji on purpose, and are not candidates for
+conversion: card suits (`♥ ♠ ♦ ♣`) and markers where color carries the meaning.
 
 ## See also
 

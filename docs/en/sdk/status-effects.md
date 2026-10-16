@@ -29,9 +29,11 @@ interface StatusEffectDef {
 
 ## Built-ins
 
-5 generic conditions already registered by default: `blinded`, `poisoned`, `stunned`,
-`prone`, `invisible`. A system can overwrite any of them by registering again
-with the same `id`, or add custom conditions.
+15 built-in conditions are registered at startup (`client/core/status-effect-registry.ts`):
+`blinded`, `poisoned`, `stunned`, `prone`, `invisible`, `restrained`, `frightened`, `grappled`,
+`unconscious`, `burning`, `paralyzed`, `deafened`, `charmed`, `incapacitated`, `dead`. Each has a
+translated `label` and a Font Awesome `icon`. A system can overwrite any of them by registering
+again with the same `id`, or add custom conditions.
 
 ## Example
 

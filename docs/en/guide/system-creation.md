@@ -28,8 +28,8 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
 > **Template extension is `.hbs`.** The render engine (`renderTemplate()`) does no extension
 > rewriting — the file on disk must match exactly the path declared in `template:` (or `PARTS`).
 > A mismatched path hits the dev server's SPA HTML fallback instead of the real template, and the
-> render fails with `"[renderTemplate] ... returned HTML (likely dev server fallback, not the
-> actual template)"`.
+> render fails with `"[renderTemplate] "<path>" returned HTML (likely dev-server fallback, not the
+> real template)"`.
 
 ## Manifest (`ruleset.json`)
 
@@ -111,7 +111,7 @@ Systems (rulesets) define the game rules: actor/item types, default data, valida
   so the type validation in `POST/PUT /api/items` only sees what is here, in this
   static JSON. Types outside the native list (`weapon, spell, armor, equipment, consumable,
   tool, treasure, other`) and outside this array are silently downgraded to `equipment`.
-- `compendiums`: Optional array of compendium sources, read live and browse-only — **never** copied into a world's database on activation. Each GM decides, per entry, whether to materialize it into their own world (drag-and-drop, or the "save to my compendium" action), which writes exactly that one entry, never the whole pack. Two kinds of entry:
+- `compendiums`: Optional array of compendium sources, read live and browse-only — **never** copied into a world's database on activation. Each GM decides, per entry, whether to materialize it into their own world (by dragging the entry onto a document's sheet), which writes exactly that one entry, never the whole pack. Two kinds of entry:
   - **Local** — a plain string, the path (relative to the addon/ruleset folder) to a `.sqlite` file with a `pack_meta` table (1 row: `name`, `type`) and an `entries` table (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Build one with `scripts/build-compendium-pack.mjs`.
   - **Remote** — an object `{ "type": "remote", "apiUrl": "..." }`, for content hosted by a third party (e.g. a paid addon a publisher maintains on their own database). `apiUrl` must be an `https://` endpoint (`http://` is rejected outright) speaking a **small contract of our own, database-agnostic** — not PostgREST — with just three routes: `GET {apiUrl}/meta` → `{ name, type }`, `GET {apiUrl}/entries` (accepts `?search=`/`?includeData=`) → an entries array, and `GET {apiUrl}/entries/:id` → one entry. Any backend works as long as it answers those routes: Supabase/Postgres behind a thin Edge Function, a plain Express server over MySQL, whatever — the core never talks to the publisher's database directly. If the content is paid, add `"requiresApiKey": true` to the manifest (outside the `compendiums` array) — see [Remote compendium sources: security model](#remote-compendium-sources-security-model) below before shipping one of these.
 - `languages`: Optional array with system language packs. The VTT loads the JSON and performs automatic registration (using *deep merge*) to populate the `Loom.i18n` object.
@@ -142,15 +142,15 @@ edit addon → Compatibility tab → License), and it applies to every world on 
   `requiresApiKey` addon's `apiUrl`; an addon without that flag sends the request with no
   `Authorization` at all — whoever hosts it decides whether that's enough or whether they
   want their own auth on top.
-- **`http://` is refused.** `assertSecureApiUrl()` in `compendium-source.ts` rejects any
+- **`http://` is refused.** `assertPublicHttpsUrl()` (`server/applications/utils/ssrf-safe-fetch.ts`, called by `compendium-source.ts`) rejects any
   `apiUrl` that isn't `https://`, so the key can't be sniffed in transit.
-- **Browsing a remote source requires `compendiumEdit` (GM), not just being logged in.**
-  The `/api/compendium/sources*` routes enforce this — otherwise any player account on
-  the world could loop the endpoint and have the server proxy the entire paid pack on
-  their behalf, not just what the GM licensed. (The `/api/compendium/browse/*` routes,
-  used by player-facing pickers like the character wizard, are open to any authenticated
-  user, but only ever return what's already enabled for that player's world via
-  `world_packages`/`world.system` — never the server's whole catalog.)
+- **Listing and browsing a remote source is open to the world's players; writing is not.**
+  `GET /api/compendium/sources*` is read-only and available to every player of the world,
+  scoped to what the world's system and enabled packages allow (`getWorldCompendiumScope`).
+  A `requiresApiKey` source is only listed once a key has been licensed on the server.
+  The `/api/compendium/browse/*` routes, used by player-facing pickers like the character
+  wizard, follow the same scope. Import, lock, folder and entry writes require
+  `compendiumEdit` (GM by default).
 - **Remote-sourced content is escaped before rendering.** `name`, `imgUrl`, etc. come back
   as untrusted third-party data and are HTML-escaped (see `escapeHtml`/`safeImgUrl` in
   `client/windows/compendium-source-window.ts` and `sidebar.ts`) before going into any

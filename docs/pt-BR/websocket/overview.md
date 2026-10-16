@@ -10,10 +10,14 @@ habilitados — o Socket.IO negocia o transporte sozinho, isso não é um `Upgra
 
 **Auth:** dois middlewares `io.use()` rodam antes do `connection` disparar:
 1. Checagem de licença.
-2. JWT extraído do cookie `loom_world_token` (`socket.handshake.headers.cookie`) e
-   verificado. Se ausente/inválido, o middleware chama `next(new Error(...))` — o Socket.IO
-   transforma isso num evento `connect_error` no cliente (não existe uma resposta HTTP 401
-   literal, já que o handshake pode terminar via polling antes de fazer upgrade).
+2. JWT extraído do cookie `loom_world_token` (`socket.handshake.headers.cookie`, ou
+   `handshake.auth.token` como alternativa) e verificado. Pra sessão de jogador, o middleware
+   também confere se a conta não está banida e se o `sessionVersion` ainda bate com o do token.
+   Falhas chamam `next(new Error(...))` — o Socket.IO transforma isso num evento `connect_error`
+   no cliente (não existe uma resposta HTTP 401 literal, já que o handshake pode terminar via
+   polling antes de fazer upgrade). As mensagens de erro são `LICENSE_REQUIRED: ...` (licença),
+   `Authentication error` (token ausente ou inválido), `ACCOUNT_BANNED` e `SESSION_REVOKED`. O
+   cliente manda o navegador pra `/` nos dois últimos.
 
 ## Salas (rooms)
 
@@ -33,6 +37,9 @@ Apesar do nome, o helper `broadcastToAll()` do servidor **geralmente não** é u
 verdade pra todo socket: ele resolve `worldId` (ou `stageId`, ou `castId`) a partir do
 payload e roteia via `broadcastToWorld()`/`broadcastToStage()`, só caindo pra um
 `io.emit(...)` de verdade pra todo socket conectado quando nenhum desses pode ser resolvido.
+A única exceção é `world.deactivated`, que é enviado com `io.emit` pra todo socket do servidor e
+desconecta todo usuário conectado, de todos os worlds (ver [events.md](./events.md)).
+
 Existe também um helper separado `broadcastToWorldOwned()` pra documentos com `ownership`
 por linha (ex: actors): em vez de um único `io.to(room).emit(...)`, ele itera os sockets
 ativos da sala e manda um payload redigido pra quem estiver abaixo do nível de permissão de
@@ -48,7 +55,11 @@ socket.emit('message', { type: string, data: unknown });
 
 `wsClient.send(type, data)` faz esse embrulho pra você — ver
 [`sdk/ws-client.md`](../sdk/ws-client.md). O handler `socket.on('message', ...)` do servidor
-faz switch em `type` pra despachar.
+faz switch em `type` pra despachar. Mensagens enviadas com o socket offline ficam na fila do
+`wsClient` (até 50, enviadas depois de reconectar); `token.drag` e `user.cursor` são descartadas.
+
+Sessões de display e stream (tipos `display`/`stream`) são somente leitura: o servidor aceita só
+`user.identify` delas e descarta silenciosamente todos os outros tipos de mensagem.
 
 **Servidor → Cliente** é o oposto: cada evento é emitido com o **nome próprio dele**
 (`socket.emit('cast.created', data)`, `io.to(room).emit('chat.message', data)`, etc.), nunca
@@ -56,10 +67,22 @@ embrulhado num envelope `{type, data}`. O `wsClient` do cliente usa `socket.onAn
 capturar todo evento recebido e redespachar pros handlers registrados por nome — ver
 [`events.md`](./events.md) pro catálogo completo.
 
+**Nomes internos do `Signal` não são nomes na rede.** `Signal` é o barramento de eventos interno do
+servidor. Vários nomes internos são diferentes do que os clientes recebem: `actors.updated` sai
+como `actor.updated`, `stages.updated` como `stage.updated`, `tiles.created` como `tile.created`,
+`users.updated` como `user.updated`, `macros.*` como `macro.*`, `worlds.*` como `world.*`,
+`levels.*` como `level.*`, `decks.deleted` como `deck.deleted`, `compendium_packs.*` como
+`compendium.*`, `roll_tables.*` como `roll-table.*` e `folders.*` como `folder.*`. As renomeações
+são feitas pelos relays `Signal.listen` em `server/index.ts`. Alguns eventos nunca passam pelo
+`Signal` e vão direto pra uma sala com `broadcastToWorld` ou `broadcastToStage` (por exemplo
+`chat.message`, `ping`, `user.cursor`, `token.drag`). Só os nomes na rede em
+[`events.md`](./events.md) fazem parte do protocolo; um nome `Signal` no código do servidor não é
+um contrato com o cliente.
+
 Existe também um passthrough cru: qualquer evento emitido pelo cliente cujo nome comece com
 `module.`, `system.` ou `socket.` é relayado como está pra sala do world de quem mandou,
 pulando o envelope `message` inteiro — a via de escape que addons usam pros próprios eventos
-de tempo real sem tocar em `server/index.ts` (ver
+de tempo real sem tocar em `server/index.ts` (limitado a 20 mensagens por segundo e 64 KB por payload; ver
 [`events.md`](./events.md#relay-customizado-para-eventos-de-addonsistema-module-system-socket)).
 
 ## Ciclo de vida da conexão
@@ -87,10 +110,15 @@ de tempo real sem tocar em `server/index.ts` (ver
 
 ## Reconexão automática
 
-Tratada inteiramente pelo próprio cliente Socket.IO (`ws-client.ts` só configura): até 5
-tentativas com backoff exponencial (1s, 2s, 4s, 8s, limitado a 16s). Uma desconexão iniciada
-pelo servidor (`reason === 'io server disconnect'`, ex: depois de `world.deactivated` fechar
-a sala à força) **não** dispara tentativa de reconexão do cliente.
+O próprio cliente Socket.IO tenta de novo sem limite (`reconnectionAttempts: Infinity`), com o
+atraso crescendo de 1s até um teto de 16s. Uma desconexão iniciada pelo servidor
+(`reason === 'io server disconnect'`, ex: depois de `world.deactivated`) **não** é retentada pelo
+próprio Socket.IO: o `ws-client.ts` chama `connect()` de novo manualmente, usando os atrasos 1s,
+2s, 4s, 8s e depois 16s para todas as tentativas seguintes, também sem limite.
+
+Depois de qualquer reconexão, se o cliente ainda tem sessão ele envia `user.identify` com
+`isReconnect: true` e em seguida `context.update` pra stage atual. O servidor responde ao identify
+com `users.online` e `cast.resync` no lugar de um novo `init` (ver a seção `user.identify` abaixo).
 
 ## user.identify
 
@@ -106,6 +134,8 @@ Enviado logo após conectar pra começar a sincronização:
 O servidor extrai `userId`/`userName`/`userRole` do JWT — os campos de identidade que o
 cliente manda são só informativos, nunca confiados. Isso entra na sala `world:<worldId>` e
 dispara o payload `init` mais um broadcast `users.online` pro resto daquela sala.
+Quando o cliente manda `isReconnect: true`, o servidor pula o `init`: envia `users.online` pra
+sala e `cast.resync` só pra esse socket.
 
 ## init
 

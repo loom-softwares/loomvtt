@@ -28,7 +28,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
 > **Extensão de template é `.hbs`.** O motor de render (`renderTemplate()`) não reescreve
 > extensão nenhuma — o arquivo no disco precisa bater exatamente com o path declarado em
 > `template:` (ou `PARTS`). Um path errado bate no fallback HTML do SPA do dev server, e o
-> render falha com `"[renderTemplate] ... devolveu HTML (provável fallback do dev server, não
+> render falha com `"[renderTemplate] "<caminho>" devolveu HTML (provável fallback do dev-server, não
 > o template real)"`.
 
 ## Manifest (`ruleset.json`)
@@ -112,7 +112,7 @@ Sistemas (rulesets) definem as regras de jogo: tipos de actor/item, dados padrã
   então a validação de tipo em `POST/PUT /api/items` só enxerga o que estiver aqui, neste
   JSON estático. Tipos fora da lista nativa (`weapon, spell, armor, equipment, consumable,
   tool, treasure, other`) e fora deste array são silenciosamente rebaixados pra `equipment`.
-- `compendiums`: Array opcional de fontes de compêndio, lidas em tempo real e só pra navegação — **nunca** copiadas pro banco do mundo na ativação. Cada GM decide, entry por entry, se materializa aquilo no próprio mundo (drag-and-drop, ou a ação "salvar no meu compêndio"), o que grava só aquela entry, nunca o pack inteiro. Dois tipos de item:
+- `compendiums`: Array opcional de fontes de compêndio, lidas em tempo real e só pra navegação — **nunca** copiadas pro banco do mundo na ativação. Cada GM decide, entry por entry, se materializa aquilo no próprio mundo (arrastando a entry para a ficha de um documento), o que grava só aquela entry, nunca o pack inteiro. Dois tipos de item:
   - **Local** — uma string simples, o caminho (relativo à pasta do addon/ruleset) de um arquivo `.sqlite` com uma tabela `pack_meta` (1 linha: `name`, `type`) e uma tabela `entries` (`id`, `name`, `type`, `sortOrder`, `imgUrl`, `data`). Monta um com `scripts/build-compendium-pack.mjs`.
   - **Remota** — um objeto `{ "type": "remote", "apiUrl": "..." }`, pra conteúdo hospedado por terceiro (ex: um addon pago que uma editora mantém no próprio banco). `apiUrl` precisa ser um endpoint `https://` (`http://` é rejeitado direto) que fale um contrato **próprio, agnóstico de banco** — não PostgREST — com só três rotas: `GET {apiUrl}/meta` → `{ name, type }`, `GET {apiUrl}/entries` (aceita `?search=`/`?includeData=`) → array de entries, e `GET {apiUrl}/entries/:id` → uma entry específica. Qualquer backend serve, desde que responda essas rotas: Supabase/Postgres com uma Edge Function fina na frente, um servidor Express puro sobre MySQL, o que for — o core nunca fala com o banco da editora diretamente. Se o conteúdo for pago, some `"requiresApiKey": true` no manifest (fora do array `compendiums`) — ver [Fontes remotas de compêndio: modelo de segurança](#fontes-remotas-de-compendio-modelo-de-seguranca) abaixo antes de distribuir uma dessas.
 - `languages`: Array opcional com pacotes de idioma do sistema. O VTT carrega o JSON e faz o registro automático (usando *deep merge*) para popular o objeto `Loom.i18n`.
@@ -143,15 +143,15 @@ Licença), e ela vale pra todos os mundos daquele servidor.
   `Authorization: Bearer <key>` em toda requisição pra um `apiUrl` de addon
   `requiresApiKey`; addon sem essa flag manda a requisição sem `Authorization` — quem
   hospeda decide se isso basta ou se exige autenticação própria.
-- **`http://` é rejeitado.** `assertSecureApiUrl()` em `compendium-source.ts` bloqueia
+- **`http://` é rejeitado.** `assertPublicHttpsUrl()` (`server/applications/utils/ssrf-safe-fetch.ts`, chamada por `compendium-source.ts`) bloqueia
   qualquer `apiUrl` que não seja `https://`, pra chave não viajar em texto claro na rede.
-- **Navegar uma fonte remota exige `compendiumEdit` (GM), não só estar logado.** As rotas
-  `/api/compendium/sources*` exigem isso — senão qualquer conta de jogador no mundo
-  conseguiria usar a rota em loop e fazer o servidor devolver o pack pago inteiro em nome
-  dela, não só o que o GM licenciou. (As rotas `/api/compendium/browse/*`, usadas por
-  seletores voltados a jogador — como o wizard de personagem — ficam abertas pra
-  qualquer autenticado, mas só devolvem o que já está habilitado pro mundo daquele
-  jogador via `world_packages`/`world.system`, nunca o catálogo inteiro do servidor.)
+- **Listar e navegar uma fonte remota é liberado para os jogadores do mundo; gravar não.**
+  `GET /api/compendium/sources*` é somente leitura e disponível a todo jogador do mundo,
+  limitado ao que o sistema do mundo e os pacotes habilitados permitem (`getWorldCompendiumScope`).
+  Uma fonte com `requiresApiKey` só aparece depois que uma chave foi licenciada no servidor.
+  As rotas `/api/compendium/browse/*`, usadas por seletores voltados a jogador — como o
+  wizard de personagem — seguem o mesmo escopo. Importar, travar, criar pastas e gravar
+  entries exigem `compendiumEdit` (GM por padrão).
 - **Conteúdo de fonte remota é escapado antes de renderizar.** `name`, `imgUrl` etc. vêm
   como dado de terceiro não confiável e passam por escape de HTML (ver
   `escapeHtml`/`safeImgUrl` em `client/windows/compendium-source-window.ts` e

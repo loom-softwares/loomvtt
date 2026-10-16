@@ -7,7 +7,7 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 | Campo | Tipo | Default | Descrição |
 |-------|------|---------|-----------|
 | `id` | `string` | UUID | Identificador único |
-| `worldId` | `string` | — | Mundo (do contexto de auth ou do body; sem fallback) |
+| `worldId` | `string` | `'world-1'` | Mundo: vem da sessão, ou do body quando a sessão não tem mundo. O default do schema só se aplica quando nenhum dos dois é informado |
 | `stageId` | `string` | id da stage ativa, ou `'stage-1'` | Stage (cenário) atual |
 | `levelId` | `string` | `''` | Level dentro da stage |
 | `name` | `string` | — | Nome (**obrigatório**) |
@@ -17,14 +17,17 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 | `y` | `number` | `100` | Posição Y no grid |
 | `colorHex` | `string` | `'#e74c3c'` | Cor do token |
 | `avatarUrl` | `string` | `''` | URL do avatar |
-| `ringColor` | `string` | `'#e74c3c'` | Cor do anel |
+| `ringColor` | `string` | `colorHex` quando informado, senão `'#e74c3c'` | Cor do anel |
+| `ringUrl` | `string` | `''` | URL da imagem do anel |
+| `ringEffect` | `string` | `'none'` | Efeito do anel |
+| `ringScale` | `number` | `1.6` | Escala do anel |
 | `shape` | `string` | `'circle'` | Forma (`circle`, `square`, etc.) |
 | `effects` | `array` | `[]` | Efeitos visuais ativos |
 | `statusMarkers` | `array` | `[]` | Marcadores de status |
 | `systemData` | `object` | `{}` | Dados do sistema (ruleset) |
 | `actorId` | `string` | `''` | ID do actor vinculado |
 | `isLinked` | `boolean` | `false` | Vinculado ao actor? |
-| `ownership` | `object` | `{}` | Permissões de dono |
+| `ownership` | `object` | só o criador (e os donos do actor vinculado com nível de edição, na criação) | Permissões de dono |
 | `folderId` | `string` | `''` | Pasta |
 | `elevation` | `number` | `0` | Elevação |
 | `locked` | `boolean` | `false` | Bloqueado? |
@@ -64,7 +67,7 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 
 Lista todos os membros do elenco, ordenados por `createdAt` ascendente.
 
-**Query:** `?limit=`, `?offset=`
+**Query:** `?stageId=` (só os tokens dessa stage), `?limit=`, `?offset=`
 
 **Response `200`:**
 ```json
@@ -112,12 +115,13 @@ Retorna todos os tokens vinculados a um actor.
 **Parâmetros:** `actorId` (path)
 
 **Response `200`:** `Cast[]`
+**Response `500`:** `{ "error": "Failed to retrieve linked tokens." }`
 
 ---
 
 ### POST `/:actorId/propagate`
 
-Propaga alterações do actor para todos os tokens vinculados (`isLinked: true`).
+Propaga alterações do actor para todos os tokens vinculados (`isLinked: true`). `avatarUrl` usa o do token quando o actor não tem um. Cada atualização de token também emite `cast.updated`. Não há verificação de GM nem de propriedade.
 
 **Parâmetros:** `actorId` (path)
 
@@ -125,6 +129,8 @@ Propaga alterações do actor para todos os tokens vinculados (`isLinked: true`)
 ```json
 { "success": true, "propagatedCount": 3 }
 ```
+**Response `404`:** `{ "error": "Actor not found." }`
+**Response `500`:** `{ "error": "Failed to propagate actor changes." }`
 
 ---
 
@@ -159,9 +165,13 @@ Se `actorId` for informado:
   (sincronização completa).
 - `isLinked: false` → `systemData` é copiado como um snapshot independente, e se `traits`
   não foi informado, `traits.hp` é semeado a partir de `systemData.hp.value` do actor (ou `10`).
+  O snapshot não é sincronizado depois. Clicar no token ainda abre a ficha do actor, não este snapshot.
+
+Os donos do actor vinculado com nível de edição (3) também ganham edição no token, e o criador sempre ganha. Qualquer sessão logada pode criar um token; não há verificação de GM.
 
 **Response `201`:** Objeto do cast criado
 **Response `400`:** `{ "error": "Field \"name\" is required and must be a non-empty string." }`
+**Response `500`:** `{ "error": "Failed to create cast member" }`
 
 **Evento WS:** `cast.created`
 
@@ -169,14 +179,20 @@ Se `actorId` for informado:
 
 ### PUT `/:id`
 
-Atualiza campos do token. Atualização parcial (só envia o que quer mudar).
+Atualiza campos do token. Atualização parcial (só envia o que quer mudar). Campos aceitos: `name`, `kind`, `traits`, `colorHex`, `x`, `y`, `avatarUrl`, `ringColor`, `shape`, `effects`, `statusMarkers`, `systemData`, `folderId`, `stageId`, `elevation`, `levelId`, `locked`, `hidden`, `movementAction`, `targetedBy`, `tintColor`, `opacity`, `rotation`, `scale`, `sightEnabled`, `sightRange`, `sightAngle`, `sightMode`, `detectionModes`, `lightDimRange`, `lightBrightRange`, `lightColor`, `lightAnimation`, `barGridSize`, `bar1`, `bar2`, `displayBars`. Os campos de anel `ringUrl`, `ringEffect` e `ringScale` são ignorados aqui (use `PUT /:id/token`). `id`, `worldId`, `actorId`, `isLinked`, `ownership` e os timestamps também são ignorados.
+
+A regra de donos do actor de `POST /` também roda aqui, antes da atualização. Quem não tem edição recebe `403`.
+
+`systemData` é mesclado em profundidade ao JSON guardado, como nos actors: objetos simples mesclam chave por chave, arrays e escalares substituem o valor antigo, e uma chave escrita como `"-=chave"` apaga essa chave. Um `systemData` parcial só altera as chaves que você envia.
+
+Clicar em um token não edita este snapshot. O client abre a ficha do actor para qualquer token com `actorId`, vinculado ou não, e essa ficha grava no actor (veja `sdk/sheets.md`).
 
 **Parâmetros:** `id` (path)
 
-**Request body:** qualquer campo do schema acima, exceto `id`/`worldId`/`actorId`/`isLinked`/`ownership`/`createdAt`/`updatedAt`.
-
 **Response `200`:** Objeto atualizado
 **Response `400`:** `{ "error": "No valid fields provided for update." }`
+**Response `403`:** `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Not found" }`
 
 **Evento WS:** `cast.updated`
 
@@ -188,9 +204,11 @@ Atualiza apenas propriedades visuais/config do token (mesmo que PUT /:id, mas se
 
 **Parâmetros:** `id` (path)
 
-**Request body:** `avatarUrl`, `ringColor`, `shape`, `effects`, `statusMarkers`, `systemData`, `elevation`, `levelId`, `locked`, `hidden`, `movementAction`, `targetedBy`, `tintColor`, `opacity`, `rotation`, `scale`, `sightEnabled`, `sightRange`, `sightAngle`, `sightMode`, `detectionModes`, `lightDimRange`, `lightBrightRange`, `lightColor`, `lightAnimation`, `barGridSize`
+**Request body:** `avatarUrl`, `ringColor`, `ringUrl`, `ringEffect`, `ringScale`, `shape`, `effects`, `statusMarkers`, `systemData`, `elevation`, `levelId`, `locked`, `hidden`, `movementAction`, `targetedBy`, `tintColor`, `opacity`, `rotation`, `scale`, `sightEnabled`, `sightRange`, `sightAngle`, `sightMode`, `detectionModes`, `lightDimRange`, `lightBrightRange`, `lightColor`, `lightAnimation`, `barGridSize`, `bar1`, `bar2`, `displayBars`
 
 **Response `200`:** Objeto atualizado
+**Response `403`:** `{ "error": "Access denied" }`
+**Response `404`:** `{ "error": "Not found" }`
 
 **Evento WS:** `cast.updated`
 
@@ -209,8 +227,9 @@ Marca/desmarca alvos no token. Qualquer usuário autenticado no mundo pode usar.
 
 **Response `200`:** Objeto atualizado
 **Response `400`:** `{ "error": "targetedBy must be an array" }`
+**Response `404`:** `{ "error": "Not found" }`
 
-**Evento WS:** `token.target` (não `cast.updated`)
+**Evento WS:** `token.target` (enviado a todos os clientes conectados, de todos os mundos). A atualização em si também emite `cast.updated`.
 
 ---
 
@@ -227,6 +246,8 @@ Atualiza só a posição do token (usado em drag em tempo real — mais leve que
 
 **Response `200`:** `{ "success": true }`
 **Response `404`:** `{ "error": "Cast member not found" }`
+**Nota:** o resultado da atualização não é verificado. Uma sessão sem permissão de edição recebe `200` e nada muda.
+**Nota:** o resultado da atualização não é verificado. Uma sessão sem permissão de edição recebe `200` e nada muda.
 
 **Evento WS:** `cast.updated`
 
@@ -241,7 +262,8 @@ ator em todas as cenas, vinculados ou não, e define o formato deles como `none`
 **Response `400`:** `{ "error": "The actor has no image to apply." }`
 **Response `403`:** `{ "error": "Only the GM can apply the token image to the stages." }`
 **Response `404`:** `{ "error": "Actor not found." }`
-**WS Event:** `cast.updated` para cada cast
+**Response `500`:** `{ "error": "Failed to apply the token image." }`
+**Evento WS:** `cast.updated` para cada cast
 
 ---
 
@@ -256,6 +278,7 @@ Remove um token.
 { "success": true, "id": "member-abc123" }
 ```
 
+**Response `403`:** `{ "error": "Access denied" }`
 **Response `404`:** `{ "error": "Cast member not found" }`
 
 **Evento WS:** `cast.deleted`

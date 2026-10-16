@@ -10,9 +10,8 @@ Fonte: `client/core/handlebars-helpers.ts`.
 > **Por que existe:** qualquer template convertido que usa `{{localize}}`, `{{concat}}` etc.
 > (praticamente todos) quebraria com "Missing helper" sem esses registros.
 >
-> **Faltam helpers de widgets mais complexos** (`formGroup`/`formInput`/`numberInput`/
-> `radioBoxes`/`editor`/`object`) produzir formulários inteiros — mas os de formulário abaixo
-> **já estão** incluídos. Adicione sob demanda se um template real precisar de mais.
+> **Não registrados:** os widgets de formulário `editor` e `object`. Os helpers de formulário
+> `formGroup`, `formInput`, `numberInput` e `radioBoxes` estão incluídos abaixo. Adicione sob demanda se um template real precisar de mais.
 
 ## Helpers registrados
 
@@ -29,6 +28,11 @@ Fonte: `client/core/handlebars-helpers.ts`.
 | `formInput` | `{{formInput type="text" name="x" value=val}}` | Gera `<input>` (suporta `checkbox`, `select` com `options`) |
 | `numberInput` | `{{numberInput val name="hp" step=1 min=0 max=10}}` | `<input type="number">` com os atributos |
 | `radioBoxes` | `{{radioBoxes name choices checked=checked}}` | Gera grupo de radios (`<div class="radio-boxes">`) |
+| `eq` / `ne` | `{{#if (eq a b)}}` | `a === b` / `a !== b` |
+| `lt` / `gt` / `lte` / `gte` | `{{#if (gt a b)}}` | `a < b`, `a > b`, `a <= b`, `a >= b` |
+| `and` / `or` | `{{#if (and a b)}}` / `{{#if (or a b)}}` | Verdadeiro se todos / algum dos argumentos forem truthy |
+| `not` | `{{#if (not a)}}` | `!a` |
+| `numLoop` | `{{#numLoop 3 start=1 step=1}}{{this}}{{/numLoop}}` | Repete o bloco `niter` vezes; `this` é o índice (com deslocamento `start` e passo `step`) |
 
 ## Exemplo
 

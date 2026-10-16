@@ -31,8 +31,7 @@ Global API exposed to addons and systems on the client side.
   },
   renderTemplate,
   loadTemplates,
-  debounce,
-  throttle,
+  utils: { debounce, throttle, mergeObject, /* ...see utils.md */ },
   DragDrop,
   fields,
   rolls: {
@@ -47,6 +46,7 @@ Global API exposed to addons and systems on the client side.
     get resolveFOVOrigins() { ... },
     renderRollCard: renderRollCardWrap,
     renderMessage: renderMessageWrap,
+    chatCardContextOptions: chatCardContextOptionsWrap,
     renderMacroIcon: renderMacroIconWrap,
   },
   BaseWindow,
@@ -86,8 +86,8 @@ Global API exposed to addons and systems on the client side.
 | `sheets`                     | `SheetCatalog`                                 | Sheet catalog                                                    |
 | `systems`                    | `SystemRegistry`                               | RPG systems registry                                            |
 | `applications.ux.TextEditor` | `TextEditor`                                   | Text and HTML enrichment utilities (e.g. `@Embed`, `[[/roll]]`) |
-| `debounce`                   | `(fn, delay) => fn`                            | Limits the execution of a function in time                           |
-| `throttle`                   | `(fn, delay) => fn`                            | Limits the execution frequency of a function                     |
+| `utils.debounce`             | `(fn, delay) => fn`                            | Limits the execution of a function in time (there is no top-level `Loom.debounce`) |
+| `utils.throttle`             | `(fn, delay) => fn`                            | Limits the execution frequency of a function (there is no top-level `Loom.throttle`) |
 | `DragDrop`                   | `class LoomDragDrop`                           | Utility to manage native drag-and-drop operations        |
 | `fields`                     | `Object`                                       | Data fields API (StringField, NumberField, etc)                        |
 | `dice`                       | `DiceRegistry`                                 | Dice expressions registry (visual/face — see `dice.md`)       |
@@ -103,6 +103,12 @@ Global API exposed to addons and systems on the client side.
 | `wraps.renderRollCard`       | `function`                                     | Chat roll card wrap point (see `wrappable.md`)               |
 | `wraps.renderMessage`        | `function`                                     | HTML wrap point for any chat message                        |
 | `wraps.renderMacroIcon`      | `function`                                     | Icon wrap point for each macro hotbar slot                  |
+| `wraps.chatCardContextOptions` | `function`                                   | Right-click menu items of a chat card (see `wrappable.md`) |
+| `settings`                   | `{ register, registerMenu, get, set, whenReady, settings }` | Module settings registry |
+| `i18n`                       | `{ registerLang, localize, format }`           | Ruleset translation helpers |
+| `mainMenu`                   | `{ register, unregister }`                     | Main menu entries (hotbar button, "Main Menu") |
+| `LoomCategoryBrowser`        | `class`                                        | Category browser base class (implement `_prepareCategoryData()`) |
+| `Roll` / `Die`               | `class`                                        | Base classes for custom dice/rolls (`class X extends Loom.Roll`) |
 | `BaseWindow`                 | `class`                                        | Window base class — addon extends to create its own sheet        |
 | `LoomDocumentSheet`          | `class`                                        | Sheet base with automatic data-binding                             |
 | `LoomHandlebarsMixin`        | `function`                                     | Mixin `(Base) => class` — render via `static PARTS`/`TABS`       |

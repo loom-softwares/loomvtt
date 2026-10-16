@@ -8,21 +8,30 @@
 
 ### GET `/packages`
 
-Lists available packages (addons + rulesets).
+Lists available packages (addons + rulesets). No auth guard on this route.
 
-**Response `200`:** `{ "packages": [...] }`
+**Query:** `?worldId=`. With `worldId`, an addon is `active` only if that world has an explicit enabled row in `world_packages`; without it, `active` comes from the manifest.
+
+**Response `200`:** `{ "packages": [{ "type", "name", ...manifest, "active" }] }`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
 ### POST `/:type/:name/activate`
 
-Activates package. `requireAdminSession`
+Activates package (writes `active: true` to its manifest). `type` `ruleset` selects a ruleset; any other value means addon. `requireAdminSession`
+
+**Response `200`:** `{ "success": true, "type", "name", "active": true }`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
 ### POST `/:type/:name/deactivate`
 
-Deactivates package. `requireAdminSession`
+Deactivates package (writes `active: false` to its manifest). Same `type` rule as activate. `requireAdminSession`
+
+**Response `200`:** `{ "success": true, "type", "name", "active": false }`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -30,17 +39,36 @@ Deactivates package. `requireAdminSession`
 
 Installs package from URL. `requireAdminSession`
 
-**Request body:** `{ "manifestUrl": "...", "type": "addon|ruleset" }`
+**Request body:** `{ "manifestUrl": "...", "type": "addon|ruleset", "operationId"?, "expectedSha256"?, "entitlementVisa"? }`. `type` other than `ruleset` means addon. `operationId` defaults to `manifestUrl`.
 
-**WS Event:** `addon.installed`
+**Response `200`:** the result of `installFromUrl` (`success` flag and details)
+**Response `400`:** `{ "error": "manifestUrl is required" }`
+**Response `500`:** `{ "error": "..." }`
+**WS Event:** `addon.installed` with `{ type, name, version }` (only when the install succeeded). The install also emits `operation.progress` with `{ operationId, percent, phase, label }` during the install; see the note below.
 
 ---
 
-### DELETE `/:type/:name` (or `DELETE /ruleset/:name`, `DELETE /addons/:name`)
+### POST `/:type/:name/update`
 
-Uninstalls package (addon or ruleset). `requireAdminSession`
+Reinstalls the package from its latest release. `requireAdminSession`
 
-**WS Event:** `addon.uninstalled` (payload `{ type, name }`)
+**Request body (optional):** `{ "operationId"? }`
+
+**Response `200`:** the result of `updatePackage` (`success`, `alreadyUpToDate`, ...)
+**Response `500`:** `{ "error": "..." }`
+**WS Event:** `addon.installed` with `{ type, name, version }` when the update succeeded and was not already up to date
+
+---
+
+### DELETE `/:type/:name`
+
+Uninstalls package (addon or ruleset). `type` `ruleset` selects a ruleset; any other value means addon. `requireAdminSession`
+
+**Response `200`:** the result of `uninstallPackage`
+**Response `500`:** `{ "error": "..." }`
+**WS Event:** `addon.uninstalled` (payload `{ type, name }`, only when the uninstall succeeded)
+
+> **Note:** `operation.progress` is emitted with `Signal.broadcast` by the install and update routes. This page does not confirm the wire name clients receive for it: UNVERIFIED (no `Signal.listen` relay was found in `server/index.ts`).
 
 ---
 
@@ -49,13 +77,14 @@ Uninstalls package (addon or ruleset). `requireAdminSession`
 Lists the compendium packs declared in the package manifest (`compendiums`). Used by the
 Compendiums tab of `ModuleManifestWindow`. `requireAdminSession`
 
-**Response `200`:**
+**Response `200`:** one entry per declared compendium. A local pack whose path is invalid or has no `pack_meta` row has `name`/`packType`/`entryCount` set to `null` and an `error` field (`"invalid path"` or `"pack_meta not found"`).
 ```json
 [
   { "file": "packs/items.sqlite", "type": "local", "name": "Items", "packType": "Item", "entryCount": 42 },
   { "file": null, "type": "remote", "apiUrl": "https://...", "name": null, "packType": null, "entryCount": null }
 ]
 ```
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -65,7 +94,12 @@ Renames a local compendium pack (`.sqlite`) by modifying its metadata in the `pa
 
 **Request body:** `{ "file": "packs/items.sqlite", "name": "New Name" }`
 
+`file` must be a literal entry of the manifest's `compendiums` list; any other path is rejected.
+
 **Response `200`:** `{ "success": true, "file": "packs/items.sqlite", "name": "New Name" }`
+**Response `400`:** `{ "error": "file is required." }`, `{ "error": "name is required." }` or `{ "error": "Invalid pack path." }`
+**Response `404`:** `{ "error": "Pack not declared in this manifest." }` or `{ "error": "Pack file has no pack_meta row." }`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -73,13 +107,20 @@ Renames a local compendium pack (`.sqlite`) by modifying its metadata in the `pa
 
 Checks for update. `requireAdminSession`
 
+**Response `200`:** the result of `checkForUpdate`
+**Response `500`:** `{ "error": "..." }`
+
 ---
 
 ### POST `/fetch-manifest`
 
-Fetches remote manifest. `requireAdminSession`
+Fetches remote manifest, the preview before installing. The manifest must pass the same Loom gate as the installer (`validateLoomManifest`). `requireAdminSession`
 
-**Request body:** `{ "manifestUrl": "..." }`
+**Request body:** `{ "manifestUrl": "...", "type"?: "addon|ruleset" }`
+
+**Response `200`:** `{ "manifest": {...}, "warning": ... }`
+**Response `400`:** `{ "error": "manifestUrl is required" }`, or the gate error when the manifest is not a Loom package
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -90,8 +131,36 @@ download, only search). No auth.
 
 **Query:** `?type=`, `?category=`, `?q=` (search by title/description)
 
+Each row's `banner_url` is rewritten to the server proxy `/api/marketplace/catalog/banner/:id` (or `null`), so the browser never fetches remote images directly.
+
 **Response `200`:** `{ "packages": [...] }`
-**Response `502`:** `{ "error": "Could not load the Loom Hub catalog." }`
+**Response `502`:** `{ "error": "Não foi possível carregar o catálogo do Loom Hub." }` (the message is in Portuguese in the code)
+
+---
+
+### GET `/catalog/banner/:id`
+
+Proxies the banner image of a catalog package. Only ids returned by the last successful `/catalog` call are served. No auth.
+
+**Response `200`:** image bytes (`Cache-Control: public, max-age=1800`)
+**Response `404`:** empty body when the id is unknown, the source is not an image, or it is over 5 MB
+
+---
+
+### GET `/site-feed`
+
+Lists up to 12 published articles of the Loom site for the Setup Hub cards (read-only index on Supabase, cached for 30 minutes). No auth. Falls back to the last cache, or to an empty list, when the upstream fails.
+
+**Response `200`:** `{ "siteUrl": "...", "articles": [{ slug, title, summary, category, createdAt, coverUrl, link }] }`
+
+---
+
+### GET `/site-feed/cover/:slug`
+
+Proxies the cover image of an article. Only slugs from the last feed fetch are served. No auth.
+
+**Response `200`:** image bytes (`Cache-Control: public, max-age=1800`)
+**Response `404`:** empty body
 
 ---
 
@@ -112,8 +181,10 @@ Edits installed package metadata directly on the `addon.json`/`ruleset.json` on 
 
 **Request body (all optional):** `{ title?, version?, author?, repository?, description?, dependencies?: string[], conflicts?: string[], systems?: string[] }`
 
-Never accepts `core`/`client`/`name`/`settings`/`compendiums`/`requiresApiKey` — that's
-package code/structure, not metadata editable from here.
+Only those eight fields are read. Other keys (`core`, `client`, `name`, `settings`, `compendiums`, `requiresApiKey`, ...) are ignored. `dependencies`, `conflicts` and `systems` must be arrays (non-string items are dropped), otherwise `400`.
+
+**Response `400`:** `{ "error": "dependencies must be an array." }` (the same for `conflicts` and `systems`)
+**Response `500`:** `{ "error": "..." }`
 
 **UI Behavior (`ModuleManifestWindow`):**
 - The **Compendiums** tab is only rendered if the manifest declares `compendiums` with at least 1 item.
@@ -140,7 +211,9 @@ paid marketplace — sale is still manual, outside the app). **Auth:** `requireA
 
 **Request body:** `{ "packageName": "...", "quantity"?: number (1-100, default 1) }`
 
-**Response `200`:** `{ "codes": ["LOOM-XXXX-XXXX-XXXX", ...] }`
+**Response `200`:** `{ "codes": ["LOOM-XXXX-XXXX-XXXX", ...] }` (the plaintext codes are returned only here; the database keeps an HMAC)
+**Response `400`:** `{ "error": "packageName is required" }`
+**Response `500`:** `{ "error": "..." }`
 
 ---
 
@@ -165,3 +238,27 @@ body: **Auth:** `requireAdminSession`
   **Response `200`:** `{ success: true, packageName, worldId }`
   **Response `404`:** code not found / package not installed
   **Response `409`:** code already used
+  **Response `400`:** `{ "error": "code is required" }` or `{ "error": "worldId is required" }`
+  **Response `500`:** `{ "error": "..." }`
+
+### GET `/entitlements`
+
+Lists the package entitlements stored on this server (licenses synced from the Loom account). `requireAdminSession`
+
+**Response `200`:** `{ "entitlements": [{ id, productId, packageName, packageType, tier, validUntil, status, isActive, expiresInDays, createdAt }] }`. `status` is `active` or `expired`, from the signed visa.
+**Response `500`:** `{ "error": "..." }`
+
+---
+
+### POST `/entitlements/sync`
+
+Pulls the entitlements of the Loom account now. `requireAdminSession`
+
+**Response `200`:** the result of `syncAccountEntitlements`
+**Response `500`:** `{ "error": "..." }`
+
+---
+
+### Admin session errors
+
+Every route marked `requireAdminSession` (`server/applications/api/setup.ts`) answers `401` with `{ "error": "Admin session required" }` when there is no admin cookie, `401` with `{ "error": "Invalid or expired token" }` for a bad token, and `403` with `{ "error": "Admin access required" }` for a non-admin token.

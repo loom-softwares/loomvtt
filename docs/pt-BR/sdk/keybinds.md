@@ -92,5 +92,8 @@ keybinds.unregister('meu-addon-acao');
 ## Notas
 
 - Atalhos só funcionam quando o foco não está em input/textarea/contenteditable
-- Múltiplos atalhos podem ser registrados para a mesma tecla (último registrado vence)
+- Os nomes de tecla são valores de `KeyboardEvent.key` (`t`, `Escape`, `ArrowUp`). Se o usuário ativar a opção de teclas universais (localStorage `loom_universal_keys`), usa-se `KeyboardEvent.code`, com `KeyT` e `Digit1` lidos como `t` e `1`.
+- Múltiplos atalhos podem ser registrados para a mesma tecla. Um override do usuário vence os padrões; entre os padrões, vence o registrado primeiro (`getAction` devolve a primeira correspondência). Ver a nota CODE ISSUE abaixo.
+
+> **CODE ISSUE:** `getAction` em `client/core/keybinds.ts` devolve o primeiro padrão que bate, na ordem de registro; assim, uma ação registrada depois na mesma tecla nunca dispara, e nenhum conflito é reportado. Em aberto: se "o primeiro vence" é o comportamento pretendido.
 - Usuários podem reconfigurar atalhos na janela de configuração de teclas

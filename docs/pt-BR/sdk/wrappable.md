@@ -59,10 +59,18 @@ tentar criar os seus próprios equivalentes concorrentes:
 | Wrap point | Assinatura | Uso |
 |---|---|---|
 | `renderRollCard` | `(roll: RollResult, esc) => string` | Customiza o card HTML de um roll no chat |
-| `renderMessage` | `(msg, ctx: { esc, canSeeRoll }) => string` | Customiza o HTML de qualquer mensagem de chat |
+| `renderMessage` | `(msg, ctx: { esc, canSeeRoll, canDelete? }) => string` | Customiza o HTML de qualquer mensagem de chat |
 | `renderMacroIcon` | `(macro) => string` | Customiza o ícone de um slot da hotbar de macros |
 | `resolveFOVOrigins` | `function` | Customiza os pontos de origem do cálculo de FOV do Canvas |
 | `chatCardContextOptions` | `(msg) => ChatCardContextOption[]` | Itens do menu de clique-direito num card do chat — core já devolve um "Reroll" genérico pra toda mensagem de roll (reenvia a mesma formula/mode/meta/actorId), funciona mesmo sem sistema nenhum registrado |
+
+`RollResult` é `{ formula, terms, total, flavor?, mode, meta? }`. O `mode` dele é o modo de **visibilidade**
+(`public`, `gmroll`, `blindroll` ou `selfroll`), não o modo do dado. O motor não tem campo de modo do dado: um
+sistema que precisa dele tem de enviá-lo em `meta`, que o motor não interpreta. `meta` é opcional e vem do client,
+então trate como entrada não confiável.
+
+`esc` é o escapador do chat (ele faz `textContent` para `innerHTML`). Escapa apenas `&`, `<` e `>`, **não aspas**.
+Não coloque a saída dele dentro de um valor de atributo entre aspas sem escapar você mesmo `"` e `'`.
 
 ```js
 Loom.wraps.renderRollCard.addWrapper((original, roll, esc) => {
