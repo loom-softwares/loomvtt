@@ -64,7 +64,7 @@ Here you can customize:
 | :--- | :--- | :--- |
 | **Pan Camera** | Click & drag Middle or Right Mouse Button | `Ctrl + Arrow Keys` |
 | **Zoom In / Zoom Out** | Mouse Wheel (Scroll) | `PageUp` / `PageDown` |
-| **Reset View** | — | `Home` |
+| **Reset View** | — | — (no default key) |
 | **Pause Game (GM)** | — | `Spacebar` |
 
 ---
@@ -72,7 +72,7 @@ Here you can customize:
 ## 🗺️ Top Scene Navigation & Preload
 
 Located across the top of the viewport, the scene navigation bar lets the GM preview and switch between scenes seamlessly:
-* **Active Scene vs Preview:** The GM can preview any scene by clicking its tab without dragging players. To switch the world's active scene and pull all players, right-click the scene tab and select *Activate for Everyone*.
+* **Active Scene vs Preview:** The GM can preview any scene by clicking its tab without dragging players. To switch the world's active scene and pull all players, right-click the scene tab and select *Activate (All Players)*.
 * **Memory Preloading (Preload):** The GM can right-click any inactive scene and select *Preload Scene*. The engine loads map textures and geometry in background with an LRU cache (up to 5 cached scenes), delivering instant transitions with zero stutter.
 * **Collapse/Expand:** The caret toggle button at the start of the navigation bar collapses the row to display only the active scene, keeping screen real estate clear.
 

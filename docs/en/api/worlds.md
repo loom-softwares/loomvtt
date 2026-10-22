@@ -162,7 +162,7 @@ Changes the world clock. **Auth:** `requireAuth, requireWorldMatch, requireGM`
 
 GM (game session) edits superficial world information — never accepts
 `system`/`dataPath`/`adminPassword` (exclusive to the admin route `PUT /:id`). **Auth:**
-`requireAuth, requireGM`
+`requireAuth, requireWorldMatch, requireGM`
 
 **Request body:** `name`, `backgroundUrl`, `theme`, `nextSession`, `description`, `effectsRequireGmApproval`
 (any subset)
@@ -241,7 +241,7 @@ userColor, userRole } }` — also sets the `loom_world_token` cookie
 
 ### POST `/:id/pause`
 
-GM pauses the world (blocks player interaction). **Auth:** `requireAuth, requireGM`
+GM pauses the world (blocks player interaction). **Auth:** `requireAuth, requireWorldMatch, requireGM`
 
 Pausing also stops the world clock (see `PUT /:id/time`); the time is saved.
 
@@ -252,7 +252,7 @@ Pausing also stops the world clock (see `PUT /:id/time`); the time is saved.
 
 ### POST `/:id/resume`
 
-GM resumes the world. **Auth:** `requireAuth, requireGM`
+GM resumes the world. **Auth:** `requireAuth, requireWorldMatch, requireGM`
 
 Resuming also restarts the world clock from the time it stopped at.
 
@@ -370,7 +370,7 @@ Defines which addons are enabled in the world (admin). **Auth:** `requireAdminSe
 ### POST `/:worldId/packages/gm`
 
 Same as the route above, but called by the GM from inside the game session instead of the
-Setup Hub. **Auth:** `requireAuth, requireGM`
+Setup Hub. **Auth:** `requireAuth, requireWorldMatch, requireGM`
 
 **Request body / Response:** identical to `POST /:worldId/packages`
 

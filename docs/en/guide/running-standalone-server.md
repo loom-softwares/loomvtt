@@ -15,8 +15,9 @@ npm run package:server
 ```
 
 This produces `release/node/` — a self-contained folder with the compiled
-server (`app/`), the compiled client (`client/`), and a trimmed
-`package.json`. It does **not** bundle `node_modules`: that's installed on
+server (`app/`), the compiled client (`client/`), the SDK build
+(`packages/sdk/dist/`, served at `/_loom/sdk/`), `shared/`, the `supervisor.mjs`
+launcher, the `start.sh`/`start.command` scripts, and a trimmed `package.json`. It does **not** bundle `node_modules`: that's installed on
 whichever machine actually runs it, in the next step, so the native
 dependency (`better-sqlite3`) always matches that machine's OS/architecture.
 The same `release/node/` folder works on Windows, Linux, and macOS.
@@ -98,7 +99,12 @@ Behavior:
 
 ## Keeping it running
 
-`npm start` runs in the foreground. For a real server deployment, run it
+`npm start` runs in the foreground (it runs `node supervisor.mjs app/index.js`). For a real server deployment, run it
 under a process manager so it survives crashes and reboots — e.g.
-[pm2](https://pm2.keymetrics.io/) (`pm2 start app/index.js --name loomvtt`)
-or a systemd service unit calling `node app/index.js` directly.
+[pm2](https://pm2.keymetrics.io/) (`pm2 start supervisor.mjs --name loomvtt -- app/index.js`)
+or a systemd service unit calling `node supervisor.mjs app/index.js`.
+
+Run it through `supervisor.mjs`, not `app/index.js` directly: the supervisor is what restarts
+the server when Setup Hub asks for a restart and what swaps the files during an in-app update of
+the Node edition. Started directly, the server runs, but those two buttons may do nothing (only a
+systemd unit gets the restart, as an exit code 75 that the unit must restart).

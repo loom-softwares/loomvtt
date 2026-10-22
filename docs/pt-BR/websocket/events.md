@@ -128,6 +128,20 @@ assuma que um padrão de uma entidade vale pra outra. Renomeações conhecidas: 
 | `world.resumed` | `{ worldId }` | Mundo retomado pelo GM |
 | `time.updated` | `{ worldId, worldTime, timeScale, paused, serverNow, calendarId? }` | Snapshot do relógio do mundo: enviado a cada mudança, ao pausar e ao retomar, e a cada cerca de 30 s enquanto o relógio roda. Os clientes calculam o horário atual a partir do último snapshot |
 
+## Eventos de efeito
+
+Relayados por `server/index.ts` via `lib/effect-relay.ts`. Ver [api/effects.md](../api/effects.md#signals) para saber quando cada um é enviado.
+
+| Evento | Payload (`data`) | Quem recebe |
+|--------|-------------------|-----------|
+| `buff.created` | O efeito aplicado | Todos os sockets do mundo do efeito |
+| `buff.updated` | O efeito atualizado | Todos os sockets do mundo |
+| `buff.deleted` | `{ id, worldId }` | Todos os sockets do mundo (relayado do signal interno `buff.removed`, que carrega o mundo) |
+| `effect.requested` | `{ requestId, worldId, userId, templateId, targetCastId, targetActorId, templateName }` | Só os sockets de Assistant GM e Gamemaster do mundo (role 3 ou mais) |
+| `effect.denied` | `{ requestId, userId }` | Só os sockets do jogador cujo pedido foi negado |
+
+Um payload `buff.*` ou `effect.requested` sem `worldId` é descartado (nada é enviado); `effect.denied` é roteado por `userId`.
+
 ## Eventos de Chat
 
 | Evento | Payload (`data`) | Descrição |
@@ -205,7 +219,7 @@ Mandados embrulhados num único evento Socket.IO chamado `'message'`: `socket.em
 
 - **Documentos com campos embarcados (`ChildrenField`, ex: `items` no Actor) sempre chegam populados em `*.updated`** — `Document.update()` (core) popula esses campos antes de fazer o `Signal.broadcast`, então nunca vem com `items: undefined`/faltando por engano. Um array vazio no payload é um valor real (último filho removido), não "não populado" — quem escuta o evento e faz merge do estado local precisa tratar `undefined` e `[]` como coisas diferentes.
 - `_socketId` num payload é usado pra exclusão do remetente (evitar eco). O servidor remove o campo antes de enviar `cast.updated` e `token.moved`, então o cliente nunca o recebe.
-- Eventos com Signal mas **sem relay WS nenhum** (sem `Signal.listen()` pra eles em `server/index.ts`, então `wsClient.on(...)` nunca vai disparar): `buff.*`, `bug-report.*`, `campaign.*`, `zone.*`, `compendium.sourceFolderChanged`, `compendium.sourceLockChanged`, `operation.progress`, e os eventos genéricos `<tableName>.*` de tabelas sem relay (por exemplo `settings.*`, `module_settings.*`, `walls.*`, `drawings.*`). `fog.*` é relayado (ver a tabela de canvas).
+- Eventos com Signal mas **sem relay WS nenhum** (sem `Signal.listen()` pra eles em `server/index.ts`, então `wsClient.on(...)` nunca vai disparar): `bug-report.*`, `campaign.*`, `zone.*`, `compendium.sourceFolderChanged`, `compendium.sourceLockChanged`, `operation.progress`, e os eventos genéricos `<tableName>.*` de tabelas sem relay (por exemplo `settings.*`, `module_settings.*`, `walls.*`, `drawings.*`). `fog.*` é relayado (ver a tabela de canvas).
 - **CODE ISSUE:** `client/components/card-progress.ts` (e um comentário em `client/screens/setup-hub/worlds-tab.ts`) escuta `operation.progress`, mas não existe `Signal.listen('operation.progress')`, então esses listeners nunca disparam. `compendium.sourceFolderChanged` e `compendium.sourceLockChanged` têm o mesmo problema: o cliente escuta e ninguém repassa.
 - **Público dos eventos da sala do world:** os relays filtram pelo `ownership` de cada documento e por um nível padrão de permissão. Quando o mapa de ownership está vazio, vale o padrão: `0` significa que só sockets de GM recebem o evento (`deck.*`, `combat.*`, `item.*` sem ownership); `1` significa que todo jogador do world recebe. `actor.*` e `journal.*` também redigem o payload pra jogadores Limitados. Tokens `cast.*` com `hidden: true` vão só pra sockets de GM.
 - `world.deactivated` é a exceção ao escopo de sala: vai pra todo socket conectado e desconecta todo usuário conectado, inclusive de outros worlds.

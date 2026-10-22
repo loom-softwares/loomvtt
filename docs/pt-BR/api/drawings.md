@@ -4,6 +4,8 @@
 
 | Campo | Tipo | Default |
 |-------|------|---------|
+| `id` | `string` | UUID |
+| `stageId` | `string` | — |
 | `type` | `string` | `'rectangle'` |
 | `x` | `number` | `0` |
 | `y` | `number` | `0` |

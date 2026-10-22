@@ -81,6 +81,8 @@ API_PATHS = {
 };
 ```
 
+> **Duas constantes não têm rota por trás.** `SETUP_LOCAL_ADDRESS` (`/setup/local-address`) e `WORLDS_REGENERATE_PASSWORD` (`/worlds/:id/invite-links/regenerate-password`) estão declaradas, mas o servidor não monta esses endpoints, então chamá-las devolve `404`. Os endereços de convite vêm de `GET /api/worlds/:worldId/invite-links` (ver [worlds.md](../api/worlds.md)). As constantes com `:id` são modelos: troque o `:id` você mesmo.
+
 ## Exemplo
 
 ```typescript

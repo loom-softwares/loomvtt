@@ -92,7 +92,7 @@ O instalador rejeita qualquer manifest sem `"engine": "loom"`.
 - Adicione [configurações](../guide/addon-creation.md#manifest-addonjson) com `settings` no manifest
 - Use `wrap()` para interceptar funções do core
 - Crie uma janela personalizada com `windowManager`
-- Importe `Signal` de `/_loom/sdk/index.js` para eventos client-side
+- Escute eventos do servidor no navegador com `LoomHooks.on(...)` (ver [hooks](../sdk/hooks.md))
 
 > **Nota:** `Signal` (EventEmitter server-side) **não** é exportado pelo SDK.
 > O SDK não expõe o sistema de Signals do servidor — addons client-side recebem

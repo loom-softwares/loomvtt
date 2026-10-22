@@ -83,3 +83,17 @@ O objeto `ui.notifications` é exposto em `Loom.ui` e mapeia notificações visu
 - `Loom.world`: Propriedade global plana contendo as informações do mundo atualmente ativo (como `id`, `title`, etc). Diferente das coleções, este é um snapshot dos dados obtido no momento do bootstrap e não possui métodos interativos, seguindo paridade com a VTT legada (`game.world`). A HUD de jogo busca esse dado quando abre o mundo, antes de o hook `init` disparar. Antes desse ponto ele é `undefined`, e continua `undefined` se essa busca falhar.
 - `Loom.Roll`: Atalho global para a classe `LoomRoll`, espelhando a classe `Roll` original usada para rolagem de dados e avaliação matemática.
 - `Loom.Die`: Atalho global para a classe `Die`, compondo os termos base de um `LoomRoll`.
+
+## Outros auxiliares em `window.Loom`
+
+Todos estes existem em `window.Loom` em tempo de execução (`client/main.ts`).
+
+| Membro | O que faz |
+|---|---|
+| `Loom.fromUuidSync(uuid)` | Busca síncrona de `<Tipo>.<id>` nas coleções vivas (`Actor`, `Item`, `Scene`, `JournalEntry`/`Journal`, `Macro`, `Folder`, `RollTable`, `Playlist`, `Combat`, `User`). Devolve `undefined` quando o documento ainda não foi carregado, quando o UUID tem mais de dois segmentos e para todo UUID `Compendium.*` (UUIDs de compêndio não são resolvidos aqui). |
+| `Loom.fromUuid(uuid)` | Versão assíncrona. Mesma busca; se nada for achado e o UUID for `Item.<id>`, busca o item em `GET /api/items/:id` e o registra. Outros tipos nunca são buscados: resolvem para `undefined`. |
+| `Loom.openCompendiumEntrySheet(pack, entry)` | Abre a ficha real de uma entrada de compêndio (pack do mundo ou source pack de addon/ruleset). Mostra um toast informativo e devolve `null` quando o tipo do pack não tem ficha. |
+| `Loom.mountRichTextEditor(el, initialHTML, rootNode?, options?)` | Monta em `el` o editor ProseMirror usado pelos journals. `options` é `{ floatingMenu?, insertMenu? }`. Devolve `{ view, getHTML(), destroy() }`. |
+| `Loom.clipboard.copyPlainText(text)` | Copia texto com um `<textarea>` oculto; devolve `true` quando a cópia funcionou. |
+| `Loom.dice3d` | Aparência dos dados próprios de um sistema nos dados 3D: `registerDie(denomination, appearance, source?)`, `registerPreset(preset, source?)`, `unregisterDie(source)`, `show(items)`, `showForRoll(roll)`. O SDK também exporta como `dice3d`. |
+| `Loom.keybindings` | Alias de `Loom.keybinds` (mesmo objeto). Ver [keybinds.md](keybinds.md). |

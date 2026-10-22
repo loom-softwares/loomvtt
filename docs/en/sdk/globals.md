@@ -83,3 +83,17 @@ The `ui.notifications` object is exposed on `Loom.ui` and maps visual notificati
 - `Loom.world`: Flat global property containing the currently active world's information (like `id`, `title`, etc). Unlike collections, this is a snapshot of the data obtained at bootstrap time and has no interactive methods, following parity with the legacy VTT (`game.world`). The game HUD fetches it when it opens the world, before the `init` hook fires. It is `undefined` before that point, and it stays `undefined` if that fetch fails.
 - `Loom.Roll`: Global shortcut for the `LoomRoll` class, mirroring the original `Roll` class used for dice rolling and mathematical evaluation.
 - `Loom.Die`: Global shortcut for the `Die` class, composing the base terms of a `LoomRoll`.
+
+## Other helpers on `window.Loom`
+
+Each of these exists on `window.Loom` at runtime (`client/main.ts`).
+
+| Member | What it does |
+|---|---|
+| `Loom.fromUuidSync(uuid)` | Synchronous lookup of `<Type>.<id>` in the live collections (`Actor`, `Item`, `Scene`, `JournalEntry`/`Journal`, `Macro`, `Folder`, `RollTable`, `Playlist`, `Combat`, `User`). Returns `undefined` when the document is not loaded yet, when the UUID has more than two segments, and for every `Compendium.*` UUID (compendium UUIDs are not resolved here). |
+| `Loom.fromUuid(uuid)` | Async version. Same lookup; if nothing is found and the UUID is `Item.<id>`, it fetches the item from `GET /api/items/:id` and registers it. Other types are never fetched: they resolve to `undefined`. |
+| `Loom.openCompendiumEntrySheet(pack, entry)` | Opens the real sheet of a compendium entry (world pack or addon/ruleset source pack). Shows an info toast and returns `null` when the pack type has no sheet. |
+| `Loom.mountRichTextEditor(el, initialHTML, rootNode?, options?)` | Mounts the ProseMirror editor used by journals in `el`. `options` is `{ floatingMenu?, insertMenu? }`. Returns `{ view, getHTML(), destroy() }`. |
+| `Loom.clipboard.copyPlainText(text)` | Copies text with a hidden `<textarea>`; returns `true` when the copy worked. |
+| `Loom.dice3d` | Look of a system's own dice in the 3D dice: `registerDie(denomination, appearance, source?)`, `registerPreset(preset, source?)`, `unregisterDie(source)`, `show(items)`, `showForRoll(roll)`. Also exported by the SDK as `dice3d`. |
+| `Loom.keybindings` | Alias of `Loom.keybinds` (same object). See [keybinds.md](keybinds.md). |

@@ -6,7 +6,7 @@ LoomVTT allows you to generate dedicated read-only display links to project maps
 
 ## Opening the Displays Manager
 
-In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa-satellite-dish"></i>) located on the top header or toolbox. The **Displays & Table View** window will open.
+In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa-satellite-dish"></i>) in the theater controls cluster of the Game HUD. The **Displays & Table View** window will open.
 
 ---
 
@@ -59,5 +59,5 @@ In the GM's Game HUD, click on the broadcast antenna icon (<i class="fa-solid fa
 
 - **Clean Virtual Sessions**: Display links generate an isolated JWT session (`isDisplay: true`). No phantom user accounts are created in the database, ensuring the world login screen and player management stay completely clean.
 - **One-Click Instant Revocation**: The GM can instantly revoke any active display link. Connected screens terminate immediately with a visual revocation notification.
-- **Total Privacy & Secret Concealment**: Hidden enemies, GM layers, secret map notes, and administrative controls are never leaked to display clients.
+- **Total Privacy & Secret Concealment**: GM layers and administrative controls are not sent to display clients. Tokens flagged `hidden` are filtered out of the data a display receives.
 - **Automatic Reconnection**: In case of temporary Wi-Fi drops, a discreet banner notifies viewers and the map re-establishes synchronization automatically once network connectivity resumes.

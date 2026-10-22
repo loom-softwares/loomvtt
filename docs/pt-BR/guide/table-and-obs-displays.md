@@ -6,7 +6,7 @@ O LoomVTT permite gerar links de visualização dedicados somente leitura (*Read
 
 ## Como Abrir a Janela de Displays
 
-No Game HUD do Mestre, clique no ícone de antena de transmissão (<i class="fa-solid fa-satellite-dish"></i>) na barra superior ou na toolbox. A janela **Displays & Mesa Física** será aberta.
+No Game HUD do Mestre, clique no ícone de antena de transmissão (<i class="fa-solid fa-satellite-dish"></i>) no grupo de controles do teatro do Game HUD. A janela **Displays & Mesa Física** será aberta.
 
 ---
 
@@ -59,5 +59,5 @@ No Game HUD do Mestre, clique no ícone de antena de transmissão (<i class="fa-
 
 - **Sessões Virtuais Limpas**: Os links geram uma sessão JWT isolada (`isDisplay: true`). Nenhuma conta fantasma é criada no banco de dados, mantendo a tela de login ("Quem é você?") e o gerenciamento de jogadores completamente limpos.
 - **Tokens Revogáveis com 1 Clique**: O Mestre pode revogar qualquer link ativo instantaneamente na lista de displays. Telas conectadas são desconectadas de imediato com aviso visual.
-- **Isolamento de Segredos**: Não vazam monstros ocultos, camadas de GM, notas secretas ou controles administrativos.
+- **Isolamento de Segredos**: Camadas de GM e controles administrativos não são enviados aos displays. Tokens marcados como `hidden` são filtrados dos dados que o display recebe.
 - **Reconexão Automática**: Em caso de oscilações de Wi-Fi, um aviso discreto aparece e o mapa se reconecta sozinho assim que a rede estabilizar.

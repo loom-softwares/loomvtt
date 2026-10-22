@@ -61,7 +61,7 @@ try to create its own competing equivalents:
 | `renderRollCard` | `(roll: RollResult, esc) => string` | Customizes the HTML card of a chat roll |
 | `renderMessage` | `(msg, ctx: { esc, canSeeRoll, canDelete? }) => string` | Customizes the HTML of any chat message |
 | `renderMacroIcon` | `(macro) => string` | Customizes the icon of a macro hotbar slot |
-| `resolveFOVOrigins` | `function` | Customizes the origin points for the Canvas FOV calculation |
+| `resolveFOVOrigins` | `() => { x, y, range, angle?, facing?, mode?, darkRange? }[]` | Customizes the origin points for the Canvas FOV calculation |
 | `chatCardContextOptions` | `(msg) => ChatCardContextOption[]` | Right-click menu items on a chat card — core already returns a generic "Reroll" for every roll message (resends the same formula/mode/meta/actorId), works even without any system registered |
 
 `RollResult` is `{ formula, terms, total, flavor?, mode, meta? }`. Its `mode` is the **visibility** mode

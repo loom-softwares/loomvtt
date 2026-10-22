@@ -127,6 +127,20 @@ assume a pattern from one entity applies to another. Known renames: `actors.*` �
 | `world.resumed` | `{ worldId }` | World resumed by GM |
 | `time.updated` | `{ worldId, worldTime, timeScale, paused, serverNow, calendarId? }` | World clock snapshot: sent on every change, on pause and resume, and about every 30 s while the clock runs. Clients compute the current time from the last snapshot |
 
+## Effect Events
+
+Relayed by `server/index.ts` through `lib/effect-relay.ts`. See [api/effects.md](../api/effects.md#signals) for when each is sent.
+
+| Event | Payload (`data`) | Who receives it |
+|--------|-------------------|-----------|
+| `buff.created` | The applied effect | Every socket of the effect's world |
+| `buff.updated` | The updated effect | Every socket of the world |
+| `buff.deleted` | `{ id, worldId }` | Every socket of the world (relayed from the internal `buff.removed` signal, which carries the world) |
+| `effect.requested` | `{ requestId, worldId, userId, templateId, targetCastId, targetActorId, templateName }` | Only the world's Assistant GM and Gamemaster sockets (role 3 and above) |
+| `effect.denied` | `{ requestId, userId }` | Only the sockets of the player whose request was denied |
+
+A `buff.*` or `effect.requested` payload without `worldId` is dropped (nothing is sent); `effect.denied` is routed by `userId`.
+
 ## Chat Events
 
 | Event | Payload (`data`) | Description |
@@ -203,7 +217,7 @@ type, data })`. `wsClient.send(type, data)` does this wrapping for you.
 
 - **Documents with embedded fields (`ChildrenField`, e.g., `items` on Actor) always arrive populated in `*.updated`** — `Document.update()` (core) populates these fields before doing a `Signal.broadcast`, so it never comes with `items: undefined`/missing by mistake. An empty array in the payload is a real value (last child removed), not "unpopulated" — whoever listens to the event and merges local state must treat `undefined` and `[]` as different things.
 - `_socketId` in a payload is used for sender exclusion (avoiding echo). The server removes it before sending `cast.updated` and `token.moved`, so clients never receive it.
-- Events with a Signal but **no WS relay at all** (no `Signal.listen()` for them in `server/index.ts`, so `wsClient.on(...)` will never fire): `buff.*`, `bug-report.*`, `campaign.*`, `zone.*`, `compendium.sourceFolderChanged`, `compendium.sourceLockChanged`, `operation.progress`, and the generic `<tableName>.*` events of tables without a relay (for example `settings.*`, `module_settings.*`, `walls.*`, `drawings.*`). `fog.*` is relayed (see the canvas table).
+- Events with a Signal but **no WS relay at all** (no `Signal.listen()` for them in `server/index.ts`, so `wsClient.on(...)` will never fire): `bug-report.*`, `campaign.*`, `zone.*`, `compendium.sourceFolderChanged`, `compendium.sourceLockChanged`, `operation.progress`, and the generic `<tableName>.*` events of tables without a relay (for example `settings.*`, `module_settings.*`, `walls.*`, `drawings.*`). `fog.*` is relayed (see the canvas table).
 - **CODE ISSUE:** `client/components/card-progress.ts` (and a comment in `client/screens/setup-hub/worlds-tab.ts`) listens for `operation.progress`, but no `Signal.listen('operation.progress')` exists, so those listeners never fire. `compendium.sourceFolderChanged` and `compendium.sourceLockChanged` have the same problem: the client listens for them and nothing forwards them.
 - **Audience of world-room events:** the relays filter by each document's `ownership` and a default permission level. When the ownership map is empty, the default decides: `0` means only GM sockets receive the event (`deck.*`, `combat.*`, `item.*` with no ownership), `1` means every player in the world. `actor.*` and `journal.*` also redact the payload for Limited players. `cast.*` tokens with `hidden: true` go only to GM sockets.
 - `world.deactivated` is the exception to room scoping: it goes to every connected socket and disconnects every connected user, including users of other worlds.

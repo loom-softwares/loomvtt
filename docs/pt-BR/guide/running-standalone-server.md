@@ -11,7 +11,7 @@ npm run build
 npm run package:server
 ```
 
-Isso produzirá a pasta `release/node/` — uma pasta auto-contida com o servidor compilado (`app/`), o cliente web compilado (`client/`) e um `package.json` enxuto. O pacote **não** inclui a pasta `node_modules`: ela é instalada na máquina de destino no passo seguinte, garantindo que dependências nativas (`better-sqlite3`) correspondam exatamente ao sistema operacional e arquitetura daquela máquina. A mesma pasta `release/node/` funciona em Windows, Linux e macOS.
+Isso produzirá a pasta `release/node/` — uma pasta auto-contida com o servidor compilado (`app/`), o cliente web compilado (`client/`), o build do SDK (`packages/sdk/dist/`, servido em `/_loom/sdk/`), `shared/`, o launcher `supervisor.mjs`, os scripts `start.sh`/`start.command` e um `package.json` enxuto. O pacote **não** inclui a pasta `node_modules`: ela é instalada na máquina de destino no passo seguinte, garantindo que dependências nativas (`better-sqlite3`) correspondam exatamente ao sistema operacional e arquitetura daquela máquina. A mesma pasta `release/node/` funciona em Windows, Linux e macOS.
 
 ## 2. Copiar para a máquina de destino
 
@@ -78,4 +78,6 @@ Comportamento:
 
 ## Mantendo o servidor ativo
 
-O comando `npm start` roda em primeiro plano. Para uma implantação real de servidor contínuo, execute o LoomVTT sob um gerenciador de processos para que ele reinicie automaticamente em caso de falhas ou reinicialização do sistema — como o [pm2](https://pm2.keymetrics.io/) (`pm2 start app/index.js --name loomvtt`) ou um serviço do systemd executando `node app/index.js` diretamente.
+O comando `npm start` roda em primeiro plano (executa `node supervisor.mjs app/index.js`). Para uma implantação real de servidor contínuo, execute o LoomVTT sob um gerenciador de processos para que ele reinicie automaticamente em caso de falhas ou reinicialização do sistema — como o [pm2](https://pm2.keymetrics.io/) (`pm2 start supervisor.mjs --name loomvtt -- app/index.js`) ou um serviço do systemd executando `node supervisor.mjs app/index.js`.
+
+Rode pelo `supervisor.mjs`, não direto pelo `app/index.js`: é o supervisor que reinicia o servidor quando o Setup Hub pede reinício e que troca os arquivos durante uma atualização dentro do app da edição Node. Iniciado direto, o servidor roda, mas esses dois botões podem não fazer nada (só um serviço systemd recebe o reinício, como saída com código 75 que a unit precisa reiniciar).

@@ -6,7 +6,7 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 
 | Campo | Tipo | Default | Descrição |
 |-------|------|---------|-----------|
-| `id` | `string` | UUID | Identificador único |
+| `id` | `string` | UUID (`member-<uuid>`) | Identificador único |
 | `worldId` | `string` | `'world-1'` | Mundo: vem da sessão, ou do body quando a sessão não tem mundo. O default do schema só se aplica quando nenhum dos dois é informado |
 | `stageId` | `string` | id da stage ativa, ou `'stage-1'` | Stage (cenário) atual |
 | `levelId` | `string` | `''` | Level dentro da stage |
@@ -15,7 +15,7 @@ Membros do elenco — personagens, NPCs, monstros no cenário.
 | `traits` | `object` | `{}` | Atributos do sistema (ex: `{ hp: { value: 10 } }`) |
 | `x` | `number` | `100` | Posição X no grid |
 | `y` | `number` | `100` | Posição Y no grid |
-| `colorHex` | `string` | `'#e74c3c'` | Cor do token |
+| `colorHex` | `string` | cor hex aleatória | Cor do token |
 | `avatarUrl` | `string` | `''` | URL do avatar |
 | `ringColor` | `string` | `colorHex` quando informado, senão `'#e74c3c'` | Cor do anel |
 | `ringUrl` | `string` | `''` | URL da imagem do anel |
@@ -200,7 +200,7 @@ Clicar em um token não edita este snapshot. O client abre a ficha do actor para
 
 ### PUT `/:id/token`
 
-Atualiza apenas propriedades visuais/config do token (mesmo que PUT /:id, mas sem `name`, `kind`, `colorHex`, `x`, `y`).
+Atualiza apenas propriedades visuais/config do token (mesmo formato de `PUT /:id`, mas sem `name`, `kind`, `colorHex`, `x`, `y`, `folderId`, `stageId`).
 
 **Parâmetros:** `id` (path)
 
@@ -246,7 +246,6 @@ Atualiza só a posição do token (usado em drag em tempo real — mais leve que
 
 **Response `200`:** `{ "success": true }`
 **Response `404`:** `{ "error": "Cast member not found" }`
-**Nota:** o resultado da atualização não é verificado. Uma sessão sem permissão de edição recebe `200` e nada muda.
 **Nota:** o resultado da atualização não é verificado. Uma sessão sem permissão de edição recebe `200` e nada muda.
 
 **Evento WS:** `cast.updated`

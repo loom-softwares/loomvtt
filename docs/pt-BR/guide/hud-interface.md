@@ -64,7 +64,7 @@ Nesta modal é possível definir:
 | :--- | :--- | :--- |
 | **Mover Câmera (Pan)** | Clique e arraste com o botão do meio ou direito | `Ctrl + Setas do Teclado` |
 | **Zoom In / Zoom Out** | Girar roda do mouse (Scroll) | `PageUp` / `PageDown` |
-| **Resetar Visão** | — | `Home` |
+| **Resetar Visão** | — | — (sem tecla padrão) |
 | **Pausar Jogo (GM)** | — | `Barra de Espaço` |
 
 ---
@@ -72,7 +72,7 @@ Nesta modal é possível definir:
 ## 🗺️ Barra Superior de Cenas & Pré-carregamento
 
 Na parte superior da tela, a barra de navegação de cenas permite que o Mestre alterne rapidamente entre cenários:
-* **Cena Ativa vs Pré-visualização:** O Mestre pode inspecionar qualquer cena clicando em seu botão sem transportá-los imediatamente. Para ativar a cena e puxar todos os jogadores, basta clicar com o botão direito e selecionar *Ativar para Todos*.
+* **Cena Ativa vs Pré-visualização:** O Mestre pode inspecionar qualquer cena clicando em seu botão sem transportá-los imediatamente. Para ativar a cena e puxar todos os jogadores, basta clicar com o botão direito e selecionar *Ativar (Todos os Jogadores)*.
 * **Pré-carregamento em Memória (Preload):** O Mestre pode clicar com o botão direito em uma cena e escolher *Pré-carregar Cena*. O motor carrega as texturas e paredes em segundo plano com um cache LRU (até 5 cenas em memória), garantindo transições instantâneas sem congelamento de tela.
 * **Recolher/Expandir:** O botão lateral na barra permite recolher as abas para focar apenas na cena ativa, economizando espaço na tela.
 

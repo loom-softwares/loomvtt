@@ -29,10 +29,12 @@ O usuário cola **um unico link** no Loom, e nada mais.
 | `engine` | **sim** | Tem que ser exatamente `"loom"`. Sem isso a instalacao e recusada antes do download. |
 | `type` | recomendado | `"addon"` ou `"ruleset"`. Se presente, tem que bater com o que o usuario escolheu. |
 | `name` | **sim** | Apenas letras, numeros, `-` e `_`. Vira o nome da pasta instalada. |
-| `version` | **sim** | Numerico separado por ponto (`1.2.3`). |
-| `download` | **sim** | URL do `.zip`. Aponte para a **tag**, nao para `latest`. |
-| `manifest` | **sim** | URL deste proprio arquivo. Aponte para `releases/latest/download/`. |
-| `engineVersion` | nao | `">=X.Y.Z"` ou `"X.Y.Z"`. Recusa limpo se o Loom for mais antigo. |
+| `version` | **sim** | Numerico separado por ponto, com sufixo de pre-release opcional (`1.2.3`, `1.2.3-alpha`). O `version` e o `name` do `addon.json` de dentro do `.zip` tem que ser iguais aos do manifest remoto, senao a instalacao e abortada. |
+| `download` | recomendado | URL do `.zip`. Aponte para a **tag**, nao para `latest`. Se faltar e `manifest` for uma URL do GitHub, o Loom resolve o `.zip` do ultimo release; caso contrario a instalacao falha. |
+| `manifest` | recomendado | URL deste proprio arquivo. Aponte para `releases/latest/download/`. O Loom grava a URL que buscou de volta no manifest instalado, e a checagem de update usa ela. |
+| `engineVersion` | nao | Uma ou mais clausulas separadas por espaco com `>=`, `<=`, `>`, `<` ou `=` (sem operador vale `>=`), ex.: `">=2.0.0"` ou `">=2.0.0 <3.0.0"`. E informativo: instalar fora da faixa **continua** e so mostra um aviso. Clausula fora do formato e ignorada. |
+| `sha256` | nao | SHA-256 hex do `.zip`. Quando presente, a instalacao aborta se o download nao bater. |
+| `visa` | nao | Visa de direito assinado emitido pelo Loom para pacotes pagos. Verificado contra o nome do pacote e o hash do `.zip`. |
 | `title`, `author`, `description` | nao | Exibicao. |
 
 ## Por que `manifest` deve ser `latest` e `download` deve ser a tag
@@ -59,4 +61,4 @@ Nao ha passo 4. Quem ja instalou ve a atualizacao no proximo check.
 
 Por seguranca, o Loom so busca pacote no GitHub (`github.com`,
 `raw.githubusercontent.com`, `objects.githubusercontent.com`,
-`release-assets.githubusercontent.com`, `api.github.com`, `codeload.github.com`).
+`release-assets.githubusercontent.com`, `api.github.com`, `codeload.github.com`) e o catalogo oficial Loom (`loomvtt.com`, `www.loomvtt.com`, `loomvtt.site`, `cdn.loomvtt.site`, `loomsite.vercel.app`).
