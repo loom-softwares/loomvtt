@@ -4,10 +4,10 @@ Architecture: amd64
 Maintainer: Rob Oliveira
 Depends: nodejs (>= 18), npm
 Filename: https://github.com/loom-softwares/loomvtt/releases/download/v2.1.2-alpha/loomvtt_2.1.2-alpha_amd64.deb
-Size: 574988138
-MD5sum: b1a18b2c75d2cd2ac37422dc826e86ed
-SHA1: 9bd324b480be179d179e0dc4d2784d852601858e
-SHA256: 0458b31881db70d313219204bb091c0781e36e4c4016e5c3fed89621d5b188de
+Size: 594184094
+MD5sum: a406e524007c808dc654564ac83d5de5
+SHA1: bb72325b40bc15460e25b725ce69d2c12d3c3377
+SHA256: a528054844d1c0c1401a404a78b121a87755a539cdfd4a5e5e64aa8e73b7e8c1
 Section: web
 Priority: optional
 Description: LoomVTT server
