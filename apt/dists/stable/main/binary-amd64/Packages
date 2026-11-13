@@ -4,10 +4,10 @@ Architecture: amd64
 Maintainer: Rob Oliveira
 Depends: nodejs (>= 18), npm
 Filename: https://github.com/loom-softwares/loomvtt/releases/download/v3.0.0-alpha/loomvtt_3.0.0-alpha_amd64.deb
-Size: 594187432
-MD5sum: 3f7c7b99a67ad267c8a511136f65b472
-SHA1: 01f90b52cee2535491ec7db1c39abaca102bfdd8
-SHA256: 7684ec689e5ce49eec7d11b0c8911b53167d98159f8a66b4c2ee3d8e6bcb83c6
+Size: 594186690
+MD5sum: 9cf873d1bb962b571e90c211cbdbe29e
+SHA1: 6d77ba3092e6a735b7b6bd337efcc562089e6c0c
+SHA256: 1664ecf5d93b2b6a4b4e11c3a7000153c2f6a02743220512b5e25950b5cae0bf
 Section: web
 Priority: optional
 Description: LoomVTT server
