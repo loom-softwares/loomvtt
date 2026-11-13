@@ -1,7 +1,7 @@
 <div align="center">
   <img src="loom-logo.png" alt="LoomVTT Logo" width="160" />
   <h1>LoomVTT</h1>
-  <p><a href="https://github.com/loom-softwares/loomvtt"><img src="https://img.shields.io/github/v/release/loom-softwares/loomvtt?include_prereleases&amp;sort=date&amp;label=LoomVTT&amp;style=for-the-badge&amp;color=7c3aed"" />3.0.0</a></p>
+  <p><a href="https://github.com/loom-softwares/loomvtt">3.0.0<img src="https://img.shields.io/github/v/release/loom-softwares/loomvtt?include_prereleases&amp;sort=date&amp;label=LoomVTT&amp;style=for-the-badge&amp;color=7c3aed"" /></a></p>
 </div>
 
 This repository serves as the central hub for tracking planned features, feature requests, bugs, and other issues for [LoomVTT](https://loomvtt.com) software.
